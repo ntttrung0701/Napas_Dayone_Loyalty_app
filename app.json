@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Napas DayOne",
+    "slug": "napas-dayone-demo",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.lsm.pay"
+    },
+    "android": {
+      "package": "com.lsm.pay",
+      "adaptiveIcon": {
+        "backgroundColor": "#F4F7FB"
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Cho phép Napas DayOne sử dụng Face ID để xác thực đăng nhập."
+        }
+      ]
+    ]
+  }
+}
