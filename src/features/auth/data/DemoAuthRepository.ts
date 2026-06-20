@@ -13,12 +13,12 @@ export class DemoAuthRepository implements AuthRepository {
 
   constructor() {
     this.store({
-      id: 'demo-user',
-      fullName: 'Khách hàng Napas',
-      phone: '0987654321',
-      email: 'demo@napas.vn',
-      clientCode: 'CIF001',
-      password: 'Demo@123',
+      id: '001',
+      fullName: 'Nguyen Van Anh',
+      phone: '123456789',
+      email: 'trung123@gmail.com',
+      clientCode: '070102',
+      password: 'Ntt0701@',
     });
   }
 

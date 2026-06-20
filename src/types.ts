@@ -1,4 +1,4 @@
-export type MainTab = 'home' | 'offers' | 'qr' | 'history' | 'profile';
+export type MainTab = 'home' | 'offers' | 'qr' | 'notifications' | 'profile';
 
 export type AppScreen =
   | 'splash'
@@ -9,7 +9,20 @@ export type AppScreen =
   | 'payment'
   | 'transfer'
   | 'cards'
+  | 'transaction-detail'
   | 'receipt';
+
+export type NotificationCategory = 'transaction' | 'offer' | 'system';
+
+export type LoyaltyNotification = {
+  id: string;
+  title: string;
+  message: string;
+  date: string;
+  occurredAt: string;
+  category: NotificationCategory;
+  isRead: boolean;
+};
 
 export type Offer = {
   id: string;
@@ -22,12 +35,30 @@ export type Offer = {
   expiresAt: string;
 };
 
+export type TransactionKind = 'earn' | 'redemption' | 'transfer' | 'expiration' | 'payment';
+
+export type TransactionStatus = 'success' | 'pending' | 'expired' | 'failed';
+
+export type TransactionTimelineStep = {
+  id: string;
+  time: string;
+  title: string;
+  description: string;
+};
+
 export type Transaction = {
   id: string;
   title: string;
   subtitle: string;
   date: string;
+  occurredAt: string;
   points: number;
+  kind: TransactionKind;
+  status: TransactionStatus;
+  source: string;
+  amount: number;
+  pointRule: string;
+  timeline: TransactionTimelineStep[];
 };
 
 export type Receipt = {

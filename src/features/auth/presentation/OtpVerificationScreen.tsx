@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { PrimaryButton } from '../../../shared/components/PrimaryButton';
 import { colors } from '../../../theme/colors';
 import type { OtpChallenge } from '../domain/AuthModels';
+import { authScreenPresentations } from './AuthScreenPresentation';
 import { AuthShell, DemoOtpNotice, FormError } from './AuthUi';
 
 export function OtpVerificationScreen({
@@ -46,8 +47,9 @@ export function OtpVerificationScreen({
   return (
     <AuthShell
       onBack={onBack}
-      subtitle={`Nhập mã OTP đã gửi tới ${challenge.destination}`}
-      title="XÁC THỰC OTP"
+      presentation={authScreenPresentations.otp.withSubtitle(
+        `Nhập mã OTP đã gửi tới ${challenge.destination}`,
+      )}
     >
       <DemoOtpNotice />
       <FormError message={error} />

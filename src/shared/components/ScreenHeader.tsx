@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '../../theme/colors';
@@ -7,9 +8,10 @@ type ScreenHeaderProps = {
   title: string;
   onBack?: () => void;
   rightLabel?: string;
+  rightContent?: ReactNode;
 };
 
-export function ScreenHeader({ title, onBack, rightLabel }: ScreenHeaderProps) {
+export function ScreenHeader({ title, onBack, rightLabel, rightContent }: ScreenHeaderProps) {
   return (
     <View style={styles.header}>
       <View style={styles.side}>
@@ -23,7 +25,7 @@ export function ScreenHeader({ title, onBack, rightLabel }: ScreenHeaderProps) {
         {title}
       </Text>
       <View style={[styles.side, styles.right]}>
-        {rightLabel ? <Text style={styles.rightLabel}>{rightLabel}</Text> : null}
+        {rightContent ?? (rightLabel ? <Text style={styles.rightLabel}>{rightLabel}</Text> : null)}
       </View>
     </View>
   );

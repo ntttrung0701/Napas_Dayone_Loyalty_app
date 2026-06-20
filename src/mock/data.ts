@@ -1,9 +1,9 @@
-import type { Offer, Transaction } from '../types';
+import type { LoyaltyNotification, Offer, Transaction } from '../types';
 
 export const offers: Offer[] = [
   {
     id: 'highlands-50',
-    category: 'Ẩm thực',
+    category: 'Voucher',
     title: 'Highlands Coffee 50K',
     partner: 'Highlands Coffee',
     description: 'Áp dụng cho mọi loại đồ uống tại hệ thống Highlands Coffee toàn quốc.',
@@ -13,7 +13,7 @@ export const offers: Offer[] = [
   },
   {
     id: 'winmart-10',
-    category: 'Mua sắm',
+    category: 'Hoàn tiền',
     title: 'Hoàn 10% tại WinMart',
     partner: 'WinMart',
     description: 'Giảm trực tiếp 10%, tối đa 50.000đ cho hóa đơn từ 300.000đ.',
@@ -23,7 +23,7 @@ export const offers: Offer[] = [
   },
   {
     id: 'travel-100',
-    category: 'Du lịch',
+    category: 'Quà tặng',
     title: 'Voucher di chuyển 100K',
     partner: 'Napas Travel',
     description: 'Ưu đãi cho một chuyến đi nội thành thanh toán bằng thẻ liên kết.',
@@ -33,26 +33,152 @@ export const offers: Offer[] = [
   },
 ];
 
+export const seedNotifications: LoyaltyNotification[] = [
+  {
+    id: 'NTF-OFFER-01',
+    title: 'Ưu đãi dành riêng cho Hạng Vàng',
+    message: 'Đổi 500 điểm nhận ngay voucher Highlands Coffee trị giá 50.000đ.',
+    date: '09:20, hôm nay',
+    occurredAt: '2026-06-20T09:20:00+07:00',
+    category: 'offer',
+    isRead: false,
+  },
+  {
+    id: 'NTF-SECURITY-01',
+    title: 'Đăng nhập trên thiết bị tin cậy',
+    message: 'Tài khoản vừa đăng nhập thành công bằng sinh trắc học.',
+    date: '08:05, hôm nay',
+    occurredAt: '2026-06-20T08:05:00+07:00',
+    category: 'system',
+    isRead: false,
+  },
+  {
+    id: 'NTF-POINTS-01',
+    title: 'Điểm sắp hết hạn',
+    message: '8.000 điểm sẽ hết hạn trong 30 ngày. Hãy sử dụng trước thời hạn.',
+    date: '18:30, hôm qua',
+    occurredAt: '2026-06-19T18:30:00+07:00',
+    category: 'system',
+    isRead: true,
+  },
+];
+
 export const seedTransactions: Transaction[] = [
   {
     id: 'TX-2401',
     title: 'Thanh toán Lotte Mart',
     subtitle: 'Hoàn điểm mua sắm',
-    date: '24/10/2026, 10:30',
+    date: '20/06/2026, 10:30:22',
+    occurredAt: '2026-06-20T10:30:22+07:00',
     points: 500,
+    kind: 'earn',
+    status: 'success',
+    source: 'Vietcombank',
+    amount: 5_000_000,
+    pointRule: '10.000 VND = 1 điểm',
+    timeline: [
+      {
+        id: 'TX-2401-payment',
+        time: '10:30:22',
+        title: 'Thanh toán hoàn tất',
+        description: 'Napas đã đối soát thành công từ cổng ATM liên kết.',
+      },
+      {
+        id: 'TX-2401-points',
+        time: '10:30:25',
+        title: 'Kết toán cộng điểm',
+        description: 'Hệ thống Loyalty đã cộng điểm thành công vào ví DayOne.',
+      },
+    ],
   },
   {
     id: 'TX-2201',
     title: 'Đổi Voucher Highlands 50K',
     subtitle: 'Đổi đặc quyền',
-    date: '22/10/2026, 09:15',
+    date: '19/06/2026, 09:15:00',
+    occurredAt: '2026-06-19T09:15:00+07:00',
     points: -2_000,
+    kind: 'redemption',
+    status: 'pending',
+    source: 'Highlands Coffee',
+    amount: 50_000,
+    pointRule: '2.000 điểm = Voucher 50.000đ',
+    timeline: [
+      {
+        id: 'TX-2201-request',
+        time: '09:15:00',
+        title: 'Đã nhận yêu cầu đổi điểm',
+        description: 'Hệ thống đang xác nhận voucher với đối tác Highlands Coffee.',
+      },
+    ],
+  },
+  {
+    id: 'TX-3009',
+    title: 'Điểm hết hạn',
+    subtitle: 'Điểm không sử dụng đúng hạn',
+    date: '30/05/2026, 23:59:00',
+    occurredAt: '2026-05-30T23:59:00+07:00',
+    points: -150,
+    kind: 'expiration',
+    status: 'expired',
+    source: 'Napas DayOne',
+    amount: 0,
+    pointRule: 'Điểm hết hạn theo chính sách chương trình',
+    timeline: [
+      {
+        id: 'TX-3009-expired',
+        time: '23:59:00',
+        title: 'Điểm đã hết hạn',
+        description: '150 điểm đã hết thời hạn sử dụng theo quy định chương trình.',
+      },
+    ],
   },
   {
     id: 'TX-1901',
-    title: 'Thanh toán Grab',
-    subtitle: 'Hoàn điểm di chuyển',
-    date: '19/10/2026, 19:42',
+    title: 'Thanh toán Petrolimex',
+    subtitle: 'Hoàn điểm nhiên liệu',
+    date: '15/05/2026, 15:45:12',
+    occurredAt: '2026-05-15T15:45:12+07:00',
     points: 120,
+    kind: 'earn',
+    status: 'success',
+    source: 'BIDV',
+    amount: 1_200_000,
+    pointRule: '10.000 VND = 1 điểm',
+    timeline: [
+      {
+        id: 'TX-1901-payment',
+        time: '15:45:12',
+        title: 'Thanh toán hoàn tất',
+        description: 'Giao dịch Petrolimex được ghi nhận thành công.',
+      },
+      {
+        id: 'TX-1901-points',
+        time: '15:45:15',
+        title: 'Cộng điểm thành công',
+        description: '120 điểm đã được cộng vào tài khoản Loyalty.',
+      },
+    ],
+  },
+  {
+    id: 'TX-1009',
+    title: 'Chuyển khoản',
+    subtitle: 'Nhận điểm từ bạn bè',
+    date: '10/05/2026, 11:20:00',
+    occurredAt: '2026-05-10T11:20:00+07:00',
+    points: 250,
+    kind: 'transfer',
+    status: 'success',
+    source: 'Loyalty ID 5829',
+    amount: 0,
+    pointRule: 'Điểm được chuyển từ thành viên khác',
+    timeline: [
+      {
+        id: 'TX-1009-transfer',
+        time: '11:20:00',
+        title: 'Nhận điểm thành công',
+        description: '250 điểm đã được chuyển vào tài khoản của bạn.',
+      },
+    ],
   },
 ];

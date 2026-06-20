@@ -1,19 +1,44 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Text, View } from 'react-native';
+import type { ComponentProps } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { TransactionRecord } from '../../features/history/domain/TransactionLedger';
 import { colors } from '../../theme/colors';
 import type { Transaction } from '../../types';
 import { formatPoints } from '../../utils/format';
 
-export function TransactionRow({ transaction }: { transaction: Transaction }) {
-  const positive = transaction.points >= 0;
+type IconName = ComponentProps<typeof Ionicons>['name'];
+
+const kindIcons: Record<Transaction['kind'], IconName> = {
+  earn: 'phone-portrait-outline',
+  redemption: 'gift-outline',
+  transfer: 'swap-horizontal-outline',
+  expiration: 'calendar-outline',
+  payment: 'card-outline',
+};
+
+export function TransactionRow({
+  transaction,
+  onPress,
+}: {
+  transaction: Transaction;
+  onPress?: (transaction: Transaction) => void;
+}) {
+  const record = new TransactionRecord(transaction);
+  const positive = record.isCredit;
 
   return (
-    <View style={styles.row}>
+    <Pressable
+      accessibilityHint={onPress ? 'Mở thông tin chi tiết giao dịch' : undefined}
+      accessibilityRole={onPress ? 'button' : undefined}
+      disabled={!onPress}
+      onPress={() => onPress?.(transaction)}
+      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+    >
       <View style={[styles.icon, positive ? styles.positiveIcon : styles.negativeIcon]}>
         <Ionicons
           color={positive ? colors.success : colors.warning}
-          name={positive ? 'arrow-down' : 'arrow-up'}
+          name={kindIcons[transaction.kind]}
           size={19}
         />
       </View>
@@ -24,11 +49,18 @@ export function TransactionRow({ transaction }: { transaction: Transaction }) {
         <Text style={styles.subtitle}>{transaction.subtitle}</Text>
         <Text style={styles.date}>{transaction.date}</Text>
       </View>
-      <Text style={[styles.points, positive ? styles.positive : styles.negative]}>
-        {positive ? '+' : ''}
-        {formatPoints(transaction.points)} pts
-      </Text>
-    </View>
+      <View style={styles.trailing}>
+        <Text style={[styles.points, positive ? styles.positive : styles.negative]}>
+          {positive ? '+' : ''}
+          {formatPoints(transaction.points)}
+        </Text>
+        <View style={[styles.badge, styles[transaction.status]]}>
+          <Text style={[styles.badgeText, styles[`${transaction.status}Text`]]}>
+            {record.statusLabel}
+          </Text>
+        </View>
+      </View>
+    </Pressable>
   );
 }
 
@@ -40,6 +72,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
     paddingVertical: 14,
   },
+  rowPressed: { opacity: 0.72, backgroundColor: colors.primarySoft },
   icon: {
     width: 40,
     height: 40,
@@ -73,13 +106,24 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   points: {
-    fontSize: 12,
-    fontWeight: '800',
+    fontSize: 13,
+    fontWeight: '900',
   },
   positive: {
     color: colors.success,
   },
   negative: {
-    color: colors.warning,
+    color: colors.text,
   },
+  trailing: { minWidth: 74, alignItems: 'flex-end' },
+  badge: { marginTop: 5, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3 },
+  badgeText: { fontSize: 8, fontWeight: '800' },
+  success: { backgroundColor: colors.successSoft },
+  successText: { color: colors.success },
+  pending: { backgroundColor: colors.warningSoft },
+  pendingText: { color: colors.warning },
+  expired: { backgroundColor: '#EEF1F5' },
+  expiredText: { color: colors.textMuted },
+  failed: { backgroundColor: '#FEECEC' },
+  failedText: { color: colors.danger },
 });

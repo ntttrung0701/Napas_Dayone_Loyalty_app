@@ -9,8 +9,10 @@ import {
 
 import { AuthFlow } from './src/features/auth/AuthFlow';
 import { CardsScreen } from './src/features/cards/CardsScreen';
-import { HistoryScreen } from './src/features/history/HistoryScreen';
+import { TransactionFactory } from './src/features/history/domain/TransactionFactory';
+import { TransactionDetailScreen } from './src/features/history/TransactionDetailScreen';
 import { HomeScreen } from './src/features/home/HomeScreen';
+import { NotificationsScreen } from './src/features/notifications/NotificationsScreen';
 import { OnboardingScreen } from './src/features/onboarding/OnboardingScreen';
 import { OfferDetailScreen } from './src/features/offers/OfferDetailScreen';
 import { OffersScreen } from './src/features/offers/OffersScreen';
@@ -20,9 +22,15 @@ import { ProfileScreen } from './src/features/profile/ProfileScreen';
 import { QrScreen } from './src/features/qr/QrScreen';
 import { SplashScreen } from './src/features/splash/SplashScreen';
 import { TransferScreen } from './src/features/transfer/TransferScreen';
-import { offers, seedTransactions } from './src/mock/data';
+import { offers, seedNotifications, seedTransactions } from './src/mock/data';
 import { colors } from './src/theme/colors';
-import type { AppScreen, Offer, Receipt, Transaction } from './src/types';
+import type {
+  AppScreen,
+  LoyaltyNotification,
+  Offer,
+  Receipt,
+  Transaction,
+} from './src/types';
 
 const initialRoute: AppScreen = 'splash';
 
@@ -32,6 +40,9 @@ export default function App() {
   const [selectedOffer, setSelectedOffer] = useState<Offer>(offers[0]!);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>(seedTransactions);
+  const [notifications, setNotifications] =
+    useState<LoyaltyNotification[]>(seedNotifications);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction>(seedTransactions[0]!);
 
   const currentRoute = routes[routes.length - 1] ?? initialRoute;
   const navigate = (route: AppScreen) => setRoutes((current) => [...current, route]);
@@ -43,6 +54,25 @@ export default function App() {
   const openOffer = (offer: Offer) => {
     setSelectedOffer(offer);
     navigate('offer-detail');
+  };
+
+  const openTransaction = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    navigate('transaction-detail');
+  };
+
+  const markNotificationRead = (notificationId: string) => {
+    setNotifications((current) =>
+      current.map((notification) =>
+        notification.id === notificationId ? { ...notification, isRead: true } : notification,
+      ),
+    );
+  };
+
+  const markAllNotificationsRead = () => {
+    setNotifications((current) =>
+      current.map((notification) => ({ ...notification, isRead: true })),
+    );
   };
 
   const completeRedemption = (offer: Offer) => {
@@ -61,13 +91,13 @@ export default function App() {
     setPoints((current) => current - offer.points);
     setReceipt(nextReceipt);
     setTransactions((current) => [
-      {
-        id: nextReceipt.id,
+      TransactionFactory.fromReceipt(nextReceipt, {
         title: `Đổi ${offer.title}`,
         subtitle: offer.partner,
-        date: nextReceipt.createdAt,
+        kind: 'redemption',
         points: -offer.points,
-      },
+        source: offer.partner,
+      }),
       ...current,
     ]);
     navigate('receipt');
@@ -77,13 +107,13 @@ export default function App() {
     setPoints((current) => current - nextReceipt.pointsUsed);
     setReceipt(nextReceipt);
     setTransactions((current) => [
-      {
-        id: nextReceipt.id,
+      TransactionFactory.fromReceipt(nextReceipt, {
         title: `Thanh toán ${nextReceipt.merchant}`,
         subtitle: 'Thanh toán hỗn hợp',
-        date: nextReceipt.createdAt,
+        kind: 'payment',
         points: -nextReceipt.pointsUsed,
-      },
+        source: nextReceipt.merchant,
+      }),
       ...current,
     ]);
     navigate('receipt');
@@ -105,13 +135,13 @@ export default function App() {
     setPoints((current) => current - amount);
     setReceipt(nextReceipt);
     setTransactions((current) => [
-      {
-        id: nextReceipt.id,
+      TransactionFactory.fromReceipt(nextReceipt, {
         title: nextReceipt.title,
         subtitle: 'Chuyển điểm bạn bè',
-        date: nextReceipt.createdAt,
+        kind: 'transfer',
         points: -amount,
-      },
+        source: recipient,
+      }),
       ...current,
     ]);
     navigate('receipt');
@@ -129,10 +159,10 @@ export default function App() {
         return (
           <OffersScreen
             activeTab="offers"
-            onBack={goBack}
             onNavigate={navigate}
             onSelectOffer={openOffer}
             points={points}
+            unreadNotifications={notifications.filter((notification) => !notification.isRead).length}
           />
         );
       case 'offer-detail':
@@ -176,18 +206,23 @@ export default function App() {
           <ReceiptScreen
             receipt={receipt}
             onHome={() => setRoutes(['home'])}
-            onViewHistory={() => setRoutes(['home', 'history'])}
+            onViewHistory={() => setRoutes(['home', 'notifications'])}
           />
         );
-      case 'history':
+      case 'notifications':
         return (
-          <HistoryScreen
-            activeTab="history"
+          <NotificationsScreen
+            notifications={notifications}
             onBack={goBack}
+            onMarkAllRead={markAllNotificationsRead}
+            onMarkRead={markNotificationRead}
             onNavigate={navigate}
+            onSelectTransaction={openTransaction}
             transactions={transactions}
           />
         );
+      case 'transaction-detail':
+        return <TransactionDetailScreen onBack={goBack} transaction={selectedTransaction} />;
       case 'profile':
         return (
           <ProfileScreen
@@ -195,6 +230,7 @@ export default function App() {
             onBack={goBack}
             onLogout={() => setRoutes(['login'])}
             onNavigate={navigate}
+            points={points}
           />
         );
       case 'home':
@@ -202,8 +238,10 @@ export default function App() {
         return (
           <HomeScreen
             onNavigate={navigate}
+            onSelectTransaction={openTransaction}
             points={points}
             transactions={transactions}
+            unreadNotifications={notifications.filter((notification) => !notification.isRead).length}
           />
         );
     }

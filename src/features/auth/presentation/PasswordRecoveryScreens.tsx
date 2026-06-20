@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { PrimaryButton } from '../../../shared/components/PrimaryButton';
 import type { ForgotPasswordInput } from '../domain/AuthModels';
+import { authScreenPresentations } from './AuthScreenPresentation';
 import { AuthField, AuthShell, DemoOtpNotice, FormError } from './AuthUi';
 
 export function ForgotPasswordScreen({
@@ -23,7 +24,7 @@ export function ForgotPasswordScreen({
   };
 
   return (
-    <AuthShell onBack={onBack} subtitle="Xác minh thông tin để nhận mã đặt lại mật khẩu" title="QUÊN MẬT KHẨU">
+    <AuthShell onBack={onBack} presentation={authScreenPresentations.forgotPassword}>
       <DemoOtpNotice />
       <FormError message={error} />
       <AuthField icon="call-outline" keyboardType="phone-pad" label="Số điện thoại" onChangeText={setPhone} placeholder="Nhập số điện thoại" value={phone} />
@@ -53,7 +54,7 @@ export function ResetPasswordScreen({
   };
 
   return (
-    <AuthShell onBack={onBack} subtitle="Tạo mật khẩu mới cho tài khoản của bạn" title="ĐẶT LẠI MẬT KHẨU">
+    <AuthShell onBack={onBack} presentation={authScreenPresentations.resetPassword}>
       <FormError message={error} />
       <AuthField icon="lock-closed-outline" label="Mật khẩu mới" onChangeText={setPassword} onToggleSecure={() => setSecure((current) => !current)} placeholder="Tối thiểu 6 ký tự" secureTextEntry={secure} value={password} />
       <AuthField icon="lock-closed-outline" label="Nhập lại mật khẩu mới" onChangeText={setConfirmPassword} onToggleSecure={() => setSecure((current) => !current)} placeholder="Nhập lại mật khẩu" secureTextEntry={secure} value={confirmPassword} />

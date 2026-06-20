@@ -14,16 +14,21 @@ import {
 
 import { BrandLogo } from '../../../shared/components/BrandLogo';
 import { colors } from '../../../theme/colors';
+import { AuthScreenPresentation } from './AuthScreenPresentation';
 
 type AuthShellProps = {
-  title: string;
-  subtitle?: string;
+  presentation?: AuthScreenPresentation;
   onBack?: () => void;
   children: ReactNode;
   footer?: ReactNode;
 };
 
-export function AuthShell({ title, subtitle, onBack, children, footer }: AuthShellProps) {
+export function AuthShell({
+  presentation = AuthScreenPresentation.empty,
+  onBack,
+  children,
+  footer,
+}: AuthShellProps) {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={ui.root}>
       <ScrollView
@@ -43,13 +48,23 @@ export function AuthShell({ title, subtitle, onBack, children, footer }: AuthShe
             <BrandLogo width={100} />
             <View style={ui.headerSide} />
           </View>
-          <Text style={ui.title}>{title}</Text>
-          {subtitle ? <Text style={ui.subtitle}>{subtitle}</Text> : null}
+          <AuthHeading presentation={presentation} />
           <View style={ui.body}>{children}</View>
           {footer ? <View style={ui.footer}>{footer}</View> : null}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+  );
+}
+
+function AuthHeading({ presentation }: { presentation: AuthScreenPresentation }) {
+  if (!presentation.hasTitle && !presentation.hasSubtitle) return null;
+
+  return (
+    <View>
+      {presentation.hasTitle ? <Text style={ui.title}>{presentation.title}</Text> : null}
+      {presentation.hasSubtitle ? <Text style={ui.subtitle}>{presentation.subtitle}</Text> : null}
+    </View>
   );
 }
 
@@ -59,7 +74,14 @@ type AuthFieldProps = TextInputProps & {
   onToggleSecure?: () => void;
 };
 
-export function AuthField({ label, icon, onToggleSecure, secureTextEntry, ...props }: AuthFieldProps) {
+export function AuthField({
+  label,
+  icon,
+  onToggleSecure,
+  secureTextEntry,
+  style: inputStyle,
+  ...inputProps
+}: AuthFieldProps) {
   return (
     <View style={ui.fieldBlock}>
       <Text style={ui.label}>{label}</Text>
@@ -68,9 +90,9 @@ export function AuthField({ label, icon, onToggleSecure, secureTextEntry, ...pro
         <TextInput
           autoCapitalize="none"
           placeholderTextColor="#A4AAB4"
+          {...inputProps}
           secureTextEntry={secureTextEntry}
-          style={ui.input}
-          {...props}
+          style={[ui.input, inputStyle]}
         />
         {onToggleSecure ? (
           <Pressable accessibilityLabel={secureTextEntry ? 'Hiện mật khẩu' : 'Ẩn mật khẩu'} onPress={onToggleSecure}>
@@ -130,7 +152,18 @@ const ui = StyleSheet.create({
     backgroundColor: colors.white,
     paddingHorizontal: 13,
   },
-  input: { flex: 1, marginHorizontal: 9, color: colors.text, fontSize: 13 },
+  input: {
+    flex: 1,
+    minWidth: 0,
+    marginHorizontal: 9,
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '400',
+    letterSpacing: 0,
+    lineHeight: 18,
+    paddingVertical: 0,
+    textAlign: 'left',
+  },
   errorBox: {
     flexDirection: 'row',
     alignItems: 'center',

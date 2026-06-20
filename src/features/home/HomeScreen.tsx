@@ -12,7 +12,9 @@ import { formatPoints } from '../../utils/format';
 type HomeScreenProps = {
   points: number;
   transactions: Transaction[];
+  unreadNotifications: number;
   onNavigate: (screen: AppScreen) => void;
+  onSelectTransaction: (transaction: Transaction) => void;
 };
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -20,33 +22,55 @@ type IconName = ComponentProps<typeof Ionicons>['name'];
 const quickActions: Array<{ label: string; icon: IconName; route: AppScreen; color: string }> = [
   { label: 'Đổi điểm', icon: 'gift-outline', route: 'offers', color: colors.success },
   { label: 'Tặng điểm', icon: 'paper-plane-outline', route: 'transfer', color: colors.warning },
-  { label: 'Lịch sử', icon: 'time-outline', route: 'history', color: colors.purple },
+  {
+    label: 'Thông báo',
+    icon: 'notifications-outline',
+    route: 'notifications',
+    color: colors.purple,
+  },
   { label: 'Kho quà', icon: 'wallet-outline', route: 'offers', color: colors.purple },
   { label: 'Liên kết', icon: 'card-outline', route: 'cards', color: colors.primary },
   { label: 'Mua sắm', icon: 'cart-outline', route: 'payment', color: colors.gold },
 ];
 
-export function HomeScreen({ points, transactions, onNavigate }: HomeScreenProps) {
+export function HomeScreen({
+  points,
+  transactions,
+  unreadNotifications,
+  onNavigate,
+  onSelectTransaction,
+}: HomeScreenProps) {
   return (
     <View style={styles.root}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>MA</Text>
+            <Text style={styles.avatarText}>NA</Text>
           </View>
           <View style={styles.brand}>
             <BrandLogo width={92} />
           </View>
-          <View style={styles.notification}>
+          <Pressable
+            accessibilityLabel={`${unreadNotifications} thông báo chưa đọc`}
+            accessibilityRole="button"
+            onPress={() => onNavigate('notifications')}
+            style={({ pressed }) => [styles.notification, pressed && styles.pressed]}
+          >
             <Ionicons color={colors.primaryDark} name="notifications-outline" size={20} />
-            <View style={styles.notificationDot} />
-          </View>
+            {unreadNotifications ? (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>
+                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                </Text>
+              </View>
+            ) : null}
+          </Pressable>
         </View>
 
         <View style={styles.greetingRow}>
           <View>
             <Text style={styles.hello}>Xin chào,</Text>
-            <Text style={styles.name}>Nguyen Van Anh</Text>
+            <Text style={styles.name}>Nguyễn Văn Anh</Text>
           </View>
           <View style={styles.rankBadge}>
             <Text style={styles.rankText}>GOLD</Text>
@@ -54,7 +78,15 @@ export function HomeScreen({ points, transactions, onNavigate }: HomeScreenProps
         </View>
 
         <View style={styles.pointsCard}>
-          <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
+          <View pointerEvents="none" style={styles.pointsGlowLarge} />
+          <View pointerEvents="none" style={styles.pointsGlowSmall} />
+          <View style={styles.pointsTopRow}>
+            <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
+            <View style={styles.secureBadge}>
+              <Ionicons color={colors.white} name="shield-checkmark" size={14} />
+              <Text style={styles.secureText}>Đã xác thực</Text>
+            </View>
+          </View>
           <View style={styles.pointsRow}>
             <Text style={styles.pointsValue}>{formatPoints(points)}</Text>
             <Text style={styles.pointsUnit}>pts</Text>
@@ -75,10 +107,15 @@ export function HomeScreen({ points, transactions, onNavigate }: HomeScreenProps
             <Pressable
               key={action.label}
               onPress={() => onNavigate(action.route)}
-              style={styles.quickAction}
+              style={({ pressed }) => [styles.quickAction, pressed && styles.pressed]}
             >
-              <View style={[styles.quickIcon, { borderColor: action.color }]}>
-                <Ionicons color={action.color} name={action.icon} size={24} />
+              <View
+                style={[
+                  styles.quickIcon,
+                  { borderColor: `${action.color}26`, backgroundColor: `${action.color}12` },
+                ]}
+              >
+                <Ionicons color={action.color} name={action.icon} size={30} />
               </View>
               <Text style={styles.quickLabel}>{action.label}</Text>
             </Pressable>
@@ -101,12 +138,16 @@ export function HomeScreen({ points, transactions, onNavigate }: HomeScreenProps
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Hoạt động gần đây</Text>
-            <Pressable onPress={() => onNavigate('history')}>
+            <Pressable onPress={() => onNavigate('notifications')}>
               <Text style={styles.link}>Xem tất cả</Text>
             </Pressable>
           </View>
           {transactions.slice(0, 2).map((transaction) => (
-            <TransactionRow key={transaction.id} transaction={transaction} />
+            <TransactionRow
+              key={transaction.id}
+              onPress={onSelectTransaction}
+              transaction={transaction}
+            />
           ))}
         </View>
       </ScrollView>
@@ -122,6 +163,9 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingBottom: 20,
+  },
+  pressed: {
+    opacity: 0.7,
   },
   topBar: {
     minHeight: 58,
@@ -155,18 +199,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 18,
-    backgroundColor: colors.warningSoft,
-  },
-  notificationDot: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 7,
-    height: 7,
     borderWidth: 1,
-    borderColor: colors.warningSoft,
-    borderRadius: 4,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -3,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.surface,
+    borderRadius: 9,
     backgroundColor: colors.danger,
+    paddingHorizontal: 3,
+  },
+  notificationBadgeText: {
+    color: colors.white,
+    fontSize: 8,
+    fontWeight: '900',
   },
   greetingRow: {
     flexDirection: 'row',
@@ -200,6 +254,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   pointsCard: {
+    overflow: 'hidden',
     marginHorizontal: 20,
     borderRadius: 22,
     backgroundColor: colors.primary,
@@ -209,6 +264,45 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 14,
     elevation: 7,
+  },
+  pointsGlowLarge: {
+    position: 'absolute',
+    top: -76,
+    right: -54,
+    width: 190,
+    height: 190,
+    borderRadius: 95,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+  },
+  pointsGlowSmall: {
+    position: 'absolute',
+    bottom: -66,
+    left: -34,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(27,160,220,0.28)',
+  },
+  pointsTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  secureBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.24)',
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+  },
+  secureText: {
+    marginLeft: 4,
+    color: colors.white,
+    fontSize: 8,
+    fontWeight: '800',
   },
   pointsLabel: {
     color: '#CDE7FA',
@@ -269,28 +363,28 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     paddingHorizontal: 18,
-    paddingVertical: 22,
+    paddingBottom: 8,
+    paddingTop: 22,
   },
   quickAction: {
     width: '31%',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 18,
   },
   quickIcon: {
-    width: 52,
-    height: 52,
+    width: 58,
+    height: 58,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderRadius: 17,
-    backgroundColor: colors.surface,
   },
   quickLabel: {
     marginTop: 7,
     textAlign: 'center',
-    color: colors.textMuted,
+    color: colors.text,
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   sectionCard: {
     marginBottom: 14,
@@ -300,6 +394,11 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: colors.surface,
     padding: 16,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
   },
   sectionHeader: {
     flexDirection: 'row',

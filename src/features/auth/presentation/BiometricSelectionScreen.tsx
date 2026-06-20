@@ -4,6 +4,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 
 import { colors } from '../../../theme/colors';
 import type { BiometricCapabilities, BiometricKind } from '../domain/AuthModels';
+import { authScreenPresentations } from './AuthScreenPresentation';
 import { AuthShell, FormError } from './AuthUi';
 
 export function BiometricSelectionScreen({
@@ -36,7 +37,7 @@ export function BiometricSelectionScreen({
 
   const ready = capabilities?.hasHardware && capabilities.isEnrolled;
   return (
-    <AuthShell onBack={onBack} subtitle="Chọn phương thức đã thiết lập trên thiết bị" title="SINH TRẮC HỌC">
+    <AuthShell onBack={onBack} presentation={authScreenPresentations.biometric}>
       {!capabilities && !error ? <ActivityIndicator color="#3C5C98" size="large" /> : null}
       <FormError message={error} />
       {capabilities && !ready ? (

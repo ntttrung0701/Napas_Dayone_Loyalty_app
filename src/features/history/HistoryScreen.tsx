@@ -1,55 +1,97 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
 import { BottomNav } from '../../shared/components/BottomNav';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
 import { TransactionRow } from '../../shared/components/TransactionRow';
 import { colors } from '../../theme/colors';
 import type { AppScreen, MainTab, Transaction } from '../../types';
-import { formatPoints } from '../../utils/format';
-import { TransactionLedger, type TransactionDirection } from './domain/TransactionLedger';
+import { TransactionLedger, type HistoryFilter } from './domain/TransactionLedger';
 
 type HistoryScreenProps = {
-  activeTab: MainTab;
+  activeTab?: MainTab;
   transactions: Transaction[];
   onBack: () => void;
   onNavigate: (screen: AppScreen) => void;
+  onSelectTransaction: (transaction: Transaction) => void;
 };
 
-const historyFilters = [
+const historyFilters: ReadonlyArray<{ id: HistoryFilter; label: string }> = [
   { id: 'all', label: 'Tất cả' },
-  { id: 'earned', label: 'Nhận điểm' },
-  { id: 'spent', label: 'Sử dụng' },
-] as const;
-type HistoryFilter = (typeof historyFilters)[number]['id'] & TransactionDirection;
+  { id: 'earned', label: 'Tích điểm' },
+  { id: 'redeemed', label: 'Đổi điểm' },
+  { id: 'pending', label: 'Đang chờ' },
+];
 
 export function HistoryScreen({
   activeTab,
   transactions,
   onBack,
   onNavigate,
+  onSelectTransaction,
 }: HistoryScreenProps) {
   const [selectedFilter, setSelectedFilter] = useState<HistoryFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const ledger = useMemo(() => new TransactionLedger(transactions), [transactions]);
-  const filteredTransactions = useMemo(() => ledger.filter(selectedFilter), [ledger, selectedFilter]);
+  const groups = useMemo(
+    () => ledger.group(ledger.query(selectedFilter, searchQuery)),
+    [ledger, searchQuery, selectedFilter],
+  );
+
+  const resetFilters = () => {
+    setSearchQuery('');
+    setSelectedFilter('all');
+  };
 
   return (
     <View style={styles.root}>
       <ScreenHeader onBack={onBack} title="Lịch sử điểm" />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.summary}>
-          <View style={styles.summaryBlock}>
-            <Text style={styles.summaryLabel}>ĐÃ NHẬN</Text>
-            <Text style={[styles.summaryValue, styles.earned]}>+{formatPoints(ledger.earnedTotal)} pts</Text>
-          </View>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summaryBlock}>
-            <Text style={styles.summaryLabel}>ĐÃ SỬ DỤNG</Text>
-            <Text style={[styles.summaryValue, styles.spent]}>-{formatPoints(ledger.spentTotal)} pts</Text>
-          </View>
+
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.pageTitle}>Lịch sử giao dịch</Text>
+
+        <View style={styles.searchBox}>
+          <Ionicons color={colors.textMuted} name="search-outline" size={20} />
+          <TextInput
+            accessibilityLabel="Tìm kiếm giao dịch"
+            autoCapitalize="none"
+            autoCorrect={false}
+            onChangeText={setSearchQuery}
+            placeholder="Nhập mã hoặc tên giao dịch..."
+            placeholderTextColor={colors.textMuted}
+            style={styles.searchInput}
+            value={searchQuery}
+          />
+          {searchQuery ? (
+            <Pressable
+              accessibilityLabel="Xóa nội dung tìm kiếm"
+              accessibilityRole="button"
+              hitSlop={10}
+              onPress={() => setSearchQuery('')}
+            >
+              <Ionicons color={colors.textMuted} name="close-circle" size={20} />
+            </Pressable>
+          ) : null}
         </View>
 
-        <View accessibilityRole="tablist" style={styles.filters}>
+        <ScrollView
+          accessibilityRole="tablist"
+          contentContainerStyle={styles.filters}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+        >
           {historyFilters.map((filter) => {
             const active = filter.id === selectedFilter;
             return (
@@ -61,23 +103,52 @@ export function HistoryScreen({
                 style={({ pressed }) => [
                   styles.filter,
                   active && styles.filterActive,
-                  pressed && styles.filterPressed,
+                  pressed && styles.pressed,
                 ]}
               >
-                <Text style={[styles.filterText, active && styles.filterActiveText]}>{filter.label}</Text>
+                <Text style={[styles.filterText, active && styles.filterActiveText]}>
+                  {filter.label}
+                </Text>
               </Pressable>
             );
           })}
-        </View>
+        </ScrollView>
 
-        <View style={styles.listCard}>
-          <Text style={styles.month}>HOẠT ĐỘNG GẦN ĐÂY</Text>
-          {filteredTransactions.map((transaction) => (
-            <TransactionRow key={transaction.id} transaction={transaction} />
-          ))}
-
-        </View>
+        {groups.length ? (
+          groups.map((group) => (
+            <View key={group.key} style={styles.group}>
+              <Text style={styles.month}>{group.label}</Text>
+              <View style={styles.listCard}>
+                {group.transactions.map((transaction) => (
+                  <TransactionRow
+                    key={transaction.id}
+                    onPress={onSelectTransaction}
+                    transaction={transaction}
+                  />
+                ))}
+              </View>
+            </View>
+          ))
+        ) : (
+          <View style={styles.emptyState}>
+            <View style={styles.emptyIcon}>
+              <Ionicons color={colors.primary} name="receipt-outline" size={28} />
+            </View>
+            <Text style={styles.emptyTitle}>Không tìm thấy giao dịch</Text>
+            <Text style={styles.emptyDescription}>
+              Hãy thử từ khóa khác hoặc xóa bộ lọc hiện tại.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={resetFilters}
+              style={({ pressed }) => [styles.resetButton, pressed && styles.pressed]}
+            >
+              <Text style={styles.resetButtonText}>Xóa bộ lọc</Text>
+            </Pressable>
+          </View>
+        )}
       </ScrollView>
+
       <BottomNav active={activeTab} onNavigate={onNavigate} />
     </View>
   );
@@ -88,82 +159,128 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  pressed: {
+    opacity: 0.68,
+  },
   content: {
-    padding: 18,
-    paddingBottom: 26,
+    paddingHorizontal: 18,
+    paddingTop: 20,
+    paddingBottom: 30,
   },
-  summary: {
+  pageTitle: {
+    marginBottom: 12,
+    color: colors.primaryDark,
+    fontSize: 20,
+    fontWeight: '900',
+  },
+  searchBox: {
+    minHeight: 50,
     flexDirection: 'row',
-    borderRadius: 20,
-    backgroundColor: colors.primaryDark,
-    padding: 20,
-  },
-  summaryBlock: {
-    flex: 1,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 14,
   },
-  summaryDivider: {
-    width: 1,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-  },
-  summaryLabel: {
-    color: '#B9CFE1',
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 0.7,
-  },
-  summaryValue: {
-    marginTop: 7,
-    fontSize: 17,
-    fontWeight: '900',
-  },
-  earned: {
-    color: '#5EE0A8',
-  },
-  spent: {
-    color: '#FFD27C',
+  searchInput: {
+    flex: 1,
+    minHeight: 48,
+    marginHorizontal: 9,
+    paddingVertical: 0,
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '400',
+    fontStyle: 'normal',
+    letterSpacing: 0,
+    textAlign: 'left',
   },
   filters: {
-    flexDirection: 'row',
-    marginVertical: 18,
+    paddingVertical: 16,
+    paddingRight: 6,
   },
   filter: {
-    marginRight: 8,
+    minHeight: 38,
+    justifyContent: 'center',
+    marginRight: 9,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 999,
     backgroundColor: colors.surface,
-    paddingHorizontal: 15,
-    paddingVertical: 9,
+    paddingHorizontal: 17,
   },
   filterActive: {
     borderColor: colors.primary,
     backgroundColor: colors.primary,
   },
-  filterPressed: {
-    opacity: 0.75,
-  },
   filterText: {
     color: colors.textMuted,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
   },
   filterActiveText: {
     color: colors.white,
     fontWeight: '800',
   },
+  group: {
+    marginBottom: 20,
+  },
+  month: {
+    marginBottom: 10,
+    marginLeft: 4,
+    color: colors.textMuted,
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
   listCard: {
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 18,
     backgroundColor: colors.surface,
-    padding: 16,
+    paddingHorizontal: 16,
   },
-  month: {
-    marginBottom: 4,
+  emptyState: {
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 24,
+    paddingVertical: 36,
+  },
+  emptyIcon: {
+    width: 58,
+    height: 58,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 29,
+    backgroundColor: colors.primarySoft,
+  },
+  emptyTitle: {
+    marginTop: 14,
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  emptyDescription: {
+    marginTop: 6,
     color: colors.textMuted,
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 0.8,
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+  resetButton: {
+    marginTop: 18,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  resetButtonText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: '800',
   },
 });

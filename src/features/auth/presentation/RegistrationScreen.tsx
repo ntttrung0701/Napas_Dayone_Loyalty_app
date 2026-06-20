@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { PrimaryButton } from '../../../shared/components/PrimaryButton';
 import { colors } from '../../../theme/colors';
 import type { RegistrationInput } from '../domain/AuthModels';
+import { authScreenPresentations } from './AuthScreenPresentation';
 import { AuthField, AuthShell, DemoOtpNotice, FormError } from './AuthUi';
 
 export function RegistrationScreen({
@@ -33,7 +34,7 @@ export function RegistrationScreen({
   };
 
   return (
-    <AuthShell onBack={onBack} subtitle="Điền thông tin để tạo tài khoản Napas DayOne" title="ĐĂNG KÝ">
+    <AuthShell onBack={onBack} presentation={authScreenPresentations.registration}>
       <DemoOtpNotice />
       <FormError message={error} />
       <AuthField icon="person-outline" label="Họ và tên" onChangeText={(value) => update('fullName', value)} placeholder="Nhập họ và tên" value={form.fullName} />

@@ -1,50 +1,116 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
+import type { ComponentProps } from 'react';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
 import { offers } from '../../mock/data';
 import { BottomNav } from '../../shared/components/BottomNav';
-import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { BrandLogo } from '../../shared/components/BrandLogo';
 import { colors } from '../../theme/colors';
 import type { AppScreen, MainTab, Offer } from '../../types';
 import { formatPoints } from '../../utils/format';
 import { OfferCatalog } from './domain/OfferCatalog';
 
+type IconName = ComponentProps<typeof Ionicons>['name'];
+
 type OffersScreenProps = {
   activeTab: MainTab;
   points: number;
-  onBack: () => void;
+  unreadNotifications: number;
   onNavigate: (screen: AppScreen) => void;
   onSelectOffer: (offer: Offer) => void;
 };
 
-const categories = ['Tất cả', 'Ẩm thực', 'Mua sắm', 'Du lịch'] as const;
+const categories = ['Tất cả', 'Voucher', 'Hoàn tiền', 'Quà tặng'] as const;
 type OfferCategory = (typeof categories)[number];
+
+const categoryIcons: Record<Exclude<OfferCategory, 'Tất cả'>, IconName> = {
+  Voucher: 'ticket-outline',
+  'Hoàn tiền': 'cash-outline',
+  'Quà tặng': 'gift-outline',
+};
+
 const offerCatalog = new OfferCatalog(offers);
 
 export function OffersScreen({
   activeTab,
   points,
-  onBack,
+  unreadNotifications,
   onNavigate,
   onSelectOffer,
 }: OffersScreenProps) {
   const [selectedCategory, setSelectedCategory] = useState<OfferCategory>('Tất cả');
+  const [searchQuery, setSearchQuery] = useState('');
   const filteredOffers = useMemo(
-    () => offerCatalog.filterByCategory(selectedCategory),
-    [selectedCategory],
+    () => offerCatalog.query(selectedCategory, searchQuery),
+    [searchQuery, selectedCategory],
   );
 
   return (
     <View style={styles.root}>
-      <ScreenHeader onBack={onBack} rightLabel={`${formatPoints(points)} pts`} title="Kho ưu đãi" />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.hero}>
-          <Text style={styles.eyebrow}>ĐẶC QUYỀN HỘI VIÊN</Text>
-          <Text style={styles.heroTitle}>Dùng điểm cho những điều bạn thích</Text>
-          <Text style={styles.heroText}>Chọn một danh mục và đổi ưu đãi ngay bằng số điểm hiện có.</Text>
+      <View style={styles.topBar}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>NA</Text>
+        </View>
+        <View style={styles.brand}>
+          <BrandLogo width={102} />
+        </View>
+        <Pressable
+          accessibilityLabel="Mở thông báo"
+          accessibilityRole="button"
+          onPress={() => onNavigate('notifications')}
+          style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}
+        >
+          <Ionicons color={colors.textMuted} name="notifications-outline" size={21} />
+          {unreadNotifications ? <View style={styles.notificationDot} /> : null}
+        </Pressable>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.titleRow}>
+          <Text style={styles.pageTitle}>Ưu đãi & Quà tặng</Text>
+          <Text style={styles.balanceLabel}>
+            Điểm: <Text style={styles.balanceValue}>{formatPoints(points)} pts</Text>
+          </Text>
+        </View>
+
+        <View style={styles.searchBox}>
+          <Ionicons color={colors.textMuted} name="search-outline" size={21} />
+          <TextInput
+            accessibilityLabel="Tìm kiếm ưu đãi"
+            autoCapitalize="none"
+            autoCorrect={false}
+            onChangeText={setSearchQuery}
+            placeholder="Tìm kiếm voucher, thương hiệu..."
+            placeholderTextColor={colors.textMuted}
+            style={styles.searchInput}
+            value={searchQuery}
+          />
+          {searchQuery ? (
+            <Pressable
+              accessibilityLabel="Xóa nội dung tìm kiếm"
+              accessibilityRole="button"
+              hitSlop={10}
+              onPress={() => setSearchQuery('')}
+            >
+              <Ionicons color={colors.textMuted} name="close-circle" size={20} />
+            </Pressable>
+          ) : null}
         </View>
 
         <ScrollView
+          accessibilityRole="tablist"
           contentContainerStyle={styles.filterRow}
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -53,7 +119,7 @@ export function OffersScreen({
             const active = category === selectedCategory;
             return (
               <Pressable
-                accessibilityRole="button"
+                accessibilityRole="tab"
                 accessibilityState={{ selected: active }}
                 key={category}
                 onPress={() => setSelectedCategory(category)}
@@ -63,14 +129,18 @@ export function OffersScreen({
                   pressed && styles.pressed,
                 ]}
               >
-                <Text style={[styles.filterText, active && styles.filterTextActive]}>{category}</Text>
+                <Text style={[styles.filterText, active && styles.filterTextActive]}>
+                  {category}
+                </Text>
               </Pressable>
             );
           })}
         </ScrollView>
 
-        {filteredOffers.map((offer) => {
+        {filteredOffers.map((offer, index) => {
           const affordable = points >= offer.points;
+          const icon =
+            categoryIcons[offer.category as Exclude<OfferCategory, 'Tất cả'>] ?? 'gift-outline';
           return (
             <Pressable
               accessibilityHint="Mở chi tiết ưu đãi"
@@ -80,159 +150,241 @@ export function OffersScreen({
               style={({ pressed }) => [styles.offerCard, pressed && styles.offerCardPressed]}
             >
               <View style={[styles.offerVisual, { backgroundColor: offer.accent }]}>
-                <Text style={styles.offerInitial}>{offer.partner.slice(0, 1)}</Text>
-                <Text style={styles.offerCategory}>{offer.category.toUpperCase()}</Text>
+                <View pointerEvents="none" style={styles.visualGlowLarge} />
+                <View pointerEvents="none" style={styles.visualGlowSmall} />
+                <View style={styles.hotBadge}>
+                  <Ionicons color="#FFB84D" name={index === 0 ? 'flame' : 'sparkles'} size={13} />
+                  <Text style={styles.hotText}>{index === 0 ? 'HOT DEAL' : offer.category.toUpperCase()}</Text>
+                </View>
+                <View style={styles.offerIcon}>
+                  <Ionicons color={colors.white} name={icon} size={44} />
+                </View>
+                <Text style={styles.visualPartner}>{offer.partner}</Text>
               </View>
+
               <View style={styles.offerInfo}>
-                <Text style={styles.partner}>{offer.partner}</Text>
                 <Text numberOfLines={2} style={styles.offerTitle}>
                   {offer.title}
                 </Text>
+                <Text style={styles.partner}>{offer.partner}</Text>
+                <View style={styles.divider} />
                 <View style={styles.offerFooter}>
-                  <Text style={styles.points}>{formatPoints(offer.points)} pts</Text>
-                  <Text style={[styles.status, !affordable && styles.statusDisabled]}>
-                    {affordable ? 'Có thể đổi' : 'Chưa đủ điểm'}
-                  </Text>
+                  <View>
+                    <Text style={styles.metaLabel}>Đổi bằng</Text>
+                    <View style={styles.pointsRow}>
+                      <Ionicons
+                        color={affordable ? colors.success : colors.warning}
+                        name={affordable ? 'checkmark-circle-outline' : 'alert-circle-outline'}
+                        size={17}
+                      />
+                      <Text style={[styles.points, !affordable && styles.pointsDisabled]}>
+                        {formatPoints(offer.points)} pts
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.expiryBlock}>
+                    <Text style={styles.metaLabel}>Hạn sử dụng</Text>
+                    <Text style={styles.expiry}>{offer.expiresAt}</Text>
+                  </View>
                 </View>
               </View>
             </Pressable>
           );
         })}
+
+        {!filteredOffers.length ? (
+          <View style={styles.emptyState}>
+            <Ionicons color={colors.primary} name="gift-outline" size={32} />
+            <Text style={styles.emptyTitle}>Không tìm thấy ưu đãi</Text>
+            <Text style={styles.emptyText}>Hãy thử từ khóa hoặc danh mục khác.</Text>
+          </View>
+        ) : null}
       </ScrollView>
+
       <BottomNav active={activeTab} onNavigate={onNavigate} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
+  root: { flex: 1, backgroundColor: colors.background },
+  pressed: { opacity: 0.7 },
+  topBar: {
+    minHeight: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 18,
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 18,
+    backgroundColor: colors.primarySoft,
+  },
+  avatarText: { color: colors.primary, fontSize: 11, fontWeight: '900' },
+  brand: { flex: 1, marginLeft: 10, alignItems: 'flex-start' },
+  notificationButton: {
+    width: 38,
+    height: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 19,
+  },
+  notificationDot: {
+    position: 'absolute',
+    top: 7,
+    right: 7,
+    width: 7,
+    height: 7,
+    borderWidth: 1,
+    borderColor: colors.surface,
+    borderRadius: 4,
+    backgroundColor: colors.danger,
+  },
+  content: { padding: 18, paddingBottom: 28 },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    marginBottom: 17,
+  },
+  pageTitle: { color: colors.primaryDark, fontSize: 21, fontWeight: '900' },
+  balanceLabel: { color: colors.textMuted, fontSize: 10 },
+  balanceValue: { color: colors.success, fontWeight: '900' },
+  searchBox: {
+    minHeight: 51,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 14,
+  },
+  searchInput: {
     flex: 1,
-    backgroundColor: colors.background,
+    minHeight: 49,
+    marginHorizontal: 9,
+    paddingVertical: 0,
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '400',
+    fontStyle: 'normal',
+    letterSpacing: 0,
+    textAlign: 'left',
   },
-  content: {
-    padding: 18,
-    paddingBottom: 24,
-  },
-  hero: {
-    overflow: 'hidden',
-    borderRadius: 22,
-    backgroundColor: colors.primaryDark,
-    padding: 22,
-  },
-  eyebrow: {
-    color: '#91D2FF',
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 1,
-  },
-  heroTitle: {
-    maxWidth: 290,
-    marginTop: 8,
-    color: colors.white,
-    fontSize: 23,
-    fontWeight: '900',
-    lineHeight: 29,
-  },
-  heroText: {
-    maxWidth: 300,
-    marginTop: 8,
-    color: '#C7D9E9',
-    fontSize: 12,
-    lineHeight: 18,
-  },
-  filterRow: {
-    paddingVertical: 18,
-  },
+  filterRow: { paddingBottom: 20, paddingTop: 17, paddingRight: 8 },
   filter: {
-    marginRight: 8,
+    minHeight: 38,
+    justifyContent: 'center',
+    marginRight: 9,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 999,
     backgroundColor: colors.surface,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 18,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  filterActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary,
-  },
-  filterText: {
-    color: colors.textMuted,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  filterTextActive: {
-    color: colors.white,
-  },
-  pressed: {
-    opacity: 0.75,
-  },
+  filterActive: { borderColor: colors.primary, backgroundColor: colors.primary },
+  filterText: { color: colors.textMuted, fontSize: 11, fontWeight: '700' },
+  filterTextActive: { color: colors.white, fontWeight: '900' },
   offerCard: {
-    flexDirection: 'row',
-    marginBottom: 12,
+    overflow: 'hidden',
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 18,
+    borderRadius: 20,
     backgroundColor: colors.surface,
-    padding: 12,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 7 },
+    shadowOpacity: 0.1,
+    shadowRadius: 14,
+    elevation: 4,
   },
-  offerCardPressed: {
-    opacity: 0.82,
-    transform: [{ scale: 0.995 }],
-  },
+  offerCardPressed: { opacity: 0.82, transform: [{ scale: 0.995 }] },
   offerVisual: {
-    width: 92,
-    minHeight: 112,
+    overflow: 'hidden',
+    minHeight: 162,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 14,
   },
-  offerInitial: {
-    color: colors.white,
-    fontSize: 34,
-    fontWeight: '900',
+  visualGlowLarge: {
+    position: 'absolute',
+    top: -85,
+    right: -42,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(255,255,255,0.13)',
   },
-  offerCategory: {
-    marginTop: 5,
-    color: 'rgba(255,255,255,0.82)',
-    fontSize: 8,
-    fontWeight: '800',
-    letterSpacing: 0.6,
+  visualGlowSmall: {
+    position: 'absolute',
+    bottom: -70,
+    left: -35,
+    width: 165,
+    height: 165,
+    borderRadius: 83,
+    backgroundColor: 'rgba(0,0,0,0.11)',
   },
-  offerInfo: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingLeft: 14,
-  },
-  partner: {
-    color: colors.textMuted,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  offerTitle: {
-    marginTop: 4,
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: '900',
-    lineHeight: 20,
-  },
-  offerFooter: {
+  hotBadge: {
+    position: 'absolute',
+    top: 14,
+    left: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,184,77,0.42)',
+    borderRadius: 999,
+    backgroundColor: 'rgba(20,20,20,0.55)',
+    paddingHorizontal: 11,
+    paddingVertical: 7,
   },
-  points: {
-    color: colors.primary,
+  hotText: { marginLeft: 5, color: '#FFD79A', fontSize: 8, fontWeight: '900' },
+  offerIcon: {
+    width: 72,
+    height: 72,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.17)',
+  },
+  visualPartner: {
+    marginTop: 9,
+    color: colors.white,
     fontSize: 12,
     fontWeight: '900',
+    letterSpacing: 0.4,
   },
-  status: {
-    color: colors.success,
-    fontSize: 10,
-    fontWeight: '800',
+  offerInfo: { padding: 17 },
+  offerTitle: { color: colors.primaryDark, fontSize: 15, fontWeight: '900', lineHeight: 21 },
+  partner: { marginTop: 5, color: colors.textMuted, fontSize: 10 },
+  divider: { height: 1, marginVertical: 14, backgroundColor: colors.border },
+  offerFooter: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
+  metaLabel: { color: colors.textMuted, fontSize: 9 },
+  pointsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 5 },
+  points: { marginLeft: 5, color: colors.success, fontSize: 14, fontWeight: '900' },
+  pointsDisabled: { color: colors.warning },
+  expiryBlock: { maxWidth: '48%', alignItems: 'flex-end' },
+  expiry: { marginTop: 5, textAlign: 'right', color: colors.text, fontSize: 10, fontWeight: '800' },
+  emptyState: {
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    padding: 34,
   },
-  statusDisabled: {
-    color: colors.warning,
-  },
+  emptyTitle: { marginTop: 10, color: colors.text, fontSize: 14, fontWeight: '800' },
+  emptyText: { marginTop: 5, color: colors.textMuted, fontSize: 11 },
 });

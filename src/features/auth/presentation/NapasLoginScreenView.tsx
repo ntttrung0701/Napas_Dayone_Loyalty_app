@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { PrimaryButton } from '../../../shared/components/PrimaryButton';
 import { colors } from '../../../theme/colors';
 import type { LoginInput } from '../domain/AuthModels';
+import { authScreenPresentations } from './AuthScreenPresentation';
 import { AuthField, AuthShell, FormError } from './AuthUi';
 
 export type NapasLoginScreenProps = {
@@ -67,11 +68,9 @@ export function NapasLoginScreen({
           <Text style={styles.demoNoticeText}>Môi trường demo — không dùng thông tin thật</Text>
         </View>
       }
-      subtitle="Napas DayOne — Trải nghiệm tài chính hiện đại"
-      title="ĐĂNG NHẬP"
+      presentation={authScreenPresentations.login}
     >
       {message ? <Text style={styles.successMessage}>{message}</Text> : null}
-      <Text style={styles.demoAccount}>Tài khoản mẫu: 0987654321 / Demo@123</Text>
       <FormError message={error} />
       <AuthField
         autoComplete="username"
