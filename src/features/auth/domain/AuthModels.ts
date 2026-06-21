@@ -43,6 +43,12 @@ export type BiometricCapabilities = {
   fingerprint: boolean;
 };
 
+export type FaceCapture = {
+  uri: string;
+  width: number;
+  height: number;
+};
+
 export interface AuthRepository {
   authenticate(identifier: string, password: string): Promise<AuthUser | null>;
   identifierExists(identifier: string): Promise<boolean>;
@@ -60,6 +66,10 @@ export interface AccountStorage {
 export interface BiometricAuthenticator {
   getCapabilities(): Promise<BiometricCapabilities>;
   authenticate(kind: BiometricKind): Promise<void>;
+}
+
+export interface FaceVerifier {
+  verify(capture: FaceCapture): Promise<void>;
 }
 
 export class AuthError extends Error {

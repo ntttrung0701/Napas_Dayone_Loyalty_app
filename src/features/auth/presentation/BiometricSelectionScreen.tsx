@@ -11,10 +11,12 @@ export function BiometricSelectionScreen({
   onBack,
   loadCapabilities,
   onAuthenticate,
+  onFaceCamera,
 }: {
   onBack: () => void;
   loadCapabilities: () => Promise<BiometricCapabilities>;
   onAuthenticate: (kind: BiometricKind) => Promise<void>;
+  onFaceCamera: () => void;
 }) {
   const [capabilities, setCapabilities] = useState<BiometricCapabilities | null>(null);
   const [loadingKind, setLoadingKind] = useState<BiometricKind | null>(null);
@@ -35,29 +37,34 @@ export function BiometricSelectionScreen({
     finally { setLoadingKind(null); }
   };
 
-  const ready = capabilities?.hasHardware && capabilities.isEnrolled;
+  const fingerprintReady =
+    capabilities?.hasHardware && capabilities.isEnrolled && capabilities.fingerprint;
   return (
     <AuthShell onBack={onBack} presentation={authScreenPresentations.biometric}>
       {!capabilities && !error ? <ActivityIndicator color="#3C5C98" size="large" /> : null}
       <FormError message={error} />
-      {capabilities && !ready ? (
-        <Text style={styles.notice}>Thiết bị chưa hỗ trợ hoặc chưa đăng ký sinh trắc học. Hãy kiểm tra trong phần Cài đặt.</Text>
+      {capabilities && !fingerprintReady ? (
+        <Text style={styles.notice}>
+          Thiết bị chưa đăng ký vân tay hệ thống. Bạn vẫn có thể mở camera trước để xác minh khuôn mặt.
+        </Text>
       ) : null}
       <BiometricOption
-        disabled={!ready || !capabilities?.face || loadingKind !== null}
+        disabled={loadingKind !== null}
         icon="scan-outline"
-        label="Nhận diện khuôn mặt"
-        loading={loadingKind === 'face'}
-        onPress={() => authenticate('face')}
+        label="Nhận diện bằng camera trước"
+        loading={false}
+        onPress={onFaceCamera}
       />
       <BiometricOption
-        disabled={!ready || !capabilities?.fingerprint || loadingKind !== null}
+        disabled={!fingerprintReady || loadingKind !== null}
         icon="finger-print-outline"
         label="Xác thực vân tay"
         loading={loadingKind === 'fingerprint'}
         onPress={() => authenticate('fingerprint')}
       />
-      <Text style={styles.security}>Sinh trắc học chỉ dùng sau khi bạn đã đăng nhập bằng mật khẩu và bật Ghi nhớ tài khoản. Napas không lưu dữ liệu khuôn mặt hoặc vân tay; hệ điều hành xử lý việc xác thực.</Text>
+      <Text style={styles.security}>
+        Chức năng chỉ dùng sau khi bạn đăng nhập bằng mật khẩu và bật Ghi nhớ tài khoản. Ảnh camera không được lưu; lớp xác minh demo có thể được thay bằng Face Matching/Liveness API khi triển khai thật.
+      </Text>
     </AuthShell>
   );
 }

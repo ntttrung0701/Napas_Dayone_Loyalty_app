@@ -3,15 +3,23 @@ import { useCallback, useEffect, useState } from 'react';
 import { AuthService } from './application/AuthService';
 import { DemoAuthRepository } from './data/DemoAuthRepository';
 import type {
+  FaceCapture,
   ForgotPasswordInput,
   LoginInput,
   OtpChallenge,
   RegistrationInput,
 } from './domain/AuthModels';
+import {
+  FaceAlignmentPolicy,
+  FaceRecognitionService,
+} from './domain/FaceRecognition';
 import { AsyncAccountStorage } from './infrastructure/AsyncAccountStorage';
+import { DemoCameraFaceVerifier } from './infrastructure/DemoCameraFaceVerifier';
 import { ExpoBiometricAuthenticator } from './infrastructure/ExpoBiometricAuthenticator';
+import { ExpoFaceDetectorGateway } from './infrastructure/ExpoFaceDetectorGateway';
 import { NapasLoginScreen } from './NapasLoginScreen';
 import { BiometricSelectionScreen } from './presentation/BiometricSelectionScreen';
+import { FaceVerificationScreen } from './presentation/FaceVerificationScreen';
 import { OtpVerificationScreen } from './presentation/OtpVerificationScreen';
 import {
   ForgotPasswordScreen,
@@ -19,7 +27,14 @@ import {
 } from './presentation/PasswordRecoveryScreens';
 import { RegistrationScreen } from './presentation/RegistrationScreen';
 
-type AuthRoute = 'login' | 'registration' | 'forgot-password' | 'otp' | 'reset-password' | 'biometric';
+type AuthRoute =
+  | 'login'
+  | 'registration'
+  | 'forgot-password'
+  | 'otp'
+  | 'reset-password'
+  | 'biometric'
+  | 'face-camera';
 
 export type AuthFlowProps = {
   onAuthenticated: () => void;
@@ -29,6 +44,11 @@ const authService = new AuthService(
   new DemoAuthRepository(),
   new AsyncAccountStorage(),
   new ExpoBiometricAuthenticator(),
+  new DemoCameraFaceVerifier(),
+);
+const faceRecognitionService = new FaceRecognitionService(
+  new ExpoFaceDetectorGateway(),
+  new FaceAlignmentPolicy(),
 );
 
 export function AuthFlow({ onAuthenticated }: AuthFlowProps) {
@@ -88,6 +108,17 @@ export function AuthFlow({ onAuthenticated }: AuthFlowProps) {
     },
     [onAuthenticated, service],
   );
+  const authenticateFaceCapture = useCallback(
+    async (capture: FaceCapture) => {
+      await service.authenticateWithFaceCapture(capture);
+      onAuthenticated();
+    },
+    [onAuthenticated, service],
+  );
+  const analyzeFace = useCallback(
+    (capture: FaceCapture) => faceRecognitionService.analyze(capture),
+    [],
+  );
 
   switch (route) {
     case 'registration':
@@ -112,6 +143,15 @@ export function AuthFlow({ onAuthenticated }: AuthFlowProps) {
           loadCapabilities={loadBiometricCapabilities}
           onAuthenticate={authenticateBiometric}
           onBack={() => setRoute('login')}
+          onFaceCamera={() => setRoute('face-camera')}
+        />
+      );
+    case 'face-camera':
+      return (
+        <FaceVerificationScreen
+          analyzeFace={analyzeFace}
+          onBack={() => setRoute('biometric')}
+          onVerified={authenticateFaceCapture}
         />
       );
     case 'login':

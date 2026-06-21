@@ -5,6 +5,7 @@ import {
   SafeAreaView,
   StatusBar as NativeStatusBar,
   StyleSheet,
+  View,
 } from 'react-native';
 
 import { AuthFlow } from './src/features/auth/AuthFlow';
@@ -23,6 +24,7 @@ import { QrScreen } from './src/features/qr/QrScreen';
 import { SplashScreen } from './src/features/splash/SplashScreen';
 import { TransferScreen } from './src/features/transfer/TransferScreen';
 import { offers, seedNotifications, seedTransactions } from './src/mock/data';
+import { NavigationStack } from './src/navigation/NavigationStack';
 import { colors } from './src/theme/colors';
 import type {
   AppScreen,
@@ -35,7 +37,7 @@ import type {
 const initialRoute: AppScreen = 'splash';
 
 export default function App() {
-  const [routes, setRoutes] = useState<AppScreen[]>([initialRoute]);
+  const [navigation, setNavigation] = useState(() => NavigationStack.start(initialRoute));
   const [points, setPoints] = useState(128_450);
   const [selectedOffer, setSelectedOffer] = useState<Offer>(offers[0]!);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
@@ -44,12 +46,12 @@ export default function App() {
     useState<LoyaltyNotification[]>(seedNotifications);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction>(seedTransactions[0]!);
 
-  const currentRoute = routes[routes.length - 1] ?? initialRoute;
-  const navigate = (route: AppScreen) => setRoutes((current) => [...current, route]);
+  const navigate = (route: AppScreen) =>
+    setNavigation((current) => current.push(route));
   const replace = (route: AppScreen) =>
-    setRoutes((current) => [...current.slice(0, -1), route]);
+    setNavigation((current) => current.replace(route));
   const goBack = () =>
-    setRoutes((current) => (current.length > 1 ? current.slice(0, -1) : current));
+    setNavigation((current) => current.backPreservingState());
 
   const openOffer = (offer: Offer) => {
     setSelectedOffer(offer);
@@ -147,8 +149,8 @@ export default function App() {
     navigate('receipt');
   };
 
-  const renderScreen = () => {
-    switch (currentRoute) {
+  const renderScreen = (route: AppScreen) => {
+    switch (route) {
       case 'splash':
         return <SplashScreen onFinished={() => replace('onboarding')} />;
       case 'onboarding':
@@ -205,8 +207,8 @@ export default function App() {
         return (
           <ReceiptScreen
             receipt={receipt}
-            onHome={() => setRoutes(['home'])}
-            onViewHistory={() => setRoutes(['home', 'notifications'])}
+            onHome={() => setNavigation((current) => current.reset('home'))}
+            onViewHistory={() => setNavigation(NavigationStack.path(['home', 'notifications']))}
           />
         );
       case 'notifications':
@@ -228,7 +230,7 @@ export default function App() {
           <ProfileScreen
             activeTab="profile"
             onBack={goBack}
-            onLogout={() => setRoutes(['login'])}
+            onLogout={() => setNavigation((current) => current.reset('login'))}
             onNavigate={navigate}
             points={points}
           />
@@ -250,7 +252,22 @@ export default function App() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
-      {renderScreen()}
+      <View style={styles.screenStack}>
+        {navigation.items.map((entry, index) => {
+          const active = index === navigation.items.length - 1;
+          return (
+            <View
+              accessibilityElementsHidden={!active}
+              importantForAccessibility={active ? 'auto' : 'no-hide-descendants'}
+              key={entry.instanceKey}
+              pointerEvents={active ? 'auto' : 'none'}
+              style={[styles.screen, { opacity: active ? 1 : 0, zIndex: index }]}
+            >
+              {renderScreen(entry.screen)}
+            </View>
+          );
+        })}
+      </View>
     </SafeAreaView>
   );
 }
@@ -259,6 +276,14 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     paddingTop: Platform.OS === 'android' ? NativeStatusBar.currentHeight ?? 24 : 0,
+    backgroundColor: colors.background,
+  },
+  screenStack: {
+    flex: 1,
+    position: 'relative',
+  },
+  screen: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: colors.background,
   },
 });

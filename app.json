@@ -23,6 +23,13 @@
         {
           "faceIDPermission": "Cho phép Napas DayOne sử dụng Face ID để xác thực đăng nhập."
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Cho phép Napas DayOne sử dụng camera trước để xác minh khuôn mặt.",
+          "recordAudioAndroid": false
+        }
       ]
     ]
   }

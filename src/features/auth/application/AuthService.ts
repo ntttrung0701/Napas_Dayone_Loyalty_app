@@ -7,6 +7,8 @@ import {
   type BiometricCapabilities,
   type BiometricKind,
   type ForgotPasswordInput,
+  type FaceCapture,
+  type FaceVerifier,
   type LoginInput,
   type OtpChallenge,
   type RegistrationInput,
@@ -26,6 +28,7 @@ export class AuthService {
     private readonly repository: AuthRepository,
     private readonly storage: AccountStorage,
     private readonly biometric: BiometricAuthenticator,
+    private readonly faceVerifier: FaceVerifier,
   ) {}
 
   getRememberedIdentifier(): Promise<string | null> {
@@ -116,6 +119,16 @@ export class AuthService {
       throw new AuthError('Hãy đăng nhập bằng mật khẩu và bật “Ghi nhớ tài khoản” trước khi dùng sinh trắc học.');
     }
     await this.biometric.authenticate(kind);
+  }
+
+  async authenticateWithFaceCapture(capture: FaceCapture): Promise<void> {
+    const linkedIdentifier = await this.storage.getIdentifier();
+    if (!linkedIdentifier) {
+      throw new AuthError(
+        'Hãy đăng nhập bằng mật khẩu và bật “Ghi nhớ tài khoản” trước khi dùng nhận diện khuôn mặt.',
+      );
+    }
+    await this.faceVerifier.verify(capture);
   }
 
   private createChallenge(purpose: OtpChallenge['purpose'], phone: string): OtpChallenge {
