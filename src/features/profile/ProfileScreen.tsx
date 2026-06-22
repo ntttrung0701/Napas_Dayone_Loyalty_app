@@ -139,16 +139,6 @@ export function ProfileScreen({
           ))}
         </View>
 
-        <View style={styles.securityCard}>
-          <View style={styles.shield}>
-            <Ionicons color={colors.white} name="shield-checkmark-outline" size={22} />
-          </View>
-          <View style={styles.securityInfo}>
-            <Text style={styles.securityTitle}>Trạng thái bảo mật tốt</Text>
-            <Text style={styles.securityText}>Sinh trắc học và thiết bị tin cậy đang hoạt động.</Text>
-          </View>
-        </View>
-
         <Text style={styles.sectionHeading}>CÀI ĐẶT TÀI KHOẢN</Text>
         <View style={styles.settingsCard}>
           {settings.map((setting) => (
@@ -178,7 +168,6 @@ export function ProfileScreen({
           <Ionicons color={colors.danger} name="log-out-outline" size={18} />
           <Text style={styles.logoutText}>Đăng xuất tài khoản demo</Text>
         </Pressable>
-        <Text style={styles.version}>Napas DayOne Prototype • Expo SDK 54</Text>
       </ScrollView>
       <BottomNav active={activeTab} onNavigate={onNavigate} />
     </View>

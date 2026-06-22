@@ -1,14 +1,32 @@
 import { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 
-import { BrandLogo } from '../../shared/components/BrandLogo';
+import { BrandLogo, NAPAS_LOGO } from '../../shared/components/BrandLogo';
 import { colors } from '../../theme/colors';
 
 export function SplashScreen({ onFinished }: { onFinished: () => void }) {
   useEffect(() => {
-    const timer = setTimeout(onFinished, 1_400);
-    return () => clearTimeout(timer);
-  }, [onFinished]);
+  let isMounted = true;
+
+  const logoSource = Image.resolveAssetSource(NAPAS_LOGO);
+  const preloadLogo = logoSource?.uri
+    ? Image.prefetch(logoSource.uri).catch(() => undefined)
+    : Promise.resolve();
+
+  const minimumSplashTime = new Promise<void>((resolve) => {
+    setTimeout(resolve, 1_400);
+  });
+
+  Promise.all([preloadLogo, minimumSplashTime]).then(() => {
+    if (isMounted) {
+      onFinished();
+    }
+  });
+
+  return () => {
+    isMounted = false;
+  };
+}, [onFinished]);
 
   return (
     <View style={styles.container}>
