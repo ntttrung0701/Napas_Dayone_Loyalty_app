@@ -9,6 +9,7 @@ import {
   resolveTransactionBalanceSnapshot,
   TransactionRecord,
 } from './domain/TransactionLedger';
+import { TransactionPointPolicy } from './domain/TransactionPointPolicy';
 
 const statusColor: Record<TransactionStatus, string> = {
   success: colors.success,
@@ -36,14 +37,17 @@ export function TransactionDetailScreen({
   onBack: () => void;
 }) {
   const record = new TransactionRecord(transaction);
-  const accent = statusColor[transaction.status];
-  const balanceSnapshot = resolveTransactionBalanceSnapshot({
+const pointPolicy = new TransactionPointPolicy(transaction);
+const accent = statusColor[transaction.status];
+
+const balanceSnapshot = resolveTransactionBalanceSnapshot({
   currentPoints,
   transaction,
   transactions,
 });
 
 const pointChangeColor = getPointChangeColor(transaction, balanceSnapshot.displayChange);
+const transactionDateTime = formatTransactionDateTime(transaction.occurredAt, transaction.date);
   const requestSupport = () => {
     Alert.alert(
       'Hỗ trợ giao dịch',
@@ -66,6 +70,24 @@ const pointChangeColor = getPointChangeColor(transaction, balanceSnapshot.displa
           </Text>
           <Text style={styles.summaryDate}>{transaction.date}</Text>
         </View>
+        
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>THÔNG TIN CHI TIẾT</Text>
+          <DetailRow label="Mã giao dịch" value={transaction.id} />
+<DetailRow label="Thời gian giao dịch" value={transactionDateTime} />
+<DetailRow label="Loại giao dịch" value={record.kindLabel} />
+<DetailRow label="Nguồn liên kết" value={transaction.source} icon="card-outline" />
+          {transaction.amount > 0 ? (
+            <DetailRow label="Số tiền giao dịch" value={`${formatPoints(transaction.amount)} VND`} />
+          ) : null}
+          <View style={styles.ruleRow}>
+  <View style={styles.ruleRow}>
+  <Text style={styles.ruleLabel}>{pointPolicy.ruleLabel}</Text>
+  <Text style={styles.ruleValue}>{pointPolicy.ruleDescription}</Text>
+</View>
+</View>
+        </View>
+
         <View style={styles.card}>
   <Text style={styles.cardTitle}>CẬP NHẬT SỐ DƯ ĐIỂM</Text>
 
@@ -89,19 +111,6 @@ const pointChangeColor = getPointChangeColor(transaction, balanceSnapshot.displa
     {getPointUpdateDescription(transaction)}
   </Text>
 </View>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>THÔNG TIN CHI TIẾT</Text>
-          <DetailRow label="Mã giao dịch" value={transaction.id} />
-          <DetailRow label="Loại giao dịch" value={record.kindLabel} />
-          <DetailRow icon="card-outline" label="Nguồn liên kết" value={transaction.source} />
-          {transaction.amount > 0 ? (
-            <DetailRow label="Số tiền giao dịch" value={`${formatPoints(transaction.amount)} VND`} />
-          ) : null}
-          <View style={styles.ruleRow}>
-  <Text style={styles.ruleLabel}>{getPointRuleLabel(transaction)}</Text>
-  <Text style={styles.ruleValue}>{getPointRuleDescription(transaction)}</Text>
-</View>
-        </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>TRẠNG THÁI XỬ LÝ</Text>
@@ -132,6 +141,24 @@ const pointChangeColor = getPointChangeColor(transaction, balanceSnapshot.displa
     </View>
   );
 }
+
+function formatTransactionDateTime(occurredAt: string, fallback: string) {
+  const date = new Date(occurredAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return fallback;
+  }
+
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).format(date);
+}
+
 function formatPointDelta(value: number) {
   if (value > 0) return `+${formatPoints(value)} điểm`;
   if (value < 0) return `-${formatPoints(Math.abs(value))} điểm`;
@@ -183,48 +210,6 @@ function getPointUpdateDescription(transaction: Transaction) {
   return 'Giao dịch không phát sinh biến động điểm.';
 }
 
-function getPointRuleLabel(transaction: Transaction) {
-  if (transaction.kind === 'earn') return 'Quy tắc tích điểm';
-  if (transaction.kind === 'payment') return 'Nội dung sử dụng điểm';
-  if (transaction.kind === 'redemption') return 'Nội dung đổi điểm';
-  if (transaction.kind === 'transfer') {
-    return transaction.points < 0 ? 'Nội dung chuyển điểm' : 'Nội dung nhận điểm';
-  }
-  if (transaction.kind === 'expiration') return 'Lý do hết hạn điểm';
-
-  return 'Nội dung giao dịch';
-}
-
-function getPointRuleDescription(transaction: Transaction) {
-  const absolutePoints = formatPoints(Math.abs(transaction.points));
-
-  if (transaction.kind === 'earn') {
-    if (transaction.pointRule) return transaction.pointRule;
-    return `Cộng ${absolutePoints} điểm theo quy tắc chương trình Loyalty.`;
-  }
-
-  if (transaction.kind === 'payment') {
-    return `Dùng ${absolutePoints} điểm để giảm trừ thanh toán tại ${transaction.source}.`;
-  }
-
-  if (transaction.kind === 'redemption') {
-    return `Dùng ${absolutePoints} điểm để đổi ưu đãi/voucher từ ${transaction.source}.`;
-  }
-
-  if (transaction.kind === 'transfer') {
-    if (transaction.points < 0) {
-      return `Chuyển ${absolutePoints} điểm cho ${transaction.source}.`;
-    }
-
-    return `Nhận ${absolutePoints} điểm từ ${transaction.source}.`;
-  }
-
-  if (transaction.kind === 'expiration') {
-    return `${absolutePoints} điểm hết hạn theo chính sách chương trình Loyalty.`;
-  }
-
-  return transaction.pointRule;
-}
 function DetailRow({
   label,
   value,
