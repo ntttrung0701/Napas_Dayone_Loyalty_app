@@ -236,6 +236,17 @@ case 'notifications':
       transactions={transactions}
     />
   );
+  
+  case 'profile':
+  return (
+    <ProfileScreen
+      activeTab="profile"
+      points={points}
+      onBack={goBack}
+      onLogout={() => setNavigation((current) => current.reset('login'))}
+      onNavigate={navigate}
+    />
+  );
 
 case 'transaction-detail':
   return (
