@@ -138,6 +138,7 @@ function formatPointDelta(value: number) {
   return '0 điểm';
 }
 
+
 function getPointChangeColor(transaction: Transaction, displayChange: number) {
   if (transaction.status === 'pending') return colors.warning;
   if (transaction.status === 'failed') return colors.textMuted;
