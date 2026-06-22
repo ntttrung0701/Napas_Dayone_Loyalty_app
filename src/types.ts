@@ -9,6 +9,7 @@ export type AppScreen =
   | 'payment'
   | 'transfer'
   | 'cards'
+  | 'history'
   | 'transaction-detail'
   | 'receipt';
 

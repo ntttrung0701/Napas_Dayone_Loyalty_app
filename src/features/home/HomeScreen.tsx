@@ -49,6 +49,7 @@ export function HomeScreen({
           </View>
           <View style={styles.brand}>
             <BrandLogo width={92} />
+            
           </View>
           <Pressable
             accessibilityLabel={`${unreadNotifications} thông báo chưa đọc`}
@@ -138,7 +139,7 @@ export function HomeScreen({
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Hoạt động gần đây</Text>
-            <Pressable onPress={() => onNavigate('notifications')}>
+            <Pressable onPress={() => onNavigate('history')}>
               <Text style={styles.link}>Xem tất cả</Text>
             </Pressable>
           </View>

@@ -26,6 +26,7 @@ import { TransferScreen } from './src/features/transfer/TransferScreen';
 import { offers, seedNotifications, seedTransactions } from './src/mock/data';
 import { NavigationStack } from './src/navigation/NavigationStack';
 import { colors } from './src/theme/colors';
+import { HistoryScreen } from './src/features/history/HistoryScreen';
 import type {
   AppScreen,
   LoyaltyNotification,
@@ -202,29 +203,42 @@ export default function App() {
           />
         );
       case 'cards':
-        return <CardsScreen onBack={goBack} />;
-      case 'receipt':
-        return (
-          <ReceiptScreen
-            receipt={receipt}
-            onHome={() => setNavigation((current) => current.reset('home'))}
-            onViewHistory={() => setNavigation(NavigationStack.path(['home', 'notifications']))}
-          />
-        );
-      case 'notifications':
-        return (
-          <NotificationsScreen
-            notifications={notifications}
-            onBack={goBack}
-            onMarkAllRead={markAllNotificationsRead}
-            onMarkRead={markNotificationRead}
-            onNavigate={navigate}
-            onSelectTransaction={openTransaction}
-            transactions={transactions}
-          />
-        );
-      case 'transaction-detail':
-        return <TransactionDetailScreen onBack={goBack} transaction={selectedTransaction} />;
+  return <CardsScreen onBack={goBack} />;
+
+case 'history':
+  return (
+    <HistoryScreen
+      onBack={goBack}
+      onNavigate={navigate}
+      onSelectTransaction={openTransaction}
+      transactions={transactions}
+    />
+  );
+
+case 'receipt':
+  return (
+    <ReceiptScreen
+      receipt={receipt}
+      onHome={() => setNavigation((current) => current.reset('home'))}
+      onViewHistory={() => setNavigation(NavigationStack.path(['home', 'history']))}
+    />
+  );
+
+case 'notifications':
+  return (
+    <NotificationsScreen
+      notifications={notifications}
+      onBack={goBack}
+      onMarkAllRead={markAllNotificationsRead}
+      onMarkRead={markNotificationRead}
+      onNavigate={navigate}
+      onSelectTransaction={openTransaction}
+      transactions={transactions}
+    />
+  );
+
+case 'transaction-detail':
+  return <TransactionDetailScreen onBack={goBack} transaction={selectedTransaction} />;
       case 'profile':
         return (
           <ProfileScreen

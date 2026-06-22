@@ -1,6 +1,15 @@
 import type { Transaction, TransactionKind, TransactionStatus } from '../../../types';
 
-export type HistoryFilter = 'all' | 'earned' | 'redeemed' | 'pending';
+export type HistoryFilter =
+  | 'all'
+  | 'earned'
+  | 'spent'
+  | 'redeemed'
+  | 'transferred'
+  | 'expired'
+  | 'pending'
+  | 'failed';
+
 
 export type TransactionGroup = {
   key: string;
@@ -54,11 +63,36 @@ export class TransactionRecord {
   }
 
   isIncludedIn(filter: HistoryFilter): boolean {
-    if (filter === 'earned') return this.value.kind === 'earn' || (this.value.kind === 'transfer' && this.isCredit);
-    if (filter === 'redeemed') return this.value.kind === 'redemption';
-    if (filter === 'pending') return this.value.status === 'pending';
-    return true;
+  if (filter === 'earned') {
+    return this.value.kind === 'earn' || (this.value.kind === 'transfer' && this.isCredit);
   }
+
+  if (filter === 'spent') {
+    return this.value.points < 0;
+  }
+
+  if (filter === 'redeemed') {
+    return this.value.kind === 'redemption';
+  }
+
+  if (filter === 'transferred') {
+    return this.value.kind === 'transfer';
+  }
+
+  if (filter === 'expired') {
+    return this.value.kind === 'expiration' || this.value.status === 'expired';
+  }
+
+  if (filter === 'pending') {
+    return this.value.status === 'pending';
+  }
+
+  if (filter === 'failed') {
+    return this.value.status === 'failed';
+  }
+
+  return true;
+}
 
   private static normalize(value: string): string {
     return value

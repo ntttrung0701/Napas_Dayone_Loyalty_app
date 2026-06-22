@@ -27,8 +27,12 @@ type HistoryScreenProps = {
 const historyFilters: ReadonlyArray<{ id: HistoryFilter; label: string }> = [
   { id: 'all', label: 'Tất cả' },
   { id: 'earned', label: 'Tích điểm' },
+  { id: 'spent', label: 'Tiêu điểm' },
   { id: 'redeemed', label: 'Đổi điểm' },
+  { id: 'transferred', label: 'Chuyển điểm' },
+  { id: 'expired', label: 'Hết hạn' },
   { id: 'pending', label: 'Đang chờ' },
+  { id: 'failed', label: 'Thất bại' },
 ];
 
 export function HistoryScreen({
