@@ -238,17 +238,14 @@ case 'notifications':
   );
 
 case 'transaction-detail':
-  return <TransactionDetailScreen onBack={goBack} transaction={selectedTransaction} />;
-      case 'profile':
-        return (
-          <ProfileScreen
-            activeTab="profile"
-            onBack={goBack}
-            onLogout={() => setNavigation((current) => current.reset('login'))}
-            onNavigate={navigate}
-            points={points}
-          />
-        );
+  return (
+    <TransactionDetailScreen
+      currentPoints={points}
+      onBack={goBack}
+      transaction={selectedTransaction}
+      transactions={transactions}
+    />
+  );
       case 'home':
       default:
         return (

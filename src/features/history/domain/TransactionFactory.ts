@@ -28,7 +28,7 @@ export class TransactionFactory {
       status: 'success',
       source: options.source,
       amount: receipt.originalAmount,
-      pointRule: this.resolvePointRule(options.kind, options.points),
+      pointRule: this.resolvePointRule(options.kind, options.points, options.source),
       timeline: [
         {
           id: `${receipt.id}-completed`,
@@ -46,9 +46,31 @@ export class TransactionFactory {
     };
   }
 
-  private static resolvePointRule(kind: TransactionKind, points: number): string {
-    if (kind === 'redemption') return `${Math.abs(points).toLocaleString('vi-VN')} điểm đổi ưu đãi`;
-    if (kind === 'transfer') return 'Chuyển điểm giữa các thành viên Loyalty';
-    return 'Theo quy tắc của chương trình Loyalty';
+  private static resolvePointRule(kind: TransactionKind, points: number, source: string): string {
+  const absolutePoints = Math.abs(points).toLocaleString('vi-VN');
+
+  if (kind === 'redemption') {
+    return `Dùng ${absolutePoints} điểm để đổi ưu đãi/voucher từ ${source}.`;
   }
+
+  if (kind === 'transfer') {
+    return points < 0
+      ? `Chuyển ${absolutePoints} điểm cho ${source}.`
+      : `Nhận ${absolutePoints} điểm từ ${source}.`;
+  }
+
+  if (kind === 'payment') {
+    return `Dùng ${absolutePoints} điểm để giảm trừ thanh toán tại ${source}.`;
+  }
+
+  if (kind === 'earn') {
+    return `Cộng ${absolutePoints} điểm theo quy tắc chương trình Loyalty.`;
+  }
+
+  if (kind === 'expiration') {
+    return `${absolutePoints} điểm hết hạn theo chính sách chương trình Loyalty.`;
+  }
+
+  return 'Cập nhật điểm theo quy tắc chương trình Loyalty.';
+}
 }

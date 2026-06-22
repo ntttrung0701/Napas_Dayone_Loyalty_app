@@ -5,7 +5,10 @@ import { ScreenHeader } from '../../shared/components/ScreenHeader';
 import { colors } from '../../theme/colors';
 import type { Transaction, TransactionStatus } from '../../types';
 import { formatPoints } from '../../utils/format';
-import { TransactionRecord } from './domain/TransactionLedger';
+import {
+  resolveTransactionBalanceSnapshot,
+  TransactionRecord,
+} from './domain/TransactionLedger';
 
 const statusColor: Record<TransactionStatus, string> = {
   success: colors.success,
@@ -22,14 +25,25 @@ const statusIcon: Record<TransactionStatus, 'checkmark-circle-outline' | 'time-o
 };
 
 export function TransactionDetailScreen({
+  currentPoints,
   transaction,
+  transactions,
   onBack,
 }: {
+  currentPoints: number;
   transaction: Transaction;
+  transactions: readonly Transaction[];
   onBack: () => void;
 }) {
   const record = new TransactionRecord(transaction);
   const accent = statusColor[transaction.status];
+  const balanceSnapshot = resolveTransactionBalanceSnapshot({
+  currentPoints,
+  transaction,
+  transactions,
+});
+
+const pointChangeColor = getPointChangeColor(transaction, balanceSnapshot.displayChange);
   const requestSupport = () => {
     Alert.alert(
       'Hỗ trợ giao dịch',
@@ -52,7 +66,29 @@ export function TransactionDetailScreen({
           </Text>
           <Text style={styles.summaryDate}>{transaction.date}</Text>
         </View>
+        <View style={styles.card}>
+  <Text style={styles.cardTitle}>CẬP NHẬT SỐ DƯ ĐIỂM</Text>
 
+  <DetailRow
+    label="Số dư trước giao dịch"
+    value={`${formatPoints(balanceSnapshot.balanceBefore)} điểm`}
+  />
+
+  <DetailRow
+    label={getPointUpdateLabel(transaction)}
+    value={formatPointDelta(balanceSnapshot.displayChange)}
+    valueColor={pointChangeColor}
+  />
+
+  <DetailRow
+    label="Số dư sau giao dịch"
+    value={`${formatPoints(balanceSnapshot.balanceAfter)} điểm`}
+  />
+
+  <Text style={styles.balanceNote}>
+    {getPointUpdateDescription(transaction)}
+  </Text>
+</View>
         <View style={styles.card}>
           <Text style={styles.cardTitle}>THÔNG TIN CHI TIẾT</Text>
           <DetailRow label="Mã giao dịch" value={transaction.id} />
@@ -62,9 +98,9 @@ export function TransactionDetailScreen({
             <DetailRow label="Số tiền giao dịch" value={`${formatPoints(transaction.amount)} VND`} />
           ) : null}
           <View style={styles.ruleRow}>
-            <Text style={styles.ruleLabel}>Cách thức tính điểm</Text>
-            <Text style={styles.ruleValue}>{transaction.pointRule}</Text>
-          </View>
+  <Text style={styles.ruleLabel}>{getPointRuleLabel(transaction)}</Text>
+  <Text style={styles.ruleValue}>{getPointRuleDescription(transaction)}</Text>
+</View>
         </View>
 
         <View style={styles.card}>
@@ -96,22 +132,117 @@ export function TransactionDetailScreen({
     </View>
   );
 }
+function formatPointDelta(value: number) {
+  if (value > 0) return `+${formatPoints(value)} điểm`;
+  if (value < 0) return `-${formatPoints(Math.abs(value))} điểm`;
+  return '0 điểm';
+}
 
+function getPointChangeColor(transaction: Transaction, displayChange: number) {
+  if (transaction.status === 'pending') return colors.warning;
+  if (transaction.status === 'failed') return colors.textMuted;
+  if (displayChange > 0) return colors.success;
+  if (displayChange < 0) return colors.danger;
+  return colors.textMuted;
+}
+
+function getPointUpdateLabel(transaction: Transaction) {
+  if (transaction.status === 'pending') return 'Điểm dự kiến cập nhật';
+  if (transaction.status === 'failed') return 'Điểm không cập nhật';
+  return 'Biến động điểm';
+}
+
+function getPointUpdateDescription(transaction: Transaction) {
+  const absolutePoints = formatPoints(Math.abs(transaction.points));
+
+  if (transaction.status === 'failed') {
+    return 'Giao dịch thất bại nên số dư điểm không thay đổi.';
+  }
+
+  if (transaction.status === 'pending') {
+    if (transaction.points > 0) {
+      return `Dự kiến cộng ${absolutePoints} điểm sau khi giao dịch được xử lý thành công.`;
+    }
+
+    if (transaction.points < 0) {
+      return `Dự kiến trừ ${absolutePoints} điểm sau khi giao dịch được xử lý thành công.`;
+    }
+
+    return 'Giao dịch đang chờ xử lý và chưa làm thay đổi số dư điểm.';
+  }
+
+  if (transaction.points > 0) {
+    return `Đã cộng ${absolutePoints} điểm vào tài khoản Loyalty.`;
+  }
+
+  if (transaction.points < 0) {
+    return `Đã trừ ${absolutePoints} điểm khỏi tài khoản Loyalty.`;
+  }
+
+  return 'Giao dịch không phát sinh biến động điểm.';
+}
+
+function getPointRuleLabel(transaction: Transaction) {
+  if (transaction.kind === 'earn') return 'Quy tắc tích điểm';
+  if (transaction.kind === 'payment') return 'Nội dung sử dụng điểm';
+  if (transaction.kind === 'redemption') return 'Nội dung đổi điểm';
+  if (transaction.kind === 'transfer') {
+    return transaction.points < 0 ? 'Nội dung chuyển điểm' : 'Nội dung nhận điểm';
+  }
+  if (transaction.kind === 'expiration') return 'Lý do hết hạn điểm';
+
+  return 'Nội dung giao dịch';
+}
+
+function getPointRuleDescription(transaction: Transaction) {
+  const absolutePoints = formatPoints(Math.abs(transaction.points));
+
+  if (transaction.kind === 'earn') {
+    if (transaction.pointRule) return transaction.pointRule;
+    return `Cộng ${absolutePoints} điểm theo quy tắc chương trình Loyalty.`;
+  }
+
+  if (transaction.kind === 'payment') {
+    return `Dùng ${absolutePoints} điểm để giảm trừ thanh toán tại ${transaction.source}.`;
+  }
+
+  if (transaction.kind === 'redemption') {
+    return `Dùng ${absolutePoints} điểm để đổi ưu đãi/voucher từ ${transaction.source}.`;
+  }
+
+  if (transaction.kind === 'transfer') {
+    if (transaction.points < 0) {
+      return `Chuyển ${absolutePoints} điểm cho ${transaction.source}.`;
+    }
+
+    return `Nhận ${absolutePoints} điểm từ ${transaction.source}.`;
+  }
+
+  if (transaction.kind === 'expiration') {
+    return `${absolutePoints} điểm hết hạn theo chính sách chương trình Loyalty.`;
+  }
+
+  return transaction.pointRule;
+}
 function DetailRow({
   label,
   value,
   icon,
+  valueColor,
 }: {
   label: string;
   value: string;
   icon?: 'card-outline';
+  valueColor?: string;
 }) {
   return (
     <View style={styles.detailRow}>
       <Text style={styles.detailLabel}>{label}</Text>
       <View style={styles.detailValueRow}>
         {icon ? <Ionicons color={colors.primary} name={icon} size={15} /> : null}
-        <Text style={styles.detailValue}>{value}</Text>
+        <Text style={[styles.detailValue, valueColor ? { color: valueColor } : null]}>
+  {value}
+</Text>
       </View>
     </View>
   );
@@ -129,6 +260,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     padding: 22,
   },
+  balanceNote: {
+  marginTop: 12,
+  borderRadius: 10,
+  backgroundColor: colors.primarySoft,
+  padding: 11,
+  color: colors.primary,
+  fontSize: 10,
+  fontWeight: '700',
+  lineHeight: 15,
+},
   statusIcon: {
     width: 58,
     height: 58,

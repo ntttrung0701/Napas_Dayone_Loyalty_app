@@ -142,3 +142,58 @@ export class TransactionLedger {
     return this.sortedTransactions.find((transaction) => transaction.id === transactionId);
   }
 }
+export type TransactionBalanceSnapshot = {
+  balanceBefore: number;
+  balanceAfter: number;
+  appliedChange: number;
+  displayChange: number;
+  isEstimated: boolean;
+};
+
+function getAppliedPointDelta(transaction: Transaction) {
+  if (transaction.status === 'failed' || transaction.status === 'pending') return 0;
+  return transaction.points;
+}
+
+export function resolveTransactionBalanceSnapshot({
+  currentPoints,
+  transaction,
+  transactions,
+}: {
+  currentPoints: number;
+  transaction: Transaction;
+  transactions: readonly Transaction[];
+}): TransactionBalanceSnapshot {
+  const sortedTransactions = [...transactions].sort(
+    (left, right) => Date.parse(right.occurredAt) - Date.parse(left.occurredAt),
+  );
+
+  let runningBalanceAfter = currentPoints;
+
+  for (const item of sortedTransactions) {
+    const appliedChange = getAppliedPointDelta(item);
+    const balanceBefore = runningBalanceAfter - appliedChange;
+
+    if (item.id === transaction.id) {
+      return {
+        balanceBefore,
+        balanceAfter: runningBalanceAfter,
+        appliedChange,
+        displayChange: item.points,
+        isEstimated: false,
+      };
+    }
+
+    runningBalanceAfter = balanceBefore;
+  }
+
+  const fallbackChange = getAppliedPointDelta(transaction);
+
+  return {
+    balanceBefore: currentPoints - fallbackChange,
+    balanceAfter: currentPoints,
+    appliedChange: fallbackChange,
+    displayChange: transaction.points,
+    isEstimated: true,
+  };
+}
