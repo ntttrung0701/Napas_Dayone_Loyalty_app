@@ -3,10 +3,19 @@ import type {
   AuthUser,
   RegistrationInput,
 } from '../domain/AuthModels';
+import { VietnamesePhoneNumber } from '../domain/AuthValidation';
 
 type UserRecord = AuthUser & { password: string };
 
-const normalize = (value: string) => value.trim().toLocaleLowerCase('vi');
+const normalize = (value: string) => {
+  const canonicalPhone = VietnamesePhoneNumber.toCanonical(value);
+
+  if (VietnamesePhoneNumber.isValid(canonicalPhone)) {
+    return canonicalPhone;
+  }
+
+  return value.trim().toLocaleLowerCase('vi');
+};
 
 export class DemoAuthRepository implements AuthRepository {
   private readonly users = new Map<string, UserRecord>();
@@ -15,7 +24,7 @@ export class DemoAuthRepository implements AuthRepository {
     this.store({
       id: '001',
       fullName: 'Nguyen Van Anh',
-      phone: '123456789',
+      phone: '0987654321',
       email: 'trung123@gmail.com',
       clientCode: '070102',
       password: 'Ntt0701@',

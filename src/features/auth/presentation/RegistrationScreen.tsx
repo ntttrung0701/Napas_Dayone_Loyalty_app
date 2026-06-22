@@ -7,6 +7,7 @@ import { colors } from '../../../theme/colors';
 import type { RegistrationInput } from '../domain/AuthModels';
 import { authScreenPresentations } from './AuthScreenPresentation';
 import { AuthField, AuthShell, DemoOtpNotice, FormError } from './AuthUi';
+import { PASSWORD_RULE_HINT } from '../domain/AuthValidation';
 
 export function RegistrationScreen({
   onBack,
@@ -38,10 +39,25 @@ export function RegistrationScreen({
       <DemoOtpNotice />
       <FormError message={error} />
       <AuthField icon="person-outline" label="Họ và tên" onChangeText={(value) => update('fullName', value)} placeholder="Nhập họ và tên" value={form.fullName} />
-      <AuthField icon="call-outline" keyboardType="phone-pad" label="Số điện thoại" onChangeText={(value) => update('phone', value)} placeholder="Nhập số điện thoại" value={form.phone} />
-      <AuthField icon="mail-outline" keyboardType="email-address" label="Email" onChangeText={(value) => update('email', value)} placeholder="Nhập email" value={form.email} />
+      <AuthField
+  icon="call-outline"
+  keyboardType="phone-pad"
+  label="Số điện thoại"
+  onChangeText={(value) => update('phone', value)}
+  placeholder="Nhập số điện thoại"
+  value={form.phone}
+/>
+      <AuthField
+  autoCapitalize="none"
+  icon="mail-outline"
+  keyboardType="email-address"
+  label="Email"
+  onChangeText={(value) => update('email', value)}
+  placeholder="Nhập email"
+  value={form.email}
+/>
       <AuthField icon="business-outline" label="CIF / Mã khách hàng" onChangeText={(value) => update('clientCode', value)} placeholder="Nhập CIF / mã khách hàng" value={form.clientCode} />
-      <AuthField icon="lock-closed-outline" label="Mật khẩu" onChangeText={(value) => update('password', value)} onToggleSecure={() => setSecure((current) => !current)} placeholder="Tối thiểu 6 ký tự" secureTextEntry={secure} value={form.password} />
+      <AuthField icon="lock-closed-outline" label="Mật khẩu" onChangeText={(value) => update('password', value)} onToggleSecure={() => setSecure((current) => !current)} placeholder={PASSWORD_RULE_HINT} secureTextEntry={secure} value={form.password} />
       <AuthField icon="lock-closed-outline" label="Nhập lại mật khẩu" onChangeText={(value) => update('confirmPassword', value)} onToggleSecure={() => setSecure((current) => !current)} placeholder="Nhập lại mật khẩu" secureTextEntry={secure} value={form.confirmPassword} />
       <Pressable
         accessibilityRole="checkbox"

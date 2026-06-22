@@ -44,7 +44,7 @@ export function NapasLoginScreen({
     }
   }, [initialIdentifier, initialRemember]);
 
-  const valid = account.trim().length > 0 && password.length >= 6;
+  const valid = account.trim().length > 0 && password.length >= 8;
   const submit = async () => {
     if (!valid || loading) return;
     setLoading(true);

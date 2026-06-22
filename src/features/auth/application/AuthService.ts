@@ -13,11 +13,12 @@ import {
   type OtpChallenge,
   type RegistrationInput,
 } from '../domain/AuthModels';
+import { AuthValidator } from '../domain/AuthValidation';
+
 
 export const DEMO_OTP = '123749';
 
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const phonePattern = /^\d{9,11}$/;
+
 
 export class AuthService {
   private pendingRegistration: RegistrationInput | null = null;
@@ -35,48 +36,61 @@ export class AuthService {
     return this.storage.getIdentifier();
   }
 
-  async login(input: LoginInput): Promise<AuthUser> {
-    const identifier = input.identifier.trim();
-    if (!identifier) throw new AuthError('Vui lòng nhập số điện thoại, email hoặc mã CIF.');
-    if (input.password.length < 6) throw new AuthError('Mật khẩu phải có ít nhất 6 ký tự.');
+async login(input: LoginInput): Promise<AuthUser> {
+  const validatedInput = AuthValidator.validateLogin(input);
 
-    const user = await this.repository.authenticate(identifier, input.password);
-    if (!user) throw new AuthError('Tài khoản hoặc mật khẩu không chính xác.');
+  const user = await this.repository.authenticate(
+    validatedInput.identifier,
+    validatedInput.password,
+  );
 
-    if (input.rememberIdentifier) await this.storage.saveIdentifier(identifier);
-    else await this.storage.clearIdentifier();
-    return user;
+  if (!user) throw new AuthError('Tài khoản hoặc mật khẩu không chính xác.');
+
+  if (validatedInput.rememberIdentifier) {
+    await this.storage.saveIdentifier(validatedInput.identifier);
+  } else {
+    await this.storage.clearIdentifier();
   }
+
+  return user;
+}
 
   async beginRegistration(input: RegistrationInput): Promise<OtpChallenge> {
-    this.validateRegistration(input);
-    if (await this.repository.identifierExists(input.phone)) {
-      throw new AuthError('Số điện thoại đã được đăng ký.');
-    }
-    if (await this.repository.identifierExists(input.email)) {
-      throw new AuthError('Email đã được đăng ký.');
-    }
-    if (await this.repository.identifierExists(input.clientCode)) {
-      throw new AuthError('Mã CIF đã được sử dụng.');
-    }
+  const validatedInput = AuthValidator.validateRegistration(input);
 
-    this.pendingRegistration = { ...input };
-    this.pendingResetUserId = null;
-    return this.createChallenge('registration', input.phone);
+  if (await this.repository.identifierExists(validatedInput.phone)) {
+    throw new AuthError('Số điện thoại đã được đăng ký.');
   }
 
-  async beginPasswordReset(input: ForgotPasswordInput): Promise<OtpChallenge> {
-    const phone = input.phone.replace(/\s/g, '');
-    if (!phonePattern.test(phone)) throw new AuthError('Số điện thoại không hợp lệ.');
-    if (input.clientCode.trim().length < 3) throw new AuthError('Vui lòng nhập đúng mã CIF/khách hàng.');
-
-    const user = await this.repository.findForPasswordReset(phone, input.clientCode);
-    if (!user) throw new AuthError('Không tìm thấy tài khoản phù hợp.');
-
-    this.pendingRegistration = null;
-    this.pendingResetUserId = user.id;
-    return this.createChallenge('password-reset', phone);
+  if (await this.repository.identifierExists(validatedInput.email)) {
+    throw new AuthError('Email đã được đăng ký.');
   }
+
+  if (await this.repository.identifierExists(validatedInput.clientCode)) {
+    throw new AuthError('Mã CIF đã được sử dụng.');
+  }
+
+  this.pendingRegistration = { ...validatedInput };
+  this.pendingResetUserId = null;
+
+  return this.createChallenge('registration', validatedInput.phone);
+}
+
+async beginPasswordReset(input: ForgotPasswordInput): Promise<OtpChallenge> {
+  const validatedInput = AuthValidator.validatePasswordResetRequest(input);
+
+  const user = await this.repository.findForPasswordReset(
+    validatedInput.phone,
+    validatedInput.clientCode,
+  );
+
+  if (!user) throw new AuthError('Không tìm thấy tài khoản phù hợp.');
+
+  this.pendingRegistration = null;
+  this.pendingResetUserId = user.id;
+
+  return this.createChallenge('password-reset', validatedInput.phone);
+}
 
   resendOtp(): OtpChallenge {
     if (!this.currentChallenge) throw new AuthError('Phiên xác thực OTP đã hết hạn.');
@@ -100,14 +114,16 @@ export class AuthService {
     return null;
   }
 
-  async resetPassword(password: string, confirmPassword: string): Promise<void> {
-    if (!this.pendingResetUserId) throw new AuthError('Yêu cầu đặt lại mật khẩu không còn hiệu lực.');
-    if (password.length < 6) throw new AuthError('Mật khẩu mới phải có ít nhất 6 ký tự.');
-    if (password !== confirmPassword) throw new AuthError('Mật khẩu nhập lại không khớp.');
-
-    await this.repository.updatePassword(this.pendingResetUserId, password);
-    this.pendingResetUserId = null;
+async resetPassword(password: string, confirmPassword: string): Promise<void> {
+  if (!this.pendingResetUserId) {
+    throw new AuthError('Yêu cầu đặt lại mật khẩu không còn hiệu lực.');
   }
+
+  const validatedPassword = AuthValidator.validateNewPassword(password, confirmPassword);
+
+  await this.repository.updatePassword(this.pendingResetUserId, validatedPassword);
+  this.pendingResetUserId = null;
+}
 
   getBiometricCapabilities(): Promise<BiometricCapabilities> {
     return this.biometric.getCapabilities();
@@ -138,13 +154,4 @@ export class AuthService {
     return { ...this.currentChallenge };
   }
 
-  private validateRegistration(input: RegistrationInput) {
-    if (input.fullName.trim().length < 2) throw new AuthError('Vui lòng nhập họ và tên.');
-    if (!phonePattern.test(input.phone.replace(/\s/g, ''))) throw new AuthError('Số điện thoại không hợp lệ.');
-    if (!emailPattern.test(input.email.trim())) throw new AuthError('Email không hợp lệ.');
-    if (input.clientCode.trim().length < 3) throw new AuthError('Mã CIF/khách hàng phải có ít nhất 3 ký tự.');
-    if (input.password.length < 6) throw new AuthError('Mật khẩu phải có ít nhất 6 ký tự.');
-    if (input.password !== input.confirmPassword) throw new AuthError('Mật khẩu nhập lại không khớp.');
-    if (!input.acceptedTerms) throw new AuthError('Bạn cần đồng ý với điều khoản và chính sách.');
-  }
 }
