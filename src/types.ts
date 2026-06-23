@@ -47,6 +47,11 @@ export type UserVoucher = {
   status: UserVoucherStatus;
   issuedAt: string;
   expiresAt: string;
+  expiresLabel: string;
+  description: string;
+  terms: string[];
+  pointsUsed: number;
+  transactionId: string;
 };
 
 
@@ -86,4 +91,5 @@ export type Receipt = {
   pointsUsed: number;
   cashAmount: number;
   createdAt: string;
+  voucher?: UserVoucher;
 };

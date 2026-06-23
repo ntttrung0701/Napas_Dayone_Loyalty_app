@@ -28,6 +28,7 @@ import { offers, seedNotifications, seedTransactions } from './src/mock/data';
 import { NavigationStack } from './src/navigation/NavigationStack';
 import { colors } from './src/theme/colors';
 import { HistoryScreen } from './src/features/history/HistoryScreen';
+
 import type {
   AppScreen,
   LoyaltyNotification,
@@ -46,6 +47,7 @@ export default function App() {
   const [selectedVoucher, setSelectedVoucher] = useState<UserVoucher | null>(null);
 
   const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const [vouchers, setVouchers] = useState<UserVoucher[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>(seedTransactions);
   const [notifications, setNotifications] =
     useState<LoyaltyNotification[]>(seedNotifications);
@@ -82,12 +84,44 @@ export default function App() {
     );
   };
 
-  const createVoucherFromOffer = (offer: Offer): UserVoucher => {
+  const createVoucherExpiry = (offer: Offer) => {
+  if (offer.expiresAt.includes('30 ngày')) {
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    return {
+      expiresAt: expiresAt.toISOString(),
+      expiresLabel: '30 ngày kể từ lúc đổi',
+    };
+  }
+
+  const match = offer.expiresAt.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+
+  if (match) {
+    const [, day, month, year] = match;
+    const expiresAt = new Date(Number(year), Number(month) - 1, Number(day), 23, 59, 59);
+
+    return {
+      expiresAt: expiresAt.toISOString(),
+      expiresLabel: offer.expiresAt,
+    };
+  }
+
+  const fallback = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+  return {
+    expiresAt: fallback.toISOString(),
+    expiresLabel: offer.expiresAt,
+  };
+};
+
+const createVoucherFromOffer = (offer: Offer, transactionId: string): UserVoucher => {
   const codeByOfferId: Record<string, string> = {
     'highlands-50': 'HIGHLANDS50',
     'winmart-10': 'WINMART10',
     'travel-100': 'TRAVEL100',
   };
+
+  const { expiresAt, expiresLabel } = createVoucherExpiry(offer);
 
   return {
     id: `VC-${Date.now().toString().slice(-6)}`,
@@ -97,40 +131,53 @@ export default function App() {
     code: codeByOfferId[offer.id] ?? `VC${Date.now().toString().slice(-6)}`,
     status: 'active',
     issuedAt: new Date().toISOString(),
-    expiresAt: offer.expiresAt,
+    expiresAt,
+    expiresLabel,
+    description: offer.description,
+    terms: [
+      `Hạn sử dụng: ${expiresLabel}.`,
+      'Mỗi hóa đơn áp dụng tối đa một voucher.',
+      'Không quy đổi thành tiền mặt.',
+    ],
+    pointsUsed: offer.points,
+    transactionId,
   };
 };
 
   const completeRedemption = (offer: Offer) => {
-    const nextReceipt: Receipt = {
-      id: `NPS-RD-${Date.now().toString().slice(-6)}`,
-      kind: 'redemption',
-      merchant: offer.partner,
-      title: offer.title,
-      originalAmount: 0,
-      voucherDiscount: 0,
-      pointsUsed: offer.points,
-      cashAmount: 0,
-      createdAt: 'Hôm nay, 09:41',
-    };
-    const nextVoucher = createVoucherFromOffer(offer);
+  const receiptId = `NPS-RD-${Date.now().toString().slice(-6)}`;
+  const nextVoucher = createVoucherFromOffer(offer, receiptId);
 
-
-    setPoints((current) => current - offer.points);
-    setReceipt(nextReceipt);
-    setTransactions((current) => [
-      TransactionFactory.fromReceipt(nextReceipt, {
-        title: `Đổi ${offer.title}`,
-        subtitle: offer.partner,
-        kind: 'redemption',
-        points: -offer.points,
-        source: offer.partner,
-      }),
-      ...current,
-    ]);
-    setSelectedVoucher(nextVoucher);
-    navigate('receipt');
+  const nextReceipt: Receipt = {
+    id: receiptId,
+    kind: 'redemption',
+    merchant: offer.partner,
+    title: offer.title,
+    originalAmount: 0,
+    voucherDiscount: 0,
+    pointsUsed: offer.points,
+    cashAmount: 0,
+    createdAt: 'Hôm nay, 09:41',
+    voucher: nextVoucher,
   };
+
+  setPoints((current) => current - offer.points);
+  setReceipt(nextReceipt);
+  setVouchers((current) => [nextVoucher, ...current]);
+
+  setTransactions((current) => [
+    TransactionFactory.fromReceipt(nextReceipt, {
+      title: `Đổi ${offer.title}`,
+      subtitle: offer.partner,
+      kind: 'redemption',
+      points: -offer.points,
+      source: offer.partner,
+    }),
+    ...current,
+  ]);
+
+  navigate('receipt');
+};
 
   const completePayment = (nextReceipt: Receipt) => {
     setPoints((current) => current - nextReceipt.pointsUsed);
