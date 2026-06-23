@@ -45,7 +45,7 @@ export function AuthShell({
                 </Pressable>
               ) : null}
             </View>
-            <BrandLogo width={100} />
+            <BrandLogo width={140} />
             <View style={ui.headerSide} />
           </View>
           <AuthHeading presentation={presentation} />
