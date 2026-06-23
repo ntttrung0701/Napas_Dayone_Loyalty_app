@@ -11,7 +11,8 @@ export type AppScreen =
   | 'cards'
   | 'history'
   | 'transaction-detail'
-  | 'receipt';
+  | 'receipt'
+  | 'voucher-qr';
 
 export type NotificationCategory = 'transaction' | 'offer' | 'system';
 
@@ -35,6 +36,19 @@ export type Offer = {
   accent: string;
   expiresAt: string;
 };
+export type UserVoucherStatus = 'active' | 'used' | 'expired';
+
+export type UserVoucher = {
+  id: string;
+  offerId: string;
+  title: string;
+  partner: string;
+  code: string;
+  status: UserVoucherStatus;
+  issuedAt: string;
+  expiresAt: string;
+};
+
 
 export type TransactionKind = 'earn' | 'redemption' | 'transfer' | 'expiration' | 'payment';
 

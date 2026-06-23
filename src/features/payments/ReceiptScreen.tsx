@@ -11,9 +11,15 @@ type ReceiptScreenProps = {
   receipt: Receipt | null;
   onHome: () => void;
   onViewHistory: () => void;
+  onViewVoucherQr?: () => void;
 };
 
-export function ReceiptScreen({ receipt, onHome, onViewHistory }: ReceiptScreenProps) {
+export function ReceiptScreen({
+  receipt,
+  onHome,
+  onViewHistory,
+  onViewVoucherQr,
+}: ReceiptScreenProps)  {
   if (!receipt) {
     return (
       <View style={styles.empty}>
@@ -76,10 +82,19 @@ export function ReceiptScreen({ receipt, onHome, onViewHistory }: ReceiptScreenP
       </View>
 
       <View style={styles.actions}>
-        <PrimaryButton label="Về trang chủ" onPress={onHome} />
-        <View style={styles.actionSpacer} />
-        <PrimaryButton label="Xem lịch sử" onPress={onViewHistory} variant="secondary" />
-      </View>
+  {receipt.kind === 'redemption' && onViewVoucherQr ? (
+    <>
+      <PrimaryButton label="Hiển thị QR voucher" onPress={onViewVoucherQr} />
+      <View style={styles.actionSpacer} />
+    </>
+  ) : null}
+
+  <PrimaryButton label="Về trang chủ" onPress={onHome} />
+
+  <View style={styles.actionSpacer} />
+
+  <PrimaryButton label="Xem lịch sử" onPress={onViewHistory} variant="secondary" />
+</View>
     </ScrollView>
   );
 }

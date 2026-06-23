@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 
+import { VoucherQrScreen } from './src/features/vouchers/VoucherQrScreen';
 import { AuthFlow } from './src/features/auth/AuthFlow';
 import { CardsScreen } from './src/features/cards/CardsScreen';
 import { TransactionFactory } from './src/features/history/domain/TransactionFactory';
@@ -33,6 +34,7 @@ import type {
   Offer,
   Receipt,
   Transaction,
+  UserVoucher,
 } from './src/types';
 
 const initialRoute: AppScreen = 'splash';
@@ -41,6 +43,8 @@ export default function App() {
   const [navigation, setNavigation] = useState(() => NavigationStack.start(initialRoute));
   const [points, setPoints] = useState(128_450);
   const [selectedOffer, setSelectedOffer] = useState<Offer>(offers[0]!);
+  const [selectedVoucher, setSelectedVoucher] = useState<UserVoucher | null>(null);
+
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>(seedTransactions);
   const [notifications, setNotifications] =
@@ -78,6 +82,25 @@ export default function App() {
     );
   };
 
+  const createVoucherFromOffer = (offer: Offer): UserVoucher => {
+  const codeByOfferId: Record<string, string> = {
+    'highlands-50': 'HIGHLANDS50',
+    'winmart-10': 'WINMART10',
+    'travel-100': 'TRAVEL100',
+  };
+
+  return {
+    id: `VC-${Date.now().toString().slice(-6)}`,
+    offerId: offer.id,
+    title: offer.title,
+    partner: offer.partner,
+    code: codeByOfferId[offer.id] ?? `VC${Date.now().toString().slice(-6)}`,
+    status: 'active',
+    issuedAt: new Date().toISOString(),
+    expiresAt: offer.expiresAt,
+  };
+};
+
   const completeRedemption = (offer: Offer) => {
     const nextReceipt: Receipt = {
       id: `NPS-RD-${Date.now().toString().slice(-6)}`,
@@ -90,6 +113,8 @@ export default function App() {
       cashAmount: 0,
       createdAt: 'Hôm nay, 09:41',
     };
+    const nextVoucher = createVoucherFromOffer(offer);
+
 
     setPoints((current) => current - offer.points);
     setReceipt(nextReceipt);
@@ -103,6 +128,7 @@ export default function App() {
       }),
       ...current,
     ]);
+    setSelectedVoucher(nextVoucher);
     navigate('receipt');
   };
 
@@ -152,6 +178,7 @@ export default function App() {
 
   const renderScreen = (route: AppScreen) => {
     switch (route) {
+      
       case 'splash':
         return <SplashScreen onFinished={() => replace('onboarding')} />;
       case 'onboarding':
@@ -194,6 +221,8 @@ export default function App() {
             points={points}
           />
         );
+        case 'voucher-qr':
+  return <VoucherQrScreen onBack={goBack} voucher={selectedVoucher} />;
       case 'transfer':
         return (
           <TransferScreen
@@ -218,10 +247,11 @@ case 'history':
 case 'receipt':
   return (
     <ReceiptScreen
-      receipt={receipt}
-      onHome={() => setNavigation((current) => current.reset('home'))}
-      onViewHistory={() => setNavigation(NavigationStack.path(['home', 'history']))}
-    />
+  receipt={receipt}
+  onHome={() => setNavigation((current) => current.reset('home'))}
+  onViewHistory={() => setNavigation(NavigationStack.path(['home', 'history']))}
+  onViewVoucherQr={() => navigate('voucher-qr')}
+/>
   );
 
 case 'notifications':
