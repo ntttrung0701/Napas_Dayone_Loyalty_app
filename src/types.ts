@@ -12,6 +12,8 @@ export type AppScreen =
   | 'history'
   | 'transaction-detail'
   | 'receipt'
+  | 'voucher-wallet'
+  | 'voucher-detail'
   | 'voucher-qr';
 
 export type NotificationCategory = 'transaction' | 'offer' | 'system';
@@ -52,6 +54,7 @@ export type UserVoucher = {
   terms: string[];
   pointsUsed: number;
   transactionId: string;
+  usedAt?: string;
 };
 
 

@@ -3,16 +3,14 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useMemo } from 'react';
 import QRCode from 'react-native-qrcode-svg';
 import { PrimaryButton } from '../../shared/components/PrimaryButton';
-import { BrandLogo } from '../../shared/components/BrandLogo';
 import { colors } from '../../theme/colors';
-import type { Receipt,UserVoucher } from '../../types';
+import type { Receipt, UserVoucher } from '../../types';
 import { formatCurrency, formatPoints } from '../../utils/format';
 
 type ReceiptScreenProps = {
   receipt: Receipt | null;
   onHome: () => void;
-  onViewHistory: () => void;
-  onViewVoucherQr?: () => void;
+  onViewVoucherWallet: () => void;
 };
 
 type VoucherQrPayload = {
@@ -44,9 +42,8 @@ function getVoucherStatusLabel(voucher: UserVoucher) {
 export function ReceiptScreen({
   receipt,
   onHome,
-  onViewHistory,
-  onViewVoucherQr,
-}: ReceiptScreenProps)  {
+  onViewVoucherWallet,
+}: ReceiptScreenProps) {
   if (!receipt) {
     return (
       <View style={styles.empty}>
@@ -155,12 +152,15 @@ const voucherUnavailable = voucher ? voucher.status !== 'active' || isVoucherExp
       </View>
 
       <View style={styles.actions}>
-
   <PrimaryButton label="Về trang chủ" onPress={onHome} />
 
   <View style={styles.actionSpacer} />
 
-  <PrimaryButton label="Xem lịch sử" onPress={onViewHistory} variant="secondary" />
+  <PrimaryButton
+    label="Xem kho voucher"
+    onPress={onViewVoucherWallet}
+    variant="secondary"
+  />
 </View>
     </ScrollView>
   );

@@ -8,9 +8,9 @@ import {
   View,
 } from 'react-native';
 
-import { VoucherQrScreen } from './src/features/vouchers/VoucherQrScreen';
 import { AuthFlow } from './src/features/auth/AuthFlow';
 import { CardsScreen } from './src/features/cards/CardsScreen';
+import { HistoryScreen } from './src/features/history/HistoryScreen';
 import { TransactionFactory } from './src/features/history/domain/TransactionFactory';
 import { TransactionDetailScreen } from './src/features/history/TransactionDetailScreen';
 import { HomeScreen } from './src/features/home/HomeScreen';
@@ -24,11 +24,18 @@ import { ProfileScreen } from './src/features/profile/ProfileScreen';
 import { QrScreen } from './src/features/qr/QrScreen';
 import { SplashScreen } from './src/features/splash/SplashScreen';
 import { TransferScreen } from './src/features/transfer/TransferScreen';
-import { offers, seedNotifications, seedTransactions } from './src/mock/data';
+import { VoucherFactory } from './src/features/vouchers/domain/VoucherFactory';
+import { VoucherDetailScreen } from './src/features/vouchers/VoucherDetailScreen';
+import { VoucherQrScreen } from './src/features/vouchers/VoucherQrScreen';
+import { VoucherWalletScreen } from './src/features/vouchers/VoucherWalletScreen';
+import {
+  offers,
+  seedNotifications,
+  seedTransactions,
+  seedUserVouchers,
+} from './src/mock/data';
 import { NavigationStack } from './src/navigation/NavigationStack';
 import { colors } from './src/theme/colors';
-import { HistoryScreen } from './src/features/history/HistoryScreen';
-
 import type {
   AppScreen,
   LoyaltyNotification,
@@ -43,22 +50,34 @@ const initialRoute: AppScreen = 'splash';
 export default function App() {
   const [navigation, setNavigation] = useState(() => NavigationStack.start(initialRoute));
   const [points, setPoints] = useState(128_450);
-  const [selectedOffer, setSelectedOffer] = useState<Offer>(offers[0]!);
-  const [selectedVoucher, setSelectedVoucher] = useState<UserVoucher | null>(null);
 
+  const [selectedOffer, setSelectedOffer] = useState<Offer>(offers[0]!);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
-  const [vouchers, setVouchers] = useState<UserVoucher[]>([]);
+
+  const [vouchers, setVouchers] = useState<UserVoucher[]>(seedUserVouchers);
+  const [selectedVoucher, setSelectedVoucher] = useState<UserVoucher | null>(
+    seedUserVouchers[0] ?? null,
+  );
+
   const [transactions, setTransactions] = useState<Transaction[]>(seedTransactions);
-  const [notifications, setNotifications] =
-    useState<LoyaltyNotification[]>(seedNotifications);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction>(seedTransactions[0]!);
 
-  const navigate = (route: AppScreen) =>
+  const [notifications, setNotifications] =
+    useState<LoyaltyNotification[]>(seedNotifications);
+
+  const navigate = (route: AppScreen) => {
     setNavigation((current) => current.push(route));
-  const replace = (route: AppScreen) =>
+  };
+
+  const replace = (route: AppScreen) => {
     setNavigation((current) => current.replace(route));
-  const goBack = () =>
+  };
+
+  const goBack = () => {
     setNavigation((current) => current.backPreservingState());
+  };
+
+  const unreadNotifications = notifications.filter((notification) => !notification.isRead).length;
 
   const openOffer = (offer: Offer) => {
     setSelectedOffer(offer);
@@ -68,6 +87,30 @@ export default function App() {
   const openTransaction = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
     navigate('transaction-detail');
+  };
+
+  const openVoucher = (voucher: UserVoucher) => {
+    setSelectedVoucher(voucher);
+    navigate('voucher-detail');
+  };
+
+  const openVoucherQr = (voucher: UserVoucher) => {
+    setSelectedVoucher(voucher);
+    navigate('voucher-qr');
+  };
+
+  const markVoucherUsed = (voucherId: string) => {
+    const usedAt = new Date().toISOString();
+
+    setVouchers((current) =>
+      current.map((voucher) =>
+        voucher.id === voucherId ? { ...voucher, status: 'used', usedAt } : voucher,
+      ),
+    );
+
+    setSelectedVoucher((current) =>
+      current?.id === voucherId ? { ...current, status: 'used', usedAt } : current,
+    );
   };
 
   const markNotificationRead = (notificationId: string) => {
@@ -84,104 +127,46 @@ export default function App() {
     );
   };
 
-  const createVoucherExpiry = (offer: Offer) => {
-  if (offer.expiresAt.includes('30 ngày')) {
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-
-    return {
-      expiresAt: expiresAt.toISOString(),
-      expiresLabel: '30 ngày kể từ lúc đổi',
-    };
-  }
-
-  const match = offer.expiresAt.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-
-  if (match) {
-    const [, day, month, year] = match;
-    const expiresAt = new Date(Number(year), Number(month) - 1, Number(day), 23, 59, 59);
-
-    return {
-      expiresAt: expiresAt.toISOString(),
-      expiresLabel: offer.expiresAt,
-    };
-  }
-
-  const fallback = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-
-  return {
-    expiresAt: fallback.toISOString(),
-    expiresLabel: offer.expiresAt,
-  };
-};
-
-const createVoucherFromOffer = (offer: Offer, transactionId: string): UserVoucher => {
-  const codeByOfferId: Record<string, string> = {
-    'highlands-50': 'HIGHLANDS50',
-    'winmart-10': 'WINMART10',
-    'travel-100': 'TRAVEL100',
-  };
-
-  const { expiresAt, expiresLabel } = createVoucherExpiry(offer);
-
-  return {
-    id: `VC-${Date.now().toString().slice(-6)}`,
-    offerId: offer.id,
-    title: offer.title,
-    partner: offer.partner,
-    code: codeByOfferId[offer.id] ?? `VC${Date.now().toString().slice(-6)}`,
-    status: 'active',
-    issuedAt: new Date().toISOString(),
-    expiresAt,
-    expiresLabel,
-    description: offer.description,
-    terms: [
-      `Hạn sử dụng: ${expiresLabel}.`,
-      'Mỗi hóa đơn áp dụng tối đa một voucher.',
-      'Không quy đổi thành tiền mặt.',
-    ],
-    pointsUsed: offer.points,
-    transactionId,
-  };
-};
-
   const completeRedemption = (offer: Offer) => {
-  const receiptId = `NPS-RD-${Date.now().toString().slice(-6)}`;
-  const nextVoucher = createVoucherFromOffer(offer, receiptId);
+    const receiptId = `NPS-RD-${Date.now().toString().slice(-6)}`;
+    const nextVoucher = VoucherFactory.fromOffer(offer, receiptId);
 
-  const nextReceipt: Receipt = {
-    id: receiptId,
-    kind: 'redemption',
-    merchant: offer.partner,
-    title: offer.title,
-    originalAmount: 0,
-    voucherDiscount: 0,
-    pointsUsed: offer.points,
-    cashAmount: 0,
-    createdAt: 'Hôm nay, 09:41',
-    voucher: nextVoucher,
-  };
-
-  setPoints((current) => current - offer.points);
-  setReceipt(nextReceipt);
-  setVouchers((current) => [nextVoucher, ...current]);
-
-  setTransactions((current) => [
-    TransactionFactory.fromReceipt(nextReceipt, {
-      title: `Đổi ${offer.title}`,
-      subtitle: offer.partner,
+    const nextReceipt: Receipt = {
+      id: receiptId,
       kind: 'redemption',
-      points: -offer.points,
-      source: offer.partner,
-    }),
-    ...current,
-  ]);
+      merchant: offer.partner,
+      title: offer.title,
+      originalAmount: 0,
+      voucherDiscount: 0,
+      pointsUsed: offer.points,
+      cashAmount: 0,
+      createdAt: 'Hôm nay, 09:41',
+      voucher: nextVoucher,
+    };
 
-  navigate('receipt');
-};
+    setPoints((current) => current - offer.points);
+    setReceipt(nextReceipt);
+    setSelectedVoucher(nextVoucher);
+    setVouchers((current) => [nextVoucher, ...current]);
+
+    setTransactions((current) => [
+      TransactionFactory.fromReceipt(nextReceipt, {
+        title: `Đổi ${offer.title}`,
+        subtitle: offer.partner,
+        kind: 'redemption',
+        points: -offer.points,
+        source: offer.partner,
+      }),
+      ...current,
+    ]);
+
+    navigate('receipt');
+  };
 
   const completePayment = (nextReceipt: Receipt) => {
     setPoints((current) => current - nextReceipt.pointsUsed);
     setReceipt(nextReceipt);
+
     setTransactions((current) => [
       TransactionFactory.fromReceipt(nextReceipt, {
         title: `Thanh toán ${nextReceipt.merchant}`,
@@ -192,6 +177,7 @@ const createVoucherFromOffer = (offer: Offer, transactionId: string): UserVouche
       }),
       ...current,
     ]);
+
     navigate('receipt');
   };
 
@@ -210,6 +196,7 @@ const createVoucherFromOffer = (offer: Offer, transactionId: string): UserVouche
 
     setPoints((current) => current - amount);
     setReceipt(nextReceipt);
+
     setTransactions((current) => [
       TransactionFactory.fromReceipt(nextReceipt, {
         title: nextReceipt.title,
@@ -220,129 +207,160 @@ const createVoucherFromOffer = (offer: Offer, transactionId: string): UserVouche
       }),
       ...current,
     ]);
+
     navigate('receipt');
   };
 
   const renderScreen = (route: AppScreen) => {
     switch (route) {
-      
       case 'splash':
         return <SplashScreen onFinished={() => replace('onboarding')} />;
+
       case 'onboarding':
         return <OnboardingScreen onContinue={() => replace('login')} />;
+
       case 'login':
         return <AuthFlow onAuthenticated={() => replace('home')} />;
+
       case 'offers':
         return (
           <OffersScreen
             activeTab="offers"
+            points={points}
+            unreadNotifications={unreadNotifications}
             onNavigate={navigate}
             onSelectOffer={openOffer}
-            points={points}
-            unreadNotifications={notifications.filter((notification) => !notification.isRead).length}
           />
         );
+
       case 'offer-detail':
         return (
           <OfferDetailScreen
             offer={selectedOffer}
+            points={points}
             onBack={goBack}
             onRedeem={completeRedemption}
-            points={points}
           />
         );
+
       case 'payment':
-        return (
-          <PaymentScreen
-            onBack={goBack}
-            onComplete={completePayment}
-            points={points}
-          />
-        );
+        return <PaymentScreen points={points} onBack={goBack} onComplete={completePayment} />;
+
       case 'qr':
         return (
           <QrScreen
             activeTab="qr"
+            points={points}
             onBack={goBack}
             onNavigate={navigate}
-            points={points}
           />
         );
-        case 'voucher-qr':
-  return <VoucherQrScreen onBack={goBack} voucher={selectedVoucher} />;
+
       case 'transfer':
         return (
           <TransferScreen
+            points={points}
             onBack={goBack}
             onComplete={completeTransfer}
-            points={points}
           />
         );
+
       case 'cards':
-  return <CardsScreen onBack={goBack} />;
+        return <CardsScreen onBack={goBack} />;
 
-case 'history':
-  return (
-    <HistoryScreen
-      onBack={goBack}
-      onNavigate={navigate}
-      onSelectTransaction={openTransaction}
-      transactions={transactions}
-    />
-  );
+      case 'history':
+        return (
+          <HistoryScreen
+            transactions={transactions}
+            onBack={goBack}
+            onNavigate={navigate}
+            onSelectTransaction={openTransaction}
+          />
+        );
 
-case 'receipt':
+      case 'receipt':
   return (
     <ReceiptScreen
-  receipt={receipt}
-  onHome={() => setNavigation((current) => current.reset('home'))}
-  onViewHistory={() => setNavigation(NavigationStack.path(['home', 'history']))}
-  onViewVoucherQr={() => navigate('voucher-qr')}
-/>
-  );
-
-case 'notifications':
-  return (
-    <NotificationsScreen
-      notifications={notifications}
-      onBack={goBack}
-      onMarkAllRead={markAllNotificationsRead}
-      onMarkRead={markNotificationRead}
-      onNavigate={navigate}
-      onSelectTransaction={openTransaction}
-      transactions={transactions}
-    />
-  );
-  
-  case 'profile':
-  return (
-    <ProfileScreen
-      activeTab="profile"
-      points={points}
-      onBack={goBack}
-      onLogout={() => setNavigation((current) => current.reset('login'))}
-      onNavigate={navigate}
+      receipt={receipt}
+      onHome={() => setNavigation((current) => current.reset('home'))}
+      onViewVoucherWallet={() =>
+        setNavigation(NavigationStack.path(['home', 'voucher-wallet']))
+      }
     />
   );
 
-case 'transaction-detail':
-  return (
-    <TransactionDetailScreen
-      currentPoints={points}
-      onBack={goBack}
-      transaction={selectedTransaction}
-      transactions={transactions}
-    />
-  );
+      case 'voucher-wallet':
+        return (
+          <VoucherWalletScreen
+            activeTab="offers"
+            vouchers={vouchers}
+            onBack={goBack}
+            onNavigate={navigate}
+            onSelectVoucher={openVoucher}
+          />
+        );
+
+      case 'voucher-detail':
+        return (
+          <VoucherDetailScreen
+            voucher={selectedVoucher}
+            onBack={goBack}
+            onUseVoucher={openVoucherQr}
+          />
+        );
+
+      case 'voucher-qr':
+        return (
+          <VoucherQrScreen
+            voucher={selectedVoucher}
+            onBack={goBack}
+            onMarkUsed={markVoucherUsed}
+          />
+        );
+
+      case 'notifications':
+        return (
+          <NotificationsScreen
+            notifications={notifications}
+            transactions={transactions}
+            onBack={goBack}
+            onMarkAllRead={markAllNotificationsRead}
+            onMarkRead={markNotificationRead}
+            onNavigate={navigate}
+            onSelectTransaction={openTransaction}
+          />
+        );
+
+      case 'profile':
+        return (
+          <ProfileScreen
+            activeTab="profile"
+            points={points}
+            onBack={goBack}
+            onLogout={() => setNavigation((current) => current.reset('login'))}
+            onNavigate={navigate}
+          />
+        );
+
+      case 'transaction-detail':
+        return (
+          <TransactionDetailScreen
+            currentPoints={points}
+            transaction={selectedTransaction}
+            transactions={transactions}
+            onBack={goBack}
+          />
+        );
+
       case 'home':
       default:
         return (
           <HomeScreen
-            onNavigate={navigate}
-            onSelectTransaction={openTransaction}
             points={points}
             transactions={transactions}
-            unreadNotifications={notifications.filter((notification) => !notification.isRead).length}
+            unreadNotifications={unreadNotifications}
+            onNavigate={navigate}
+            onSelectTransaction={openTransaction}
           />
         );
     }
@@ -351,16 +369,16 @@ case 'transaction-detail':
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
+
       <View style={styles.screenStack}>
         {navigation.items.map((entry, index) => {
           const active = index === navigation.items.length - 1;
+
           return (
             <View
-              accessibilityElementsHidden={!active}
-              importantForAccessibility={active ? 'auto' : 'no-hide-descendants'}
               key={entry.instanceKey}
               pointerEvents={active ? 'auto' : 'none'}
-              style={[styles.screen, { opacity: active ? 1 : 0, zIndex: index }]}
+              style={[styles.screen, !active && { display: 'none' }]}
             >
               {renderScreen(entry.screen)}
             </View>

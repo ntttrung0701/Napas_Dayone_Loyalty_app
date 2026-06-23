@@ -48,6 +48,7 @@ export function OffersScreen({
 }: OffersScreenProps) {
   const [selectedCategory, setSelectedCategory] = useState<OfferCategory>('Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
+
   const filteredOffers = useMemo(
     () => offerCatalog.query(selectedCategory, searchQuery),
     [searchQuery, selectedCategory],
@@ -59,68 +60,81 @@ export function OffersScreen({
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>NA</Text>
         </View>
+
         <View style={styles.brand}>
-          <BrandLogo width={102} />
+          <BrandLogo width={112} />
         </View>
+
         <Pressable
-          accessibilityLabel="Mở thông báo"
-          accessibilityRole="button"
           onPress={() => onNavigate('notifications')}
           style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}
         >
-          <Ionicons color={colors.textMuted} name="notifications-outline" size={21} />
+          <Ionicons color={colors.text} name="notifications-outline" size={22} />
+
           {unreadNotifications ? <View style={styles.notificationDot} /> : null}
         </Pressable>
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.titleRow}>
-          <Text style={styles.pageTitle}>Ưu đãi & Quà tặng</Text>
-          <Text style={styles.balanceLabel}>
-            Điểm: <Text style={styles.balanceValue}>{formatPoints(points)} pts</Text>
-          </Text>
+          <View>
+            <Text style={styles.pageTitle}>Ưu đãi & Quà tặng</Text>
+            <Text style={styles.pageSubtitle}>Đổi điểm hoặc sử dụng voucher đã có</Text>
+          </View>
+
+          <View style={styles.balanceBox}>
+            <Text style={styles.balanceLabel}>Điểm</Text>
+            <Text style={styles.balanceValue}>{formatPoints(points)} pts</Text>
+          </View>
         </View>
 
+        <Pressable
+          onPress={() => onNavigate('voucher-wallet')}
+          style={({ pressed }) => [styles.walletShortcut, pressed && styles.pressed]}
+        >
+          <View style={styles.walletIcon}>
+            <Ionicons color={colors.primary} name="wallet-outline" size={20} />
+          </View>
+
+          <View style={styles.walletCopy}>
+            <Text style={styles.walletTitle}>Kho Voucher của tôi</Text>
+            <Text style={styles.walletSubtitle}>
+              Xem voucher còn hạn, đã dùng hoặc hết hạn
+            </Text>
+          </View>
+
+          <Ionicons color={colors.textMuted} name="chevron-forward" size={18} />
+        </Pressable>
+
         <View style={styles.searchBox}>
-          <Ionicons color={colors.textMuted} name="search-outline" size={21} />
+          <Ionicons color={colors.textMuted} name="search-outline" size={19} />
+
           <TextInput
-            accessibilityLabel="Tìm kiếm ưu đãi"
             autoCapitalize="none"
-            autoCorrect={false}
             onChangeText={setSearchQuery}
-            placeholder="Tìm kiếm voucher, thương hiệu..."
+            placeholder="Tìm ưu đãi, đối tác..."
             placeholderTextColor={colors.textMuted}
             style={styles.searchInput}
             value={searchQuery}
           />
+
           {searchQuery ? (
-            <Pressable
-              accessibilityLabel="Xóa nội dung tìm kiếm"
-              accessibilityRole="button"
-              hitSlop={10}
-              onPress={() => setSearchQuery('')}
-            >
-              <Ionicons color={colors.textMuted} name="close-circle" size={20} />
+            <Pressable onPress={() => setSearchQuery('')}>
+              <Ionicons color={colors.textMuted} name="close-circle" size={18} />
             </Pressable>
           ) : null}
         </View>
 
         <ScrollView
-          accessibilityRole="tablist"
-          contentContainerStyle={styles.filterRow}
           horizontal
+          contentContainerStyle={styles.filterRow}
           showsHorizontalScrollIndicator={false}
         >
           {categories.map((category) => {
             const active = category === selectedCategory;
+
             return (
               <Pressable
-                accessibilityRole="tab"
-                accessibilityState={{ selected: active }}
                 key={category}
                 onPress={() => setSelectedCategory(category)}
                 style={({ pressed }) => [
@@ -140,48 +154,53 @@ export function OffersScreen({
         {filteredOffers.map((offer, index) => {
           const affordable = points >= offer.points;
           const icon =
-            categoryIcons[offer.category as Exclude<OfferCategory, 'Tất cả'>] ?? 'gift-outline';
+            categoryIcons[offer.category as keyof typeof categoryIcons] ?? 'gift-outline';
+
           return (
             <Pressable
-              accessibilityHint="Mở chi tiết ưu đãi"
-              accessibilityRole="button"
               key={offer.id}
               onPress={() => onSelectOffer(offer)}
               style={({ pressed }) => [styles.offerCard, pressed && styles.offerCardPressed]}
             >
               <View style={[styles.offerVisual, { backgroundColor: offer.accent }]}>
-                <View pointerEvents="none" style={styles.visualGlowLarge} />
-                <View pointerEvents="none" style={styles.visualGlowSmall} />
+                <View style={styles.visualGlowLarge} />
+                <View style={styles.visualGlowSmall} />
+
                 <View style={styles.hotBadge}>
-                  <Ionicons color="#FFB84D" name={index === 0 ? 'flame' : 'sparkles'} size={13} />
-                  <Text style={styles.hotText}>{index === 0 ? 'HOT DEAL' : offer.category.toUpperCase()}</Text>
+                  <Ionicons color="#FFD79A" name="sparkles" size={12} />
+                  <Text style={styles.hotText}>
+                    {index === 0 ? 'HOT DEAL' : offer.category.toUpperCase()}
+                  </Text>
                 </View>
+
                 <View style={styles.offerIcon}>
-                  <Ionicons color={colors.white} name={icon} size={44} />
+                  <Ionicons color={colors.white} name={icon} size={34} />
                 </View>
+
                 <Text style={styles.visualPartner}>{offer.partner}</Text>
               </View>
 
               <View style={styles.offerInfo}>
-                <Text numberOfLines={2} style={styles.offerTitle}>
-                  {offer.title}
-                </Text>
+                <Text style={styles.offerTitle}>{offer.title}</Text>
                 <Text style={styles.partner}>{offer.partner}</Text>
+
                 <View style={styles.divider} />
+
                 <View style={styles.offerFooter}>
                   <View>
                     <Text style={styles.metaLabel}>Đổi bằng</Text>
                     <View style={styles.pointsRow}>
                       <Ionicons
                         color={affordable ? colors.success : colors.warning}
-                        name={affordable ? 'checkmark-circle-outline' : 'alert-circle-outline'}
-                        size={17}
+                        name="diamond-outline"
+                        size={14}
                       />
                       <Text style={[styles.points, !affordable && styles.pointsDisabled]}>
                         {formatPoints(offer.points)} pts
                       </Text>
                     </View>
                   </View>
+
                   <View style={styles.expiryBlock}>
                     <Text style={styles.metaLabel}>Hạn sử dụng</Text>
                     <Text style={styles.expiry}>{offer.expiresAt}</Text>
@@ -194,7 +213,7 @@ export function OffersScreen({
 
         {!filteredOffers.length ? (
           <View style={styles.emptyState}>
-            <Ionicons color={colors.primary} name="gift-outline" size={32} />
+            <Ionicons color={colors.textMuted} name="gift-outline" size={42} />
             <Text style={styles.emptyTitle}>Không tìm thấy ưu đãi</Text>
             <Text style={styles.emptyText}>Hãy thử từ khóa hoặc danh mục khác.</Text>
           </View>
@@ -207,8 +226,13 @@ export function OffersScreen({
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  pressed: { opacity: 0.7 },
+  root: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  pressed: {
+    opacity: 0.7,
+  },
   topBar: {
     minHeight: 60,
     flexDirection: 'row',
@@ -226,8 +250,16 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: colors.primarySoft,
   },
-  avatarText: { color: colors.primary, fontSize: 11, fontWeight: '900' },
-  brand: { flex: 1, marginLeft: 10, alignItems: 'flex-start' },
+  avatarText: {
+    color: colors.primary,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  brand: {
+    flex: 1,
+    marginLeft: 10,
+    alignItems: 'flex-start',
+  },
   notificationButton: {
     width: 38,
     height: 38,
@@ -246,16 +278,77 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: colors.danger,
   },
-  content: { padding: 18, paddingBottom: 28 },
+  content: {
+    padding: 18,
+    paddingBottom: 28,
+  },
   titleRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 17,
+    marginBottom: 14,
   },
-  pageTitle: { color: colors.primaryDark, fontSize: 21, fontWeight: '900' },
-  balanceLabel: { color: colors.textMuted, fontSize: 10 },
-  balanceValue: { color: colors.success, fontWeight: '900' },
+  pageTitle: {
+    color: colors.primaryDark,
+    fontSize: 21,
+    fontWeight: '900',
+  },
+  pageSubtitle: {
+    marginTop: 4,
+    color: colors.textMuted,
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  balanceBox: {
+    alignItems: 'flex-end',
+  },
+  balanceLabel: {
+    color: colors.textMuted,
+    fontSize: 10,
+  },
+  balanceValue: {
+    color: colors.success,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  walletShortcut: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    backgroundColor: colors.surface,
+    padding: 14,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  walletIcon: {
+    width: 42,
+    height: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    backgroundColor: colors.primarySoft,
+  },
+  walletCopy: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  walletTitle: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  walletSubtitle: {
+    marginTop: 3,
+    color: colors.textMuted,
+    fontSize: 11,
+    lineHeight: 16,
+  },
   searchBox: {
     minHeight: 51,
     flexDirection: 'row',
@@ -278,7 +371,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     textAlign: 'left',
   },
-  filterRow: { paddingBottom: 20, paddingTop: 17, paddingRight: 8 },
+  filterRow: {
+    paddingBottom: 20,
+    paddingTop: 17,
+    paddingRight: 8,
+  },
   filter: {
     minHeight: 38,
     justifyContent: 'center',
@@ -294,9 +391,19 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 1,
   },
-  filterActive: { borderColor: colors.primary, backgroundColor: colors.primary },
-  filterText: { color: colors.textMuted, fontSize: 11, fontWeight: '700' },
-  filterTextActive: { color: colors.white, fontWeight: '900' },
+  filterActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primary,
+  },
+  filterText: {
+    color: colors.textMuted,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  filterTextActive: {
+    color: colors.white,
+    fontWeight: '900',
+  },
   offerCard: {
     overflow: 'hidden',
     marginBottom: 16,
@@ -310,7 +417,10 @@ const styles = StyleSheet.create({
     shadowRadius: 14,
     elevation: 4,
   },
-  offerCardPressed: { opacity: 0.82, transform: [{ scale: 0.995 }] },
+  offerCardPressed: {
+    opacity: 0.82,
+    transform: [{ scale: 0.995 }],
+  },
   offerVisual: {
     overflow: 'hidden',
     minHeight: 162,
@@ -348,7 +458,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     paddingVertical: 7,
   },
-  hotText: { marginLeft: 5, color: '#FFD79A', fontSize: 8, fontWeight: '900' },
+  hotText: {
+    marginLeft: 5,
+    color: '#FFD79A',
+    fontSize: 8,
+    fontWeight: '900',
+  },
   offerIcon: {
     width: 72,
     height: 72,
@@ -366,17 +481,59 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 0.4,
   },
-  offerInfo: { padding: 17 },
-  offerTitle: { color: colors.primaryDark, fontSize: 15, fontWeight: '900', lineHeight: 21 },
-  partner: { marginTop: 5, color: colors.textMuted, fontSize: 10 },
-  divider: { height: 1, marginVertical: 14, backgroundColor: colors.border },
-  offerFooter: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
-  metaLabel: { color: colors.textMuted, fontSize: 9 },
-  pointsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 5 },
-  points: { marginLeft: 5, color: colors.success, fontSize: 14, fontWeight: '900' },
-  pointsDisabled: { color: colors.warning },
-  expiryBlock: { maxWidth: '48%', alignItems: 'flex-end' },
-  expiry: { marginTop: 5, textAlign: 'right', color: colors.text, fontSize: 10, fontWeight: '800' },
+  offerInfo: {
+    padding: 17,
+  },
+  offerTitle: {
+    color: colors.primaryDark,
+    fontSize: 15,
+    fontWeight: '900',
+    lineHeight: 21,
+  },
+  partner: {
+    marginTop: 5,
+    color: colors.textMuted,
+    fontSize: 10,
+  },
+  divider: {
+    height: 1,
+    marginVertical: 14,
+    backgroundColor: colors.border,
+  },
+  offerFooter: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  metaLabel: {
+    color: colors.textMuted,
+    fontSize: 9,
+  },
+  pointsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  points: {
+    marginLeft: 5,
+    color: colors.success,
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  pointsDisabled: {
+    color: colors.warning,
+  },
+  expiryBlock: {
+    maxWidth: '48%',
+    alignItems: 'flex-end',
+  },
+  expiry: {
+    marginTop: 5,
+    textAlign: 'right',
+    color: colors.text,
+    fontSize: 10,
+    fontWeight: '800',
+  },
   emptyState: {
     alignItems: 'center',
     borderWidth: 1,
@@ -385,6 +542,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     padding: 34,
   },
-  emptyTitle: { marginTop: 10, color: colors.text, fontSize: 14, fontWeight: '800' },
-  emptyText: { marginTop: 5, color: colors.textMuted, fontSize: 11 },
+  emptyTitle: {
+    marginTop: 10,
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  emptyText: {
+    marginTop: 5,
+    color: colors.textMuted,
+    fontSize: 11,
+  },
 });

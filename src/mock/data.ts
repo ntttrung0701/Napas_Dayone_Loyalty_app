@@ -1,4 +1,4 @@
-import type { LoyaltyNotification, Offer, Transaction } from '../types';
+import type { LoyaltyNotification, Offer, Transaction , UserVoucher } from '../types';
 
 export const offers: Offer[] = [
   {
@@ -30,6 +30,67 @@ export const offers: Offer[] = [
     points: 2_500,
     accent: '#0369A1',
     expiresAt: '30/09/2026',
+  },
+];
+
+export const seedUserVouchers: UserVoucher[] = [
+  {
+    id: 'VC-HL-0001',
+    offerId: 'highlands-50',
+    title: 'Highlands Coffee 50K',
+    partner: 'Highlands Coffee',
+    code: 'HIGHLANDS50',
+    status: 'active',
+    issuedAt: '2026-06-20T09:15:00+07:00',
+    expiresAt: '2026-07-20T23:59:59+07:00',
+    expiresLabel: '20/07/2026',
+    description: 'Áp dụng cho mọi loại đồ uống tại hệ thống Highlands Coffee toàn quốc.',
+    terms: [
+      'Áp dụng tại hệ thống Highlands Coffee toàn quốc.',
+      'Mỗi hóa đơn áp dụng tối đa một voucher.',
+      'Không quy đổi thành tiền mặt.',
+    ],
+    pointsUsed: 500,
+    transactionId: 'NPS-RD-0001',
+  },
+  {
+    id: 'VC-WM-0002',
+    offerId: 'winmart-10',
+    title: 'Hoàn 10% tại WinMart',
+    partner: 'WinMart',
+    code: 'WINMART10',
+    status: 'used',
+    issuedAt: '2026-06-12T11:00:00+07:00',
+    expiresAt: '2026-12-31T23:59:59+07:00',
+    expiresLabel: '31/12/2026',
+    description: 'Giảm trực tiếp 10%, tối đa 50.000đ cho hóa đơn từ 300.000đ.',
+    terms: [
+      'Áp dụng cho hóa đơn từ 300.000đ.',
+      'Giảm tối đa 50.000đ.',
+      'Không áp dụng đồng thời với voucher khác.',
+    ],
+    pointsUsed: 1_200,
+    transactionId: 'NPS-RD-0002',
+    usedAt: '2026-06-15T18:20:00+07:00',
+  },
+  {
+    id: 'VC-TR-0003',
+    offerId: 'travel-100',
+    title: 'Voucher di chuyển 100K',
+    partner: 'Napas Travel',
+    code: 'TRAVEL100',
+    status: 'expired',
+    issuedAt: '2026-04-01T08:00:00+07:00',
+    expiresAt: '2026-05-01T23:59:59+07:00',
+    expiresLabel: '01/05/2026',
+    description: 'Ưu đãi cho một chuyến đi nội thành thanh toán bằng thẻ liên kết.',
+    terms: [
+      'Áp dụng cho một chuyến đi nội thành.',
+      'Không hoàn lại điểm khi voucher hết hạn.',
+      'Không quy đổi thành tiền mặt.',
+    ],
+    pointsUsed: 2_500,
+    transactionId: 'NPS-RD-0003',
   },
 ];
 

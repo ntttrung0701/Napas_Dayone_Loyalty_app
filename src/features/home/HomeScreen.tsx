@@ -28,7 +28,7 @@ const quickActions: Array<{ label: string; icon: IconName; route: AppScreen; col
     route: 'notifications',
     color: colors.purple,
   },
-  { label: 'Kho quà', icon: 'wallet-outline', route: 'offers', color: colors.purple },
+  { label: 'Voucher của tôi', icon: 'wallet-outline', route: 'voucher-wallet', color: colors.purple },
   { label: 'Liên kết', icon: 'card-outline', route: 'cards', color: colors.primary },
   { label: 'Mua sắm', icon: 'cart-outline', route: 'payment', color: colors.gold },
 ];

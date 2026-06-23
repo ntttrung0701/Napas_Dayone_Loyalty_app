@@ -37,10 +37,6 @@ export function SplashScreen({ onFinished }: { onFinished: () => void }) {
         <Text style={styles.subtitle}>Tích điểm thông minh, thanh toán an tâm</Text>
         <ActivityIndicator color={colors.primary} style={styles.loader} />
       </View>
-      <View style={styles.footer}>
-        <Text style={styles.security}>✓ MÔI TRƯỜNG DEMO AN TOÀN</Text>
-        <Text style={styles.version}>Expo SDK 54 • DayOne Prototype 0.1</Text>
-      </View>
     </View>
   );
 }
