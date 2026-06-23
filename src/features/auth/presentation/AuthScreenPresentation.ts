@@ -58,8 +58,9 @@ export const authScreenPresentations = Object.freeze({
     subtitle: 'Tạo mật khẩu mới cho tài khoản của bạn',
   }),
   otp: new AuthScreenPresentation({
-    title: 'XÁC THỰC OTP',
-  }),
+  title: 'NHẬP MÃ OTP',
+  subtitle: 'Kiểm tra tin nhắn SMS trên thiết bị sử dụng số điện thoại mà chúng tôi vừa gửi',
+}),
   biometric: new AuthScreenPresentation({
     title: 'SINH TRẮC HỌC',
     subtitle: 'Chọn phương thức đã thiết lập trên thiết bị',

@@ -11,10 +11,11 @@ import {
 const OTP_LENGTH = 6;
 const OTP_VALIDITY_SECONDS = 180;
 import { PrimaryButton } from '../../../shared/components/PrimaryButton';
+import { authScreenPresentations } from './AuthScreenPresentation';
+
+
 
 class OtpScreenText {
-  static readonly title = 'Nhập mã OTP';
-  static readonly description = 'Kiểm tra tin nhắn SMS trên thiết bị sử dụng số điện thoại mà chúng tôi vừa gửi';
   static readonly confirm = 'Xác nhận';
   static readonly contactPrefix = 'Bạn gặp sự cố ?';
   static readonly contact = 'Liên hệ chúng tôi';
@@ -118,67 +119,64 @@ export function OtpVerificationScreen({
   };
 
   return (
-    <AuthShell onBack={onBack}>
-      <View style={styles.otpCard}>
-        <Text style={styles.title}>{OtpScreenText.title}</Text>
+  <AuthShell onBack={onBack} presentation={authScreenPresentations.otp}>
+    <View style={styles.otpContent}>
+      <Text style={styles.destination}>{challenge.destination}</Text>
 
-        <Text style={styles.description}>{OtpScreenText.description}</Text>
-        <Text style={styles.destination}>{challenge.destination}</Text>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => inputRef.current?.focus()}
+        style={styles.digitPressArea}
+      >
+        <OtpDigitBoxes code={code} />
+      </Pressable>
 
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => inputRef.current?.focus()}
-          style={styles.digitPressArea}
-        >
-          <OtpDigitBoxes code={code} />
-        </Pressable>
+      <TextInput
+        ref={inputRef}
+        autoFocus
+        caretHidden
+        contextMenuHidden
+        keyboardType="number-pad"
+        maxLength={OTP_LENGTH}
+        onChangeText={updateCode}
+        onSubmitEditing={verify}
+        returnKeyType="done"
+        style={styles.hiddenInput}
+        value={code}
+      />
 
-        <TextInput
-          ref={inputRef}
-          autoFocus
-          caretHidden
-          contextMenuHidden
-          keyboardType="number-pad"
-          maxLength={OTP_LENGTH}
-          onChangeText={updateCode}
-          onSubmitEditing={verify}
-          returnKeyType="done"
-          style={styles.hiddenInput}
-          value={code}
-        />
-
-        <View style={styles.timerBlock}>
-          {isExpired ? (
-            <>
-              <Text style={styles.expiredText}>{OtpScreenText.expired()}</Text>
-              <Pressable disabled={loading} onPress={resend}>
-                <Text style={styles.resendText}>Gửi lại mã</Text>
-              </Pressable>
-            </>
-          ) : (
-            <Text style={styles.timerText}>{OtpScreenText.resendCountdown(seconds)}</Text>
-          )}
-        </View>
-
-        <FormError message={error} />
-
-        <View style={styles.confirmButtonWrap}>
-  <PrimaryButton
-    disabled={!isComplete || loading || isExpired}
-    label={loading ? 'Đang xác nhận...' : OtpScreenText.confirm}
-    onPress={verify}
-  />
-</View>
-
-        <View style={styles.contactRow}>
-          <Text style={styles.contactHint}>{OtpScreenText.contactPrefix}</Text>
-          <Pressable>
-            <Text style={styles.contactLink}>{OtpScreenText.contact}</Text>
-          </Pressable>
-        </View>
+      <View style={styles.timerBlock}>
+        {isExpired ? (
+          <>
+            <Text style={styles.expiredText}>{OtpScreenText.expired()}</Text>
+            <Pressable disabled={loading} onPress={resend}>
+              <Text style={styles.resendText}>Gửi lại mã</Text>
+            </Pressable>
+          </>
+        ) : (
+          <Text style={styles.timerText}>{OtpScreenText.resendCountdown(seconds)}</Text>
+        )}
       </View>
-    </AuthShell>
-  );
+
+      <FormError message={error} />
+
+      <View style={styles.confirmButtonWrap}>
+        <PrimaryButton
+          disabled={!isComplete || loading || isExpired}
+          label={loading ? 'Đang xác nhận...' : OtpScreenText.confirm}
+          onPress={verify}
+        />
+      </View>
+
+      <View style={styles.contactRow}>
+        <Text style={styles.contactHint}>{OtpScreenText.contactPrefix}</Text>
+        <Pressable>
+          <Text style={styles.contactLink}>{OtpScreenText.contact}</Text>
+        </Pressable>
+      </View>
+    </View>
+  </AuthShell>
+);
 }
 
 function OtpDigitBoxes({ code }: { code: string }) {
@@ -202,43 +200,19 @@ function OtpDigitBoxes({ code }: { code: string }) {
 }
 
 const styles = StyleSheet.create({
-  otpCard: {
-  width: '100%',
-  marginTop: 0,
-  borderRadius: 18,
-  backgroundColor: colors.white,
-  paddingHorizontal: 18,
-  paddingBottom: 24,
-  paddingTop: 18,
-  shadowColor: '#101828',
-  shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.035,
-  shadowRadius: 14,
-  elevation: 2,
-},
-  title: {
-    textAlign: 'center',
-    color: colors.black,
-    fontSize: 22,
-    fontWeight: '800',
-    lineHeight: 28,
-  },
-  description: {
-    marginTop: 18,
-    color: '#294B8C',
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: '600',
+  otpContent: {
+    width: '100%',
+    paddingTop: 6,
   },
   destination: {
-    marginTop: 14,
+    marginTop: 4,
     color: colors.black,
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: '900',
     letterSpacing: 1.8,
   },
   digitPressArea: {
-    marginTop: 22,
+    marginTop: 24,
   },
   digitRow: {
     width: '100%',
@@ -249,9 +223,9 @@ const styles = StyleSheet.create({
   digitBox: {
     width: 40,
     height: 48,
-    alignItems: 'center',
+    alignItems: 'stretch',
     justifyContent: 'center',
-    borderWidth: 1.4,
+    borderWidth: 0.7,
     borderColor: '#3E5C96',
     borderRadius: 12,
     backgroundColor: colors.white,
@@ -276,14 +250,13 @@ const styles = StyleSheet.create({
     minHeight: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 22,
   },
   timerText: {
     textAlign: 'center',
     color: '#294B8C',
     fontSize: 12,
     fontWeight: '700',
-    letterSpacing: 0.1,
   },
   expiredText: {
     color: colors.danger,
@@ -298,7 +271,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   confirmButtonWrap: {
-    marginTop: 10,
+    marginTop: 12,
   },
   contactRow: {
     flexDirection: 'row',
