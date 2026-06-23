@@ -10,6 +10,7 @@ import {
 
 const OTP_LENGTH = 6;
 const OTP_VALIDITY_SECONDS = 180;
+import { PrimaryButton } from '../../../shared/components/PrimaryButton';
 
 class OtpScreenText {
   static readonly title = 'Nhập mã OTP';
@@ -19,8 +20,8 @@ class OtpScreenText {
   static readonly contact = 'Liên hệ chúng tôi';
 
   static resendCountdown(seconds: number) {
-    return `The OTP code will resend in ${OtpCountdown.format(seconds)}`;
-  }
+  return `Mã OTP sẽ được gửi lại sau ${OtpCountdown.format(seconds)}`;
+}
 
   static expired() {
     return 'Mã OTP đã hết hạn';
@@ -161,17 +162,13 @@ export function OtpVerificationScreen({
 
         <FormError message={error} />
 
-        <Pressable
-          disabled={!isComplete || loading || isExpired}
-          onPress={verify}
-          style={({ pressed }) => [
-            styles.confirmButton,
-            (!isComplete || loading || isExpired) && styles.confirmButtonDisabled,
-            pressed && isComplete && !loading && !isExpired && styles.confirmButtonPressed,
-          ]}
-        >
-          <Text style={styles.confirmText}>{loading ? 'Processing...' : OtpScreenText.confirm}</Text>
-        </Pressable>
+        <View style={styles.confirmButtonWrap}>
+  <PrimaryButton
+    disabled={!isComplete || loading || isExpired}
+    label={loading ? 'Đang xác nhận...' : OtpScreenText.confirm}
+    onPress={verify}
+  />
+</View>
 
         <View style={styles.contactRow}>
           <Text style={styles.contactHint}>{OtpScreenText.contactPrefix}</Text>
@@ -206,60 +203,67 @@ function OtpDigitBoxes({ code }: { code: string }) {
 
 const styles = StyleSheet.create({
   otpCard: {
-    marginTop: 12,
-    borderRadius: 16,
+    width: '100%',
+    marginTop: 28,
+    borderRadius: 18,
     backgroundColor: colors.white,
-    paddingHorizontal: 22,
-    paddingBottom: 22,
-    paddingTop: 12,
+    paddingHorizontal: 24,
+    paddingBottom: 28,
+    paddingTop: 24,
+    shadowColor: '#101828',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.04,
+    shadowRadius: 18,
+    elevation: 2,
   },
   title: {
     textAlign: 'center',
     color: colors.black,
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 24,
+    fontWeight: '800',
+    lineHeight: 30,
   },
   description: {
-    marginTop: 12,
+    marginTop: 22,
     color: '#294B8C',
-    fontSize: 13,
-    lineHeight: 16,
-    fontWeight: '500',
+    fontSize: 17,
+    lineHeight: 23,
+    fontWeight: '600',
   },
   destination: {
-    marginTop: 10,
+    marginTop: 18,
     color: colors.black,
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: 1.2,
+    fontSize: 21,
+    fontWeight: '900',
+    letterSpacing: 2,
   },
   digitPressArea: {
-    marginTop: 16,
+    marginTop: 26,
   },
   digitRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    columnGap: 9,
+    columnGap: 11,
   },
   digitBox: {
-    width: 32,
-    height: 38,
+    width: 52,
+    height: 60,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#3E5C96',
-    borderRadius: 9,
+    borderRadius: 13,
     backgroundColor: colors.white,
   },
   digitBoxActive: {
-    borderWidth: 1.5,
+    borderWidth: 3,
     borderColor: colors.primary,
     backgroundColor: '#F7FAFF',
   },
   digitText: {
     color: colors.text,
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: '800',
   },
   hiddenInput: {
     position: 'absolute',
@@ -268,62 +272,48 @@ const styles = StyleSheet.create({
     opacity: 0,
   },
   timerBlock: {
-    minHeight: 34,
+    minHeight: 42,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
+    marginTop: 26,
   },
   timerText: {
     textAlign: 'center',
     color: '#294B8C',
-    fontSize: 10,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   expiredText: {
     color: colors.danger,
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '800',
   },
   resendText: {
-    marginTop: 4,
+    marginTop: 6,
     color: '#1D5EFF',
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '800',
     textDecorationLine: 'underline',
   },
-  confirmButton: {
-    minHeight: 34,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-    borderRadius: 7,
-    backgroundColor: '#3E5C96',
-  },
-  confirmButtonDisabled: {
-    opacity: 0.45,
-  },
-  confirmButtonPressed: {
-    opacity: 0.82,
-  },
-  confirmText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: '700',
+  confirmButtonWrap: {
+    marginTop: 14,
   },
   contactRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 4,
-    marginTop: 15,
+    gap: 5,
+    marginTop: 22,
   },
   contactHint: {
     color: colors.black,
-    fontSize: 10,
+    fontSize: 13,
   },
   contactLink: {
     color: '#1D5EFF',
-    fontSize: 10,
+    fontSize: 13,
+    fontWeight: '600',
     textDecorationLine: 'underline',
   },
 });
