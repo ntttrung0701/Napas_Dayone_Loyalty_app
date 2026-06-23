@@ -121,7 +121,9 @@ export function OtpVerificationScreen({
   return (
   <AuthShell onBack={onBack} presentation={authScreenPresentations.otp}>
     <View style={styles.otpContent}>
-      <Text style={styles.destination}>{challenge.destination}</Text>
+      <Text style={styles.destinationLine}>
+  Mã đã gửi đến <Text style={styles.destinationValue}>{challenge.destination}</Text>
+</Text>
 
       <Pressable
         accessibilityRole="button"
@@ -201,29 +203,37 @@ function OtpDigitBoxes({ code }: { code: string }) {
 
 const styles = StyleSheet.create({
   otpContent: {
-    width: '100%',
-    paddingTop: 6,
-  },
-  destination: {
-    marginTop: 4,
-    color: colors.black,
-    fontSize: 19,
-    fontWeight: '900',
-    letterSpacing: 1.8,
-  },
+  width: '100%',
+  alignItems: 'center',
+  paddingTop: 0,
+},
+  destinationLine: {
+  marginTop: 0,
+  textAlign: 'center',
+  color: '#294B8C',
+  fontSize: 13,
+  fontWeight: '500',
+  lineHeight: 18,
+},
+destinationValue: {
+  color: colors.text,
+  fontSize: 13,
+  fontWeight: '700',
+  letterSpacing: 0.8,
+},
   digitPressArea: {
-    marginTop: 24,
+    marginTop: 18,
   },
   digitRow: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+  gap: 8,
+},
   digitBox: {
     width: 40,
     height: 48,
-    alignItems: 'stretch',
+    alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 0.7,
     borderColor: '#3E5C96',
@@ -238,7 +248,7 @@ const styles = StyleSheet.create({
   digitText: {
     color: colors.text,
     fontSize: 21,
-    fontWeight: '800',
+    fontWeight: '600',
   },
   hiddenInput: {
     position: 'absolute',
@@ -247,47 +257,48 @@ const styles = StyleSheet.create({
     opacity: 0,
   },
   timerBlock: {
-    minHeight: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 22,
-  },
+  minHeight: 32,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginTop: 18,
+},
   timerText: {
-    textAlign: 'center',
-    color: '#294B8C',
-    fontSize: 12,
-    fontWeight: '700',
-  },
+  textAlign: 'center',
+  color: '#294B8C',
+  fontSize: 12,
+  fontWeight: '700',
+},
   expiredText: {
     color: colors.danger,
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   resendText: {
     marginTop: 5,
     color: '#1D5EFF',
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: '700',
     textDecorationLine: 'underline',
   },
   confirmButtonWrap: {
-    marginTop: 12,
-  },
+  width: '100%',
+  marginTop: 10,
+},
   contactRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 18,
-  },
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+  gap: 7,
+  marginTop: 16,
+},
   contactHint: {
-    color: colors.black,
-    fontSize: 12,
-  },
-  contactLink: {
-    color: '#1D5EFF',
-    fontSize: 12,
-    fontWeight: '600',
-    textDecorationLine: 'underline',
-  },
+  color: colors.black,
+  fontSize: 12,
+},
+contactLink: {
+  color: '#1D5EFF',
+  fontSize: 12,
+  fontWeight: '600',
+  textDecorationLine: 'underline',
+},
 });

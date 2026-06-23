@@ -59,7 +59,7 @@ export const authScreenPresentations = Object.freeze({
   }),
   otp: new AuthScreenPresentation({
   title: 'NHẬP MÃ OTP',
-  subtitle: 'Kiểm tra tin nhắn SMS trên thiết bị sử dụng số điện thoại mà chúng tôi vừa gửi',
+  subtitle: 'Vui lòng nhập mã OTP đã được gửi đến số điện thoại của bạn',
 }),
   biometric: new AuthScreenPresentation({
     title: 'SINH TRẮC HỌC',
