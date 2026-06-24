@@ -10,6 +10,9 @@ export const offers: Offer[] = [
     points: 500,
     accent: '#C2410C',
     expiresAt: '30 ngày kể từ lúc đổi',
+    media: {
+      imageKey: 'highlands',
+    },
   },
   {
     id: 'winmart-10',
@@ -20,6 +23,9 @@ export const offers: Offer[] = [
     points: 1_200,
     accent: '#D71920',
     expiresAt: '31/12/2026',
+    media: {
+      imageKey: 'winmart',
+    },
   },
   {
     id: 'travel-100',
@@ -49,7 +55,11 @@ export const seedUserVouchers: UserVoucher[] = [
       'Áp dụng tại hệ thống Highlands Coffee toàn quốc.',
       'Mỗi hóa đơn áp dụng tối đa một voucher.',
       'Không quy đổi thành tiền mặt.',
+      
     ],
+    media: {
+  imageKey: 'highlands',
+},
     pointsUsed: 500,
     transactionId: 'NPS-RD-0001',
   },
@@ -69,6 +79,9 @@ export const seedUserVouchers: UserVoucher[] = [
       'Giảm tối đa 50.000đ.',
       'Không áp dụng đồng thời với voucher khác.',
     ],
+    media: {
+  imageKey: 'winmart',
+},
     pointsUsed: 1_200,
     transactionId: 'NPS-RD-0002',
     usedAt: '2026-06-15T18:20:00+07:00',

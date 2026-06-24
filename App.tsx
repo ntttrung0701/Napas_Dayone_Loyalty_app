@@ -228,7 +228,6 @@ export default function App() {
       activeTab="offers"
       points={points}
       unreadNotifications={notifications.filter((notification) => !notification.isRead).length}
-      onBack={goBack}
       onNavigate={navigate}
       onSelectOffer={openOffer}
     />
@@ -252,7 +251,6 @@ export default function App() {
           <QrScreen
             activeTab="qr"
             points={points}
-            onBack={goBack}
             onNavigate={navigate}
           />
         );
@@ -324,7 +322,6 @@ export default function App() {
           <NotificationsScreen
             notifications={notifications}
             transactions={transactions}
-            onBack={goBack}
             onMarkAllRead={markAllNotificationsRead}
             onMarkRead={markNotificationRead}
             onNavigate={navigate}
@@ -337,7 +334,6 @@ export default function App() {
           <ProfileScreen
             activeTab="profile"
             points={points}
-            onBack={goBack}
             onLogout={() => setNavigation((current) => current.reset('login'))}
             onNavigate={navigate}
           />

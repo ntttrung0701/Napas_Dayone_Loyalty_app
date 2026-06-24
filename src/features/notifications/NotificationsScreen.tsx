@@ -31,7 +31,6 @@ type IconName = ComponentProps<typeof Ionicons>['name'];
 type NotificationsScreenProps = {
   notifications: LoyaltyNotification[];
   transactions: Transaction[];
-  onBack: () => void;
   onNavigate: (screen: AppScreen) => void;
   onMarkAllRead: () => void;
   onMarkRead: (notificationId: string) => void;
@@ -71,7 +70,6 @@ const categoryStyle: Record<
 export function NotificationsScreen({
   notifications,
   transactions,
-  onBack,
   onNavigate,
   onMarkAllRead,
   onMarkRead,
@@ -99,20 +97,15 @@ export function NotificationsScreen({
   return (
     <View style={styles.root}>
       <ScreenHeader
-        onBack={onBack}
-        rightContent={
-          unreadCount ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={onMarkAllRead}
-              style={({ pressed }) => pressed && styles.pressed}
-            >
-              <Text style={styles.markAll}>Đọc tất cả</Text>
-            </Pressable>
-          ) : null
-        }
-        title="Thông báo"
-      />
+  rightContent={
+    unreadCount ? (
+      <Pressable onPress={onMarkAllRead} style={({ pressed }) => pressed && styles.pressed}>
+        <Text style={styles.markAll}>Đọc tất cả</Text>
+      </Pressable>
+    ) : null
+  }
+  title="Thông báo"
+/>
 
       <ScrollView
         contentContainerStyle={styles.content}

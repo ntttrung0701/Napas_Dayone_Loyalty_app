@@ -28,6 +28,13 @@ export type LoyaltyNotification = {
   isRead: boolean;
 };
 
+export type OfferMedia = {
+  imageKey?: string;
+  imageUrl?: string;
+  thumbnailUrl?: string;
+  heroUrl?: string;
+};
+
 export type Offer = {
   id: string;
   category: string;
@@ -37,6 +44,7 @@ export type Offer = {
   points: number;
   accent: string;
   expiresAt: string;
+  media?: OfferMedia;
 };
 export type UserVoucherStatus = 'active' | 'used' | 'expired';
 
@@ -54,9 +62,9 @@ export type UserVoucher = {
   terms: string[];
   pointsUsed: number;
   transactionId: string;
+  media?: OfferMedia;
   usedAt?: string;
 };
-
 
 export type TransactionKind = 'earn' | 'redemption' | 'transfer' | 'expiration' | 'payment';
 

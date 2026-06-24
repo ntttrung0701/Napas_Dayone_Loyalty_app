@@ -51,7 +51,7 @@ export function VoucherWalletScreen({
 
   return (
     <View style={styles.root}>
-      <ScreenHeader onBack={onBack} title="Kho Voucher của tôi" />
+      <ScreenHeader onBack={onBack} title="Kho voucher của tôi" />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.summaryCard}>

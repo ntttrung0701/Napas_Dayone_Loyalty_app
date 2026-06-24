@@ -14,7 +14,7 @@ const voucherCodeByOfferId: Record<string, string> = {
 };
 
 export class VoucherFactory {
-  static fromOffer(offer: Offer, transactionId: string): UserVoucher {
+  static fromOffer(offer: Offer, transactionId: string, ): UserVoucher {
     const { expiresAt, expiresLabel } = this.resolveExpiry(offer.expiresAt);
     const fallbackCode = `VC${Date.now().toString().slice(-6)}`;
 
@@ -36,6 +36,7 @@ export class VoucherFactory {
       ],
       pointsUsed: offer.points,
       transactionId,
+      media: offer.media,
     };
   }
 

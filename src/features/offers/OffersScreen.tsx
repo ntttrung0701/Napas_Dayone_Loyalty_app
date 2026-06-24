@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
 import { useMemo, useState } from 'react';
 import {
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,13 +10,14 @@ import {
   TextInput,
   View,
 } from 'react-native';
-
+import { OfferMediaResolver } from './domain/OfferMediaResolver';
 import { offers } from '../../mock/data';
 import { BottomNav } from '../../shared/components/BottomNav';
 import { colors } from '../../theme/colors';
 import type { AppScreen, MainTab, Offer } from '../../types';
 import { formatPoints } from '../../utils/format';
 import { OfferCatalog } from './domain/OfferCatalog';
+import { ScreenHeader } from '../../shared/components/ScreenHeader';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -23,7 +25,6 @@ type OffersScreenProps = {
   activeTab: MainTab;
   points: number;
   unreadNotifications: number;
-  onBack: () => void;
   onNavigate: (screen: AppScreen) => void;
   onSelectOffer: (offer: Offer) => void;
 };
@@ -43,7 +44,6 @@ export function OffersScreen({
   activeTab,
   points,
   unreadNotifications,
-  onBack,
   onNavigate,
   onSelectOffer,
 }: OffersScreenProps) {
@@ -57,25 +57,18 @@ export function OffersScreen({
 
   return (
     <View style={styles.root}>
-      <View style={styles.topBar}>
-  <Pressable
-    onPress={onBack}
-    style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
-  >
-    <Ionicons color={colors.primaryDark} name="chevron-back" size={30} />
-  </Pressable>
-
-  <Text style={styles.headerTitle}>Ưu đãi & Quà tặng</Text>
-
-  <Pressable
-    onPress={() => onNavigate('notifications')}
-    style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}
-  >
-    <Ionicons color={colors.text} name="notifications-outline" size={22} />
-
-    {unreadNotifications ? <View style={styles.notificationDot} /> : null}
-  </Pressable>
-</View>
+      <ScreenHeader
+  title="Ưu đãi & Quà tặng"
+  rightContent={
+    <Pressable
+      onPress={() => onNavigate('notifications')}
+      style={({ pressed }) => [styles.headerIconButton, pressed && styles.pressed]}
+    >
+      <Ionicons color={colors.text} name="notifications-outline" size={22} />
+      {unreadNotifications ? <View style={styles.notificationDot} /> : null}
+    </Pressable>
+  }
+/>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.titleRow}>
@@ -93,7 +86,7 @@ export function OffersScreen({
   style={({ pressed }) => [styles.walletShortcut, pressed && styles.pressed]}
 >
   <View style={styles.walletCopy}>
-    <Text style={styles.walletTitle}>Kho Voucher của tôi</Text>
+    <Text style={styles.walletTitle}>Kho voucher của tôi</Text>
     <Text style={styles.walletSubtitle}>
       Xem voucher còn hạn, đã dùng hoặc hết hạn
     </Text>
@@ -149,8 +142,9 @@ export function OffersScreen({
 
         {filteredOffers.map((offer, index) => {
           const affordable = points >= offer.points;
-          const icon =
-            categoryIcons[offer.category as keyof typeof categoryIcons] ?? 'gift-outline';
+const icon =
+  categoryIcons[offer.category as keyof typeof categoryIcons] ?? 'gift-outline';
+const imageSource = OfferMediaResolver.getImageSource(offer.media);
 
           return (
             <Pressable
@@ -158,23 +152,36 @@ export function OffersScreen({
               onPress={() => onSelectOffer(offer)}
               style={({ pressed }) => [styles.offerCard, pressed && styles.offerCardPressed]}
             >
-              <View style={[styles.offerVisual, { backgroundColor: offer.accent }]}>
-                <View style={styles.visualGlowLarge} />
-                <View style={styles.visualGlowSmall} />
+              <View style={[styles.offerVisual, !imageSource && { backgroundColor: offer.accent }]}>
+  {imageSource ? (
+    <>
+      <Image source={imageSource} style={styles.offerImage} resizeMode="cover" />
+      <View style={styles.imageOverlay} />
+    </>
+  ) : (
+    <>
+      <View style={styles.visualGlowLarge} />
+      <View style={styles.visualGlowSmall} />
+    </>
+  )}
 
-                <View style={styles.hotBadge}>
-                  <Ionicons color="#FFD79A" name="sparkles" size={12} />
-                  <Text style={styles.hotText}>
-                    {index === 0 ? 'HOT DEAL' : offer.category.toUpperCase()}
-                  </Text>
-                </View>
+  <View style={styles.hotBadge}>
+    <Ionicons color="#FFD79A" name="sparkles" size={12} />
+    <Text style={styles.hotText}>
+      {index === 0 ? 'HOT DEAL' : offer.category.toUpperCase()}
+    </Text>
+  </View>
 
-                <View style={styles.offerIcon}>
-                  <Ionicons color={colors.white} name={icon} size={34} />
-                </View>
+  {!imageSource ? (
+    <>
+      <View style={styles.offerIcon}>
+        <Ionicons color={colors.white} name={icon} size={34} />
+      </View>
 
-                <Text style={styles.visualPartner}>{offer.partner}</Text>
-              </View>
+      <Text style={styles.visualPartner}>{offer.partner}</Text>
+    </>
+  ) : null}
+</View>
 
               <View style={styles.offerInfo}>
                 <Text style={styles.offerTitle}>{offer.title}</Text>
@@ -229,26 +236,10 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
-  topBar: {
-  minHeight: 60,
-  flexDirection: 'row',
-  alignItems: 'center',
-  borderBottomWidth: 1,
-  borderBottomColor: colors.border,
-  backgroundColor: colors.surface,
-  paddingHorizontal: 10,
-},
-  notificationButton: {
-  width: 48,
-  height: 48,
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: 24,
-},
-  notificationDot: {
+notificationDot: {
   position: 'absolute',
-  top: 10,
-  right: 10,
+  top: 8,
+  right: 8,
   width: 7,
   height: 7,
   borderWidth: 1,
@@ -256,8 +247,9 @@ const styles = StyleSheet.create({
   borderRadius: 4,
   backgroundColor: colors.danger,
 },
-  content: {
-  padding: 18,
+content: {
+  paddingHorizontal: 18,
+  paddingTop: 20,
   paddingBottom: 28,
 },
   titleRow: {
@@ -270,34 +262,35 @@ titleCopy: {
   flex: 1,
   paddingRight: 12,
 },
-  pageSubtitle: {
-  color: colors.textMuted,
-  fontSize: 14,
-  fontWeight: '700',
-  lineHeight: 20,
+headerIconButton: {
+  width: 40,
+  height: 40,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 20,
 },
-  balanceBox: {
-  minWidth: 120,
+pageSubtitle: {
+  color: colors.textMuted,
+  fontSize: 13,
+  fontWeight: '700',
+  lineHeight: 19,
+},
+
+balanceBox: {
+  minWidth: 116,
   alignItems: 'flex-end',
 },
   balanceLabel: {
   color: colors.textMuted,
-  fontSize: 12,
+  fontSize: 11,
   fontWeight: '700',
 },
-  balanceValue: {
+
+balanceValue: {
   marginTop: 4,
   color: colors.success,
-  fontSize: 17,
+  fontSize: 16,
   fontWeight: '900',
-},
-  backButton: {
-  width: 48,
-  height: 48,
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: 24,
-  backgroundColor: colors.primarySoft,
 },
   walletShortcut: {
   flexDirection: 'row',
@@ -335,13 +328,7 @@ titleCopy: {
   fontSize: 13,
   lineHeight: 18,
 },
-  headerTitle: {
-  flex: 1,
-  textAlign: 'center',
-  color: colors.primaryDark,
-  fontSize: 24,
-  fontWeight: '700',
-},
+
   searchBox: {
     minHeight: 51,
     flexDirection: 'row',
@@ -373,6 +360,17 @@ titleCopy: {
     paddingRight: 8,
   },
   
+  offerImage: {
+  ...StyleSheet.absoluteFillObject,
+  width: '100%',
+  height: '100%',
+},
+
+imageOverlay: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: 'rgba(0,0,0,0.18)',
+},
+
   filter: {
     minHeight: 20,
     justifyContent: 'center',
@@ -423,6 +421,7 @@ titleCopy: {
     minHeight: 162,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative'
   },
   visualGlowLarge: {
     position: 'absolute',

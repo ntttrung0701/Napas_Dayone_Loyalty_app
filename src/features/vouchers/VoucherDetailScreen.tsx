@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { OfferMediaResolver } from '../offers/domain/OfferMediaResolver';
 import { PrimaryButton } from '../../shared/components/PrimaryButton';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
 import { colors } from '../../theme/colors';
@@ -28,7 +28,8 @@ export function VoucherDetailScreen({ voucher, onBack, onUseVoucher }: VoucherDe
   }
 
   const canUse = VoucherFactory.canUse(voucher);
-  const statusLabel = VoucherFactory.getStatusLabel(voucher);
+const statusLabel = VoucherFactory.getStatusLabel(voucher);
+const imageSource = OfferMediaResolver.getImageSource(voucher.media);
 
   return (
     <View style={styles.root}>
@@ -36,16 +37,25 @@ export function VoucherDetailScreen({ voucher, onBack, onUseVoucher }: VoucherDe
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.heroCard}>
-          <Text style={styles.eyebrow}>VOUCHER</Text>
-          <Text style={styles.title}>{voucher.title}</Text>
-          <Text style={styles.partner}>{voucher.partner}</Text>
+  {imageSource ? (
+    <>
+      <Image source={imageSource} style={styles.heroImage} resizeMode="cover" />
+      <View style={styles.heroOverlay} />
+    </>
+  ) : null}
 
-          <View style={[styles.statusBadge, !canUse && styles.statusBadgeMuted]}>
-            <Text style={[styles.statusText, !canUse && styles.statusTextMuted]}>
-              {statusLabel}
-            </Text>
-          </View>
-        </View>
+  <View style={styles.heroTextLayer}>
+    <Text style={styles.eyebrow}>VOUCHER</Text>
+    <Text style={styles.title}>{voucher.title}</Text>
+    <Text style={styles.partner}>{voucher.partner}</Text>
+
+    <View style={[styles.statusBadge, !canUse && styles.statusBadgeMuted]}>
+      <Text style={[styles.statusText, !canUse && styles.statusTextMuted]}>
+        {statusLabel}
+      </Text>
+    </View>
+  </View>
+</View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>THÔNG TIN VOUCHER</Text>
@@ -111,11 +121,32 @@ const styles = StyleSheet.create({
     paddingBottom: 96,
   },
   heroCard: {
-    alignItems: 'center',
-    borderRadius: 24,
-    backgroundColor: colors.primary,
-    padding: 24,
-  },
+  position: 'relative',
+  overflow: 'hidden',
+  alignItems: 'center',
+  minHeight: 230,
+  borderRadius: 24,
+  backgroundColor: colors.primary,
+  padding: 24,
+},
+heroImage: {
+  ...StyleSheet.absoluteFillObject,
+  width: '100%',
+  height: '100%',
+},
+
+heroOverlay: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: 'rgba(0,0,0,0.34)',
+},
+
+heroTextLayer: {
+  position: 'relative',
+  zIndex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+  flex: 1,
+},
   eyebrow: {
     color: '#CDE7FA',
     fontSize: 10,

@@ -12,7 +12,6 @@ import { formatPoints } from '../../utils/format';
 type QrScreenProps = {
   activeTab: MainTab;
   points: number;
-  onBack: () => void;
   onNavigate: (screen: AppScreen) => void;
 };
 
@@ -51,7 +50,7 @@ function formatCountdown(totalSeconds: number) {
   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
-export function QrScreen({ activeTab, points, onBack, onNavigate }: QrScreenProps) {
+export function QrScreen({ activeTab, points, onNavigate }: QrScreenProps) {
   const [payload, setPayload] = useState<MemberQrPayload>(() => createMemberQrPayload(LOYALTY_ID));
   const [remainingSeconds, setRemainingSeconds] = useState(QR_VALIDITY_SECONDS);
 
@@ -74,7 +73,7 @@ export function QrScreen({ activeTab, points, onBack, onNavigate }: QrScreenProp
 
   return (
     <View style={styles.root}>
-      <ScreenHeader onBack={onBack} title="Mã QR thành viên" />
+      <ScreenHeader title="Mã QR thành viên" />
 
       <View style={styles.content}>
         <Text style={styles.eyebrow}>THẺ THÀNH VIÊN LOYALTY</Text>
@@ -116,13 +115,6 @@ export function QrScreen({ activeTab, points, onBack, onNavigate }: QrScreenProp
           <Text style={styles.balance}>{formatPoints(points)} điểm</Text>
         </View>
 
-        <View style={styles.securityNotice}>
-          <Text style={styles.securityText}>
-            Mã QR này chỉ dùng để định danh thành viên Loyalty tại quầy/POS hợp lệ. Không chứa số
-            điện thoại, email, số thẻ hoặc token đăng nhập.
-          </Text>
-        </View>
-
         <Pressable onPress={handleRefreshQr} style={styles.refreshButton}>
           <Ionicons color={colors.primary} name="refresh-outline" size={17} />
           <Text style={styles.refreshText}>TẠO MÃ MỚI</Text>
@@ -148,7 +140,6 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 9,
     fontWeight: '900',
-    letterSpacing: 1,
   },
   name: {
     marginTop: 8,
@@ -243,19 +234,6 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 17,
     fontWeight: '900',
-  },
-  securityNotice: {
-    width: '100%',
-    marginTop: 12,
-    borderRadius: 14,
-    backgroundColor: colors.warningSoft,
-    padding: 12,
-  },
-  securityText: {
-    textAlign: 'center',
-    color: colors.warning,
-    fontSize: 10,
-    lineHeight: 15,
   },
   refreshButton: {
     minHeight: 46,

@@ -1,5 +1,5 @@
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
-
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { OfferMediaResolver } from './domain/OfferMediaResolver';
 import { PrimaryButton } from '../../shared/components/PrimaryButton';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
 import { colors } from '../../theme/colors';
@@ -15,6 +15,7 @@ type OfferDetailScreenProps = {
 
 export function OfferDetailScreen({ offer, points, onBack, onRedeem }: OfferDetailScreenProps) {
   const affordable = points >= offer.points;
+  const imageSource = OfferMediaResolver.getImageSource(offer.media);
 
   const confirmRedemption = () => {
     Alert.alert(
@@ -31,11 +32,20 @@ export function OfferDetailScreen({ offer, points, onBack, onRedeem }: OfferDeta
     <View style={styles.root}>
       <ScreenHeader onBack={onBack} title="Chi tiết ưu đãi" />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={[styles.hero, { backgroundColor: offer.accent }]}>
-          <Text style={styles.category}>{offer.category.toUpperCase()}</Text>
-          <Text style={styles.heroTitle}>{offer.title}</Text>
-          <Text style={styles.partner}>{offer.partner}</Text>
-        </View>
+        <View style={[styles.hero, !imageSource && { backgroundColor: offer.accent }]}>
+  {imageSource ? (
+    <>
+      <Image source={imageSource} style={styles.heroImage} resizeMode="cover" />
+      <View style={styles.heroOverlay} />
+    </>
+  ) : null}
+
+  <View style={styles.heroTextLayer}>
+    <Text style={styles.category}>{offer.category.toUpperCase()}</Text>
+    <Text style={styles.heroTitle}>{offer.title}</Text>
+    <Text style={styles.partner}>{offer.partner}</Text>
+  </View>
+</View>
 
         <View style={styles.balanceCard}>
           <View>
@@ -89,11 +99,28 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: 24,
   },
-  hero: {
-    minHeight: 210,
-    justifyContent: 'flex-end',
-    padding: 24,
-  },
+ hero: {
+  position: 'relative',
+  overflow: 'hidden',
+  minHeight: 230,
+  justifyContent: 'flex-end',
+  padding: 24,
+},
+heroImage: {
+  ...StyleSheet.absoluteFillObject,
+  width: '100%',
+  height: '100%',
+},
+
+heroOverlay: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: 'rgba(0,0,0,0.32)',
+},
+
+heroTextLayer: {
+  position: 'relative',
+  zIndex: 1,
+},
   category: {
     color: 'rgba(255,255,255,0.75)',
     fontSize: 10,

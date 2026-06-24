@@ -11,7 +11,6 @@ import { formatPoints } from '../../utils/format';
 type ProfileScreenProps = {
   activeTab: MainTab;
   points: number;
-  onBack: () => void;
   onLogout: () => void;
   onNavigate: (screen: AppScreen) => void;
 };
@@ -47,7 +46,6 @@ const privileges: Array<{ icon: IconName; title: string; description: string }> 
 export function ProfileScreen({
   activeTab,
   points,
-  onBack,
   onLogout,
   onNavigate,
 }: ProfileScreenProps) {
@@ -61,7 +59,7 @@ export function ProfileScreen({
 
   return (
     <View style={styles.root}>
-      <ScreenHeader onBack={onBack} title="Tài khoản" />
+      <ScreenHeader title="Tài khoản" />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.identityRow}>
           <View style={styles.avatar}>
