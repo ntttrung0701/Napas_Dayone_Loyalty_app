@@ -32,14 +32,19 @@ export function BottomNav({ active, onNavigate }: BottomNavProps) {
         const selected = active === tab.id;
         return (
           <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ selected }}
-            key={tab.id}
-            onPress={() => {
-              if (!selected) onNavigate(tab.id);
-            }}
-            style={styles.tab}
-          >
+  key={tab.id}
+  onPress={() => {
+    if (tab.id === 'offers') {
+      onNavigate(tab.id);
+      return;
+    }
+
+    if (!selected) {
+      onNavigate(tab.id);
+    }
+  }}
+  style={styles.tab}
+>
             <View style={[styles.iconWrap, selected && styles.iconWrapSelected]}>
               <Ionicons
                 color={selected ? colors.primary : colors.textMuted}

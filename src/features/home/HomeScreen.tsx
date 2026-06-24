@@ -139,6 +139,7 @@ export function HomeScreen({
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Hoạt động gần đây</Text>
+            
             <Pressable onPress={() => onNavigate('history')}>
               <Text style={styles.link}>Xem tất cả</Text>
             </Pressable>

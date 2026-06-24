@@ -223,15 +223,16 @@ export default function App() {
         return <AuthFlow onAuthenticated={() => replace('home')} />;
 
       case 'offers':
-        return (
-          <OffersScreen
-            activeTab="offers"
-            points={points}
-            unreadNotifications={unreadNotifications}
-            onNavigate={navigate}
-            onSelectOffer={openOffer}
-          />
-        );
+  return (
+    <OffersScreen
+      activeTab="offers"
+      points={points}
+      unreadNotifications={notifications.filter((notification) => !notification.isRead).length}
+      onBack={goBack}
+      onNavigate={navigate}
+      onSelectOffer={openOffer}
+    />
+  );
 
       case 'offer-detail':
         return (

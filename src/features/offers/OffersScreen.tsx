@@ -12,7 +12,6 @@ import {
 
 import { offers } from '../../mock/data';
 import { BottomNav } from '../../shared/components/BottomNav';
-import { BrandLogo } from '../../shared/components/BrandLogo';
 import { colors } from '../../theme/colors';
 import type { AppScreen, MainTab, Offer } from '../../types';
 import { formatPoints } from '../../utils/format';
@@ -24,6 +23,7 @@ type OffersScreenProps = {
   activeTab: MainTab;
   points: number;
   unreadNotifications: number;
+  onBack: () => void;
   onNavigate: (screen: AppScreen) => void;
   onSelectOffer: (offer: Offer) => void;
 };
@@ -43,6 +43,7 @@ export function OffersScreen({
   activeTab,
   points,
   unreadNotifications,
+  onBack,
   onNavigate,
   onSelectOffer,
 }: OffersScreenProps) {
@@ -57,54 +58,49 @@ export function OffersScreen({
   return (
     <View style={styles.root}>
       <View style={styles.topBar}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>NA</Text>
-        </View>
+  <Pressable
+    onPress={onBack}
+    style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+  >
+    <Ionicons color={colors.primaryDark} name="chevron-back" size={30} />
+  </Pressable>
 
-        <View style={styles.brand}>
-          <BrandLogo width={112} />
-        </View>
+  <Text style={styles.headerTitle}>Ưu đãi & Quà tặng</Text>
 
-        <Pressable
-          onPress={() => onNavigate('notifications')}
-          style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}
-        >
-          <Ionicons color={colors.text} name="notifications-outline" size={22} />
+  <Pressable
+    onPress={() => onNavigate('notifications')}
+    style={({ pressed }) => [styles.notificationButton, pressed && styles.pressed]}
+  >
+    <Ionicons color={colors.text} name="notifications-outline" size={22} />
 
-          {unreadNotifications ? <View style={styles.notificationDot} /> : null}
-        </Pressable>
-      </View>
+    {unreadNotifications ? <View style={styles.notificationDot} /> : null}
+  </Pressable>
+</View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.titleRow}>
-          <View>
-            <Text style={styles.pageTitle}>Ưu đãi & Quà tặng</Text>
-            <Text style={styles.pageSubtitle}>Đổi điểm hoặc sử dụng voucher đã có</Text>
-          </View>
+  <View style={styles.titleCopy}>
+  </View>
 
-          <View style={styles.balanceBox}>
-            <Text style={styles.balanceLabel}>Điểm</Text>
-            <Text style={styles.balanceValue}>{formatPoints(points)} pts</Text>
-          </View>
-        </View>
+  <View style={styles.balanceBox}>
+    <Text style={styles.balanceLabel}>Điểm khả dụng</Text>
+    <Text style={styles.balanceValue}>{formatPoints(points)} pts</Text>
+  </View>
+</View>
 
         <Pressable
-          onPress={() => onNavigate('voucher-wallet')}
-          style={({ pressed }) => [styles.walletShortcut, pressed && styles.pressed]}
-        >
-          <View style={styles.walletIcon}>
-            <Ionicons color={colors.primary} name="wallet-outline" size={20} />
-          </View>
+  onPress={() => onNavigate('voucher-wallet')}
+  style={({ pressed }) => [styles.walletShortcut, pressed && styles.pressed]}
+>
+  <View style={styles.walletCopy}>
+    <Text style={styles.walletTitle}>Kho Voucher của tôi</Text>
+    <Text style={styles.walletSubtitle}>
+      Xem voucher còn hạn, đã dùng hoặc hết hạn
+    </Text>
+  </View>
 
-          <View style={styles.walletCopy}>
-            <Text style={styles.walletTitle}>Kho Voucher của tôi</Text>
-            <Text style={styles.walletSubtitle}>
-              Xem voucher còn hạn, đã dùng hoặc hết hạn
-            </Text>
-          </View>
-
-          <Ionicons color={colors.textMuted} name="chevron-forward" size={18} />
-        </Pressable>
+  <Ionicons color={colors.textMuted} name="chevron-forward" size={22} />
+</Pressable>
 
         <View style={styles.searchBox}>
           <Ionicons color={colors.textMuted} name="search-outline" size={19} />
@@ -234,98 +230,91 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   topBar: {
-    minHeight: 60,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
-    paddingHorizontal: 18,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 18,
-    backgroundColor: colors.primarySoft,
-  },
-  avatarText: {
-    color: colors.primary,
-    fontSize: 11,
-    fontWeight: '900',
-  },
-  brand: {
-    flex: 1,
-    marginLeft: 10,
-    alignItems: 'flex-start',
-  },
+  minHeight: 60,
+  flexDirection: 'row',
+  alignItems: 'center',
+  borderBottomWidth: 1,
+  borderBottomColor: colors.border,
+  backgroundColor: colors.surface,
+  paddingHorizontal: 10,
+},
   notificationButton: {
-    width: 38,
-    height: 38,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 19,
-  },
+  width: 48,
+  height: 48,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 24,
+},
   notificationDot: {
-    position: 'absolute',
-    top: 7,
-    right: 7,
-    width: 7,
-    height: 7,
-    borderWidth: 1,
-    borderColor: colors.surface,
-    borderRadius: 4,
-    backgroundColor: colors.danger,
-  },
+  position: 'absolute',
+  top: 10,
+  right: 10,
+  width: 7,
+  height: 7,
+  borderWidth: 1,
+  borderColor: colors.surface,
+  borderRadius: 4,
+  backgroundColor: colors.danger,
+},
   content: {
-    padding: 18,
-    paddingBottom: 28,
-  },
+  padding: 18,
+  paddingBottom: 28,
+},
   titleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  pageTitle: {
-    color: colors.primaryDark,
-    fontSize: 21,
-    fontWeight: '900',
-  },
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: 16,
+},
+titleCopy: {
+  flex: 1,
+  paddingRight: 12,
+},
   pageSubtitle: {
-    marginTop: 4,
-    color: colors.textMuted,
-    fontSize: 11,
-    fontWeight: '600',
-  },
+  color: colors.textMuted,
+  fontSize: 14,
+  fontWeight: '700',
+  lineHeight: 20,
+},
   balanceBox: {
-    alignItems: 'flex-end',
-  },
+  minWidth: 120,
+  alignItems: 'flex-end',
+},
   balanceLabel: {
-    color: colors.textMuted,
-    fontSize: 10,
-  },
+  color: colors.textMuted,
+  fontSize: 12,
+  fontWeight: '700',
+},
   balanceValue: {
-    color: colors.success,
-    fontSize: 11,
-    fontWeight: '900',
-  },
+  marginTop: 4,
+  color: colors.success,
+  fontSize: 17,
+  fontWeight: '900',
+},
+  backButton: {
+  width: 48,
+  height: 48,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 24,
+  backgroundColor: colors.primarySoft,
+},
   walletShortcut: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 16,
-    backgroundColor: colors.surface,
-    padding: 14,
-    shadowColor: colors.primaryDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 14,
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 16,
+  backgroundColor: colors.surface,
+  paddingHorizontal: 18,
+  paddingVertical: 17,
+  shadowColor: colors.primaryDark,
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
+  elevation: 2,
+},
   walletIcon: {
     width: 42,
     height: 42,
@@ -334,21 +323,25 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: colors.primarySoft,
   },
-  walletCopy: {
-    flex: 1,
-    marginLeft: 12,
-  },
   walletTitle: {
-    color: colors.text,
-    fontSize: 13,
-    fontWeight: '900',
-  },
+  color: colors.text,
+  fontSize: 16,
+  fontWeight: '900',
+},
+
   walletSubtitle: {
-    marginTop: 3,
-    color: colors.textMuted,
-    fontSize: 11,
-    lineHeight: 16,
-  },
+  marginTop: 5,
+  color: colors.textMuted,
+  fontSize: 13,
+  lineHeight: 18,
+},
+  headerTitle: {
+  flex: 1,
+  textAlign: 'center',
+  color: colors.primaryDark,
+  fontSize: 24,
+  fontWeight: '700',
+},
   searchBox: {
     minHeight: 51,
     flexDirection: 'row',
@@ -358,6 +351,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: colors.surface,
     paddingHorizontal: 14,
+  },
+  walletCopy: {
+    flex: 1,
   },
   searchInput: {
     flex: 1,
@@ -376,8 +372,9 @@ const styles = StyleSheet.create({
     paddingTop: 17,
     paddingRight: 8,
   },
+  
   filter: {
-    minHeight: 38,
+    minHeight: 20,
     justifyContent: 'center',
     marginRight: 9,
     borderWidth: 1,
