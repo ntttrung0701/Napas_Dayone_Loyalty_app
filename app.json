@@ -8,14 +8,22 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.lsm.pay"
+      "bundleIdentifier": "com.lsm.pay",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.lsm.pay",
       "adaptiveIcon": {
         "backgroundColor": "#F4F7FB"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT",
+        "android.permission.CAMERA"
+      ]
     },
     "plugins": [
       [
@@ -32,6 +40,11 @@
         }
       ],
       "expo-asset"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ad101dc5-d4f2-443f-a46f-1348d415ea8e"
+      }
+    }
   }
 }

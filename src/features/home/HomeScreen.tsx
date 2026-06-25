@@ -77,9 +77,7 @@ export function HomeScreen({
             <Text style={styles.hello}>Xin chào,</Text>
             <Text style={styles.name}>Nguyễn Văn Anh</Text>
           </View>
-          <View style={styles.rankBadge}>
-            <Text style={styles.rankText}>GOLD</Text>
-          </View>
+          
         </View>
 
         <ImageBackground
@@ -90,10 +88,9 @@ export function HomeScreen({
 >
   <View style={styles.pointsTopRow}>
     <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
-
-    <View style={styles.pointsLogo}>
-      <BrandLogo width={88} />
-    </View>
+    <View style={styles.rankBadge}>
+            <Text style={styles.rankText}>GOLD</Text>
+          </View>
   </View>
 
   <View style={styles.pointsRow}>
@@ -309,17 +306,13 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   rankBadge: {
-    borderWidth: 1,
-    borderColor: '#E9D8A6',
-    borderRadius: 999,
-    backgroundColor: '#FFFDF5',
-    paddingHorizontal: 13,
-    paddingVertical: 6,
+    paddingHorizontal: 1,
+    paddingVertical: 1,
   },
   rankText: {
     color: colors.gold,
-    fontSize: 10,
-    fontWeight: '900',
+    fontSize: 20,
+    fontWeight: '500',
   },
   pointsCard: {
   overflow: 'hidden',
@@ -359,13 +352,6 @@ pointsHeader: {
   alignItems: 'flex-start',
   justifyContent: 'space-between',
 },
-
-pointsLogo: {
-  alignItems: 'flex-end',
-  marginTop: -2,
-},
-
-
 pointsLabel: {
   color: '#D9ECFB',
   fontSize: 12,

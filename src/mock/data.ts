@@ -1,4 +1,10 @@
-import type { LoyaltyNotification, Offer, Transaction , UserVoucher } from '../types';
+import type {
+  LoyaltyNotification,
+  MembershipOverview,
+  Offer,
+  Transaction,
+  UserVoucher,
+} from '../types';
 
 export const offers: Offer[] = [
   {
@@ -110,6 +116,29 @@ export const seedUserVouchers: UserVoucher[] = [
     transactionId: 'NPS-RD-0003',
   },
 ];
+export const seedMembershipOverview: MembershipOverview = {
+  customerName: 'Nguyễn Văn Anh',
+  currentTier: 'gold',
+  nextTier: 'platinum',
+  availablePoints: 128_450,
+  pendingPoints: 850,
+  expiringPoints: 320,
+  expiringLabel: 'Cuối tháng này',
+  equivalentVnd: 1_284_500,
+  totalEarnedPoints: 45_200,
+  totalUsedPoints: 32_750,
+  tierPeriodSpend: 375_000_000,
+  tierTargetSpend: 500_000_000,
+  lastUpdated: '09:41, 24/10/2023',
+  monthlyPoints: [
+    { month: 'T5', earned: 1800, used: 900 },
+    { month: 'T6', earned: 2700, used: 1400 },
+    { month: 'T7', earned: 3900, used: 2300 },
+    { month: 'T8', earned: 2000, used: 400 },
+    { month: 'T9', earned: 3200, used: 3600 },
+    { month: 'T10', earned: 1350, used: 260 },
+  ],
+};
 
 export const seedNotifications: LoyaltyNotification[] = [
   {

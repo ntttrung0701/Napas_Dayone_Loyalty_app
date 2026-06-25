@@ -14,7 +14,8 @@ export type AppScreen =
   | 'receipt'
   | 'voucher-wallet'
   | 'voucher-detail'
-  | 'voucher-qr';
+  | 'voucher-qr'
+  | 'membership';
 
 export type NotificationCategory = 'transaction' | 'offer' | 'system';
 
@@ -106,4 +107,38 @@ export type Receipt = {
   cashAmount: number;
   createdAt: string;
   voucher?: UserVoucher;
+};
+
+export type MembershipTierCode = 'member' | 'silver' | 'gold' | 'platinum';
+
+export type MembershipTierConfig = {
+  code: MembershipTierCode;
+  label: string;
+  minSpend: number;
+  maxSpend?: number;
+  multiplier: number;
+  benefits: string[];
+};
+
+export type MembershipMonthlyPoint = {
+  month: string;
+  earned: number;
+  used: number;
+};
+
+export type MembershipOverview = {
+  customerName: string;
+  currentTier: MembershipTierCode;
+  nextTier: MembershipTierCode;
+  availablePoints: number;
+  pendingPoints: number;
+  expiringPoints: number;
+  expiringLabel: string;
+  equivalentVnd: number;
+  totalEarnedPoints: number;
+  totalUsedPoints: number;
+  tierPeriodSpend: number;
+  tierTargetSpend: number;
+  lastUpdated: string;
+  monthlyPoints: MembershipMonthlyPoint[];
 };

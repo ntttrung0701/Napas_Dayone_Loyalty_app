@@ -96,6 +96,14 @@ export function ProfileScreen({
             </View>
           </View>
         </View>
+        <Pressable
+  onPress={() => onNavigate('membership')}
+  style={({ pressed }) => [styles.membershipButton, pressed && styles.pressed]}
+>
+  <Ionicons color={colors.primary} name="analytics-outline" size={18} />
+  <Text style={styles.membershipButtonText}>Xem tổng quan điểm & hạng thành viên</Text>
+  <Ionicons color={colors.textMuted} name="chevron-forward" size={18} />
+</Pressable>
 
         <View style={styles.progressCard}>
           <View style={styles.progressHeader}>
@@ -275,6 +283,25 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 3,
   },
+  membershipButton: {
+  minHeight: 48,
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginTop: 14,
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 14,
+  backgroundColor: colors.primarySoft,
+  paddingHorizontal: 14,
+},
+
+membershipButtonText: {
+  flex: 1,
+  marginLeft: 10,
+  color: colors.primary,
+  fontSize: 12,
+  fontWeight: '900',
+},
   progressHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   progressTitleRow: { flex: 1, flexDirection: 'row', alignItems: 'center' },
   progressTitle: { marginLeft: 8, color: colors.primaryDark, fontSize: 12, fontWeight: '800' },

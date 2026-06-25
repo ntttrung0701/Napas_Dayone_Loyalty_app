@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { OfferMediaResolver } from './src/features/offers/domain/OfferMediaResolver';
+import { MembershipOverviewScreen } from './src/features/membership/MembershipOverviewScreen';
 
 import { AuthFlow } from './src/features/auth/AuthFlow';
 import { CardsScreen } from './src/features/cards/CardsScreen';
@@ -34,6 +35,7 @@ import {
   seedNotifications,
   seedTransactions,
   seedUserVouchers,
+  seedMembershipOverview,
 } from './src/mock/data';
 import { NavigationStack } from './src/navigation/NavigationStack';
 import { colors } from './src/theme/colors';
@@ -325,6 +327,19 @@ export default function App() {
           />
         );
 
+        case 'membership':
+  return (
+    <MembershipOverviewScreen
+      activeTab="profile"
+      overview={{
+        ...seedMembershipOverview,
+        availablePoints: points,
+        
+      }}
+      onBack={goBack}
+      onNavigate={navigate}
+    />
+  );
       case 'notifications':
         return (
           <NotificationsScreen

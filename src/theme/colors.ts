@@ -12,7 +12,7 @@ export const colors = {
   warning: '#D78600',
   warningSoft: '#FFF6DF',
   danger: '#D9363E',
-  gold: '#B8871F',
+  gold: '#fabc38',
   purple: '#6D5DD3',
   white: '#FFFFFF',
   black: '#09111C',
