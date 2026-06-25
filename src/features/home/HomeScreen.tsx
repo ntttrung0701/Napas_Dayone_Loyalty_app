@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BrandLogo } from '../../shared/components/BrandLogo';
 import { BottomNav } from '../../shared/components/BottomNav';
@@ -26,6 +26,7 @@ type HomeScreenProps = {
 };
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
+const pointCardBackground = require('../../../assets/Card.png');
 
 const quickActions: Array<{ label: string; icon: IconName; route: AppScreen }> = [
   { label: 'Đổi điểm', icon: 'sync-outline', route: 'offers' },
@@ -81,55 +82,54 @@ export function HomeScreen({
           </View>
         </View>
 
-        <View style={styles.pointsCard}>
-  <PointsCardBackground />
+        <ImageBackground
+  source={pointCardBackground}
+  resizeMode="stretch"
+  style={styles.pointsCard}
+  imageStyle={styles.pointsCardImage}
+>
+  <View style={styles.pointsTopRow}>
+    <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
 
-  <View style={styles.pointsCardContent}>
-    <View style={styles.pointsHeader}>
-      <View>
-        <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
-
-        <View style={styles.pointsRow}>
-          <Text style={styles.pointsValue}>{formatPoints(points)}</Text>
-          <Text style={styles.pointsUnit}>pts</Text>
-        </View>
-      </View>
-
-      <View style={styles.pointsLogo}>
-        <BrandLogo width={88} />
-      </View>
-    </View>
-
-    <View style={styles.pointsDivider} />
-
-    <View style={styles.pointsMetaRow}>
-      <View style={styles.pointsMetaItem}>
-        <View style={styles.pointsMetaIcon}>
-          <Ionicons color="#EAF6FF" name="time-outline" size={17} />
-        </View>
-
-        <View style={styles.pointsMetaCopy}>
-          <Text style={styles.pointsMetaLabel}>Điểm chờ xác nhận:</Text>
-          <Text style={styles.pointsMetaValue}>2.400 điểm</Text>
-        </View>
-      </View>
-
-      <Pressable
-        onPress={() => onNavigate('offers')}
-        style={({ pressed }) => [styles.pointsMetaItem, pressed && styles.pressed]}
-      >
-        <View style={[styles.pointsMetaIcon, styles.pointsMetaIconGold]}>
-          <Ionicons color="#FFE58A" name="hourglass-outline" size={17} />
-        </View>
-
-        <View style={styles.pointsMetaCopy}>
-          <Text style={styles.pointsMetaLabel}>Điểm sắp hết hạn:</Text>
-          <Text style={styles.pointsMetaValue}>8.000 điểm</Text>
-        </View>
-      </Pressable>
+    <View style={styles.pointsLogo}>
+      <BrandLogo width={88} />
     </View>
   </View>
-</View>
+
+  <View style={styles.pointsRow}>
+    <Text style={styles.pointsValue}>{formatPoints(points)}</Text>
+    <Text style={styles.pointsUnit}>pts</Text>
+  </View>
+
+  <View style={styles.pointsDivider} />
+
+  <View style={styles.pointsMetaRow}>
+    <View style={styles.pointsMetaItem}>
+      <View style={styles.pointsMetaIcon}>
+        <Ionicons color="#EAF6FF" name="time-outline" size={16} />
+      </View>
+
+      <View style={styles.pointsMetaCopy}>
+        <Text style={styles.pointsMetaLabel}>Điểm chờ xác nhận:</Text>
+        <Text style={styles.pointsMetaValue}>2.400 điểm</Text>
+      </View>
+    </View>
+
+    <Pressable
+      onPress={() => onNavigate('offers')}
+      style={({ pressed }) => [styles.pointsMetaItem, pressed && styles.pressed]}
+    >
+      <View style={[styles.pointsMetaIcon, styles.pointsMetaIconGold]}>
+        <Ionicons color="#FFE58A" name="hourglass-outline" size={16} />
+      </View>
+
+      <View style={styles.pointsMetaCopy}>
+        <Text style={styles.pointsMetaLabel}>Điểm sắp hết hạn:</Text>
+        <Text style={styles.pointsMetaValue}>8.000 điểm</Text>
+      </View>
+    </Pressable>
+  </View>
+</ImageBackground>
 
         <View style={styles.quickGrid}>
   {quickActions.map((action) => (
@@ -322,17 +322,28 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   pointsCard: {
-  position: 'relative',
   overflow: 'hidden',
-  height: 158,
+  height: 178,
   marginHorizontal: 20,
-  borderRadius: 18,
+  borderRadius: 20,
+  paddingHorizontal: 18,
+  paddingTop: 18,
+  paddingBottom: 14,
   shadowColor: '#062C57',
-  shadowOffset: { width: 0, height: 14 },
-  shadowOpacity: 0.32,
+  shadowOffset: { width: 0, height: 12 },
+  shadowOpacity: 0.28,
   shadowRadius: 18,
-  elevation: 10,
+  elevation: 9,
 },
+pointsCardImage: {
+  borderRadius: 20,
+},
+pointsTopRow: {
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  justifyContent: 'space-between',
+},
+
 
 pointsCardContent: {
   position: 'relative',
@@ -353,6 +364,7 @@ pointsLogo: {
   alignItems: 'flex-end',
   marginTop: -2,
 },
+
 
 pointsLabel: {
   color: '#D9ECFB',
@@ -386,7 +398,7 @@ pointsUnit: {
 
 pointsDivider: {
   height: 1,
-  marginTop: 18,
+  marginTop: 20,
   marginBottom: 12,
   backgroundColor: 'rgba(218,238,255,0.28)',
 },
