@@ -79,54 +79,53 @@ export function HomeScreen({
           </View>
           
         </View>
-
-        <ImageBackground
-  source={pointCardBackground}
-  resizeMode="stretch"
-  style={styles.pointsCard}
-  imageStyle={styles.pointsCardImage}
+        
+        <Pressable
+  onPress={() => onNavigate('membership')}
+  style={({ pressed }) => [styles.pointsCardPressable, pressed && styles.pressed]}
 >
-  <View style={styles.pointsTopRow}>
-    <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
-    <View style={styles.rankBadge}>
-            <Text style={styles.rankText}>GOLD</Text>
-          </View>
-  </View>
-
-  <View style={styles.pointsRow}>
-    <Text style={styles.pointsValue}>{formatPoints(points)}</Text>
-    <Text style={styles.pointsUnit}>pts</Text>
-  </View>
-
-  <View style={styles.pointsDivider} />
-
-  <View style={styles.pointsMetaRow}>
-    <View style={styles.pointsMetaItem}>
-      <View style={styles.pointsMetaIcon}>
-        <Ionicons color="#EAF6FF" name="time-outline" size={16} />
-      </View>
-
-      <View style={styles.pointsMetaCopy}>
-        <Text style={styles.pointsMetaLabel}>Điểm chờ xác nhận:</Text>
-        <Text style={styles.pointsMetaValue}>2.400 điểm</Text>
-      </View>
+  <ImageBackground
+    source={pointCardBackground}
+    resizeMode="stretch"
+    style={styles.pointsCard}
+    imageStyle={styles.pointsCardImage}
+  >
+    <View style={styles.pointsTopRow}>
+      <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
     </View>
 
-    <Pressable
-      onPress={() => onNavigate('offers')}
-      style={({ pressed }) => [styles.pointsMetaItem, pressed && styles.pressed]}
-    >
-      <View style={[styles.pointsMetaIcon, styles.pointsMetaIconGold]}>
-        <Ionicons color="#FFE58A" name="hourglass-outline" size={16} />
+    <View style={styles.pointsRow}>
+      <Text style={styles.pointsValue}>{formatPoints(points)}</Text>
+      <Text style={styles.pointsUnit}>pts</Text>
+    </View>
+
+    <View style={styles.pointsDivider} />
+
+    <View style={styles.pointsMetaRow}>
+      <View style={styles.pointsMetaItem}>
+        <View style={styles.pointsMetaIcon}>
+          <Ionicons color="#EAF6FF" name="time-outline" size={16} />
+        </View>
+
+        <View style={styles.pointsMetaCopy}>
+          <Text style={styles.pointsMetaLabel}>Điểm chờ xác nhận:</Text>
+          <Text style={styles.pointsMetaValue}>2.400 điểm</Text>
+        </View>
       </View>
 
-      <View style={styles.pointsMetaCopy}>
-        <Text style={styles.pointsMetaLabel}>Điểm sắp hết hạn:</Text>
-        <Text style={styles.pointsMetaValue}>8.000 điểm</Text>
+      <View style={styles.pointsMetaItem}>
+        <View style={[styles.pointsMetaIcon, styles.pointsMetaIconGold]}>
+          <Ionicons color="#FFE58A" name="hourglass-outline" size={16} />
+        </View>
+
+        <View style={styles.pointsMetaCopy}>
+          <Text style={styles.pointsMetaLabel}>Điểm sắp hết hạn:</Text>
+          <Text style={styles.pointsMetaValue}>8.000 điểm</Text>
+        </View>
       </View>
-    </Pressable>
-  </View>
-</ImageBackground>
+    </View>
+  </ImageBackground>
+</Pressable>
 
         <View style={styles.quickGrid}>
   {quickActions.map((action) => (
@@ -314,10 +313,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '500',
   },
-  pointsCard: {
+pointsCard: {
   overflow: 'hidden',
   height: 178,
-  marginHorizontal: 20,
   borderRadius: 20,
   paddingHorizontal: 18,
   paddingTop: 18,
@@ -329,6 +327,10 @@ const styles = StyleSheet.create({
   elevation: 9,
 },
 pointsCardImage: {
+  borderRadius: 20,
+},
+pointsCardPressable: {
+  marginHorizontal: 20,
   borderRadius: 20,
 },
 pointsTopRow: {
@@ -367,12 +369,12 @@ pointsRow: {
 
 pointsValue: {
   color: colors.white,
-  fontSize: 40,
-  fontWeight: '800',
-  letterSpacing: -1.2,
+  fontSize: 37,
+  fontWeight: '500',
   textShadowColor: 'rgba(0,0,0,0.22)',
   textShadowOffset: { width: 0, height: 2 },
   textShadowRadius: 4,
+
 },
 
 pointsUnit: {
