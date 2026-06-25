@@ -20,7 +20,7 @@ export function VoucherDetailScreen({ voucher, onBack, onUseVoucher }: VoucherDe
   if (!voucher) {
     return (
       <View style={styles.root}>
-        <ScreenHeader onBack={onBack} title="Chi tiết Voucher" />
+        <ScreenHeader onBack={onBack} title="Chi tiết voucher" />
         <View style={styles.emptyState}>
           <Ionicons color={colors.textMuted} name="ticket-outline" size={44} />
           <Text style={styles.emptyTitle}>Không tìm thấy voucher</Text>
@@ -80,9 +80,9 @@ const imageSource = OfferMediaResolver.getImageSource(voucher.media);
           ))}
         </View>
 
-        <View style={styles.notice}>
+        <View style={canUse ? styles.notice : styles.noticeWarning}>
           <Ionicons
-            color={canUse ? colors.success : colors.warning}
+            color={canUse ? colors.success : colors.danger}
             name={canUse ? 'checkmark-circle-outline' : 'alert-circle-outline'}
             size={18}
           />
@@ -222,6 +222,14 @@ heroTextLayer: {
     backgroundColor: '#DCFCE7',
     padding: 12,
   },
+  noticeWarning: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: 14,
+    borderRadius: 14,
+    backgroundColor: '#fcdcdc',
+    padding: 12,
+  },
   noticeText: {
     flex: 1,
     marginLeft: 8,
@@ -231,7 +239,7 @@ heroTextLayer: {
     lineHeight: 16,
   },
   noticeTextWarning: {
-    color: colors.warning,
+    color: colors.danger,
   },
   footer: {
     borderTopWidth: 1,

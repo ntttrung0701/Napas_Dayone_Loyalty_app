@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { OfferMediaResolver } from '../offers/domain/OfferMediaResolver';
 import { BottomNav } from '../../shared/components/BottomNav';
 import { PrimaryButton } from '../../shared/components/PrimaryButton';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
@@ -119,6 +120,7 @@ function VoucherCard({ voucher, onPress }: { voucher: UserVoucher; onPress: () =
   const status = VoucherFactory.getEffectiveStatus(voucher);
   const statusLabel = VoucherFactory.getStatusLabel(voucher);
   const disabled = status !== 'active';
+  const iconSource = OfferMediaResolver.getIconSource(voucher.media);
 
   return (
     <Pressable
@@ -130,8 +132,12 @@ function VoucherCard({ voucher, onPress }: { voucher: UserVoucher; onPress: () =
       ]}
     >
       <View style={styles.voucherIcon}>
-        <Ionicons color={colors.primary} name="ticket-outline" size={22} />
-      </View>
+  {iconSource ? (
+    <Image source={iconSource} style={styles.voucherIconImage} resizeMode="contain" />
+  ) : (
+    <Ionicons color={colors.primary} name="ticket-outline" size={22} />
+  )}
+</View>
 
       <View style={styles.voucherInfo}>
         <View style={styles.voucherTopRow}>
@@ -241,28 +247,34 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   voucherCard: {
-    flexDirection: 'row',
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 18,
-    backgroundColor: colors.surface,
-    padding: 14,
-  },
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 12,
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 18,
+  backgroundColor: colors.surface,
+  padding: 14,
+},
   voucherCardMuted: {
     opacity: 0.72,
   },
   voucherIcon: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 14,
-    backgroundColor: colors.primarySoft,
-  },
+  width: 54,
+  height: 54,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 16,
+  backgroundColor: colors.background,
+},
+voucherIconImage: {
+  width: 42,
+  height: 42,
+  borderRadius: 12,
+},
   voucherInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 14,
   },
   voucherTopRow: {
     flexDirection: 'row',

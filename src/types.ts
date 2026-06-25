@@ -33,6 +33,9 @@ export type OfferMedia = {
   imageUrl?: string;
   thumbnailUrl?: string;
   heroUrl?: string;
+
+  iconKey?: string;
+  iconUrl?: string;
 };
 
 export type Offer = {

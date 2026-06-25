@@ -12,6 +12,7 @@ export const offers: Offer[] = [
   expiresAt: '30 ngày kể từ lúc đổi',
   media: {
     imageKey: 'highlands',
+    iconKey: 'highlands'
   },
 },
 {
@@ -25,6 +26,7 @@ export const offers: Offer[] = [
   expiresAt: '31/12/2026',
   media: {
     imageKey: 'winmart',
+    iconKey: 'winmart',
   },
 },
   {
@@ -59,6 +61,7 @@ export const seedUserVouchers: UserVoucher[] = [
     ],
     media: {
   imageKey: 'highlands',
+  iconKey: 'highlands'
 },
     pointsUsed: 500,
     transactionId: 'NPS-RD-0001',
@@ -81,6 +84,7 @@ export const seedUserVouchers: UserVoucher[] = [
     ],
     media: {
   imageKey: 'winmart',
+  iconKey: 'winmart',
 },
     pointsUsed: 1_200,
     transactionId: 'NPS-RD-0002',
