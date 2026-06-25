@@ -1,6 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BrandLogo } from '../../shared/components/BrandLogo';
@@ -79,81 +78,30 @@ export function HomeScreen({
           </View>
         </View>
 
-        <LinearGradient
-  colors={['#2C79B8', '#0A4F91', '#063A73', '#052B58']}
-  end={{ x: 1, y: 1 }}
-  locations={[0, 0.32, 0.72, 1]}
-  start={{ x: 0, y: 0 }}
-  style={styles.pointsCard}
->
-  <LinearGradient
-    colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.08)', 'transparent']}
-    end={{ x: 1, y: 1 }}
-    start={{ x: 0, y: 0 }}
-    style={styles.pointsTopShine}
-  />
-
-  <LinearGradient
-    colors={['transparent', 'rgba(255,255,255,0.28)', 'transparent']}
-    end={{ x: 1, y: 1 }}
-    start={{ x: 0, y: 0 }}
-    style={styles.pointsDiagonalShine}
-  />
-
-  <View style={styles.pointsGlowRight} />
-  <View style={styles.pointsGlowLeft} />
-  <View style={styles.pointsBorderGlow} />
-
-  <View style={styles.pointsHeader}>
-    <View>
-      <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
-
-      <View style={styles.pointsRow}>
-        <Text style={styles.pointsValue}>{formatPoints(points)}</Text>
-        <Text style={styles.pointsUnit}>pts</Text>
-      </View>
-    </View>
-
-    <View style={styles.napasLogoBox}>
-      <BrandLogo width={82} />
-    </View>
-  </View>
-
-  <View style={styles.pointsDivider} />
-
-  <View style={styles.pointsMetaRow}>
-    <View style={styles.pointsMetaItem}>
-      <LinearGradient
-        colors={['rgba(255,255,255,0.32)', 'rgba(255,255,255,0.12)']}
-        style={styles.pointsMetaIcon}
-      >
-        <Ionicons color="#EAF6FF" name="time-outline" size={16} />
-      </LinearGradient>
-
-      <View style={styles.pointsMetaCopy}>
-        <Text style={styles.pointsMetaLabel}>Điểm chờ xác nhận:</Text>
-        <Text style={styles.pointsMetaValue}>2.400 điểm</Text>
-      </View>
-    </View>
-
-    <Pressable
-      onPress={() => onNavigate('offers')}
-      style={({ pressed }) => [styles.pointsMetaItem, pressed && styles.pressed]}
-    >
-      <LinearGradient
-        colors={['rgba(244,204,88,0.45)', 'rgba(244,204,88,0.16)']}
-        style={styles.pointsMetaIcon}
-      >
-        <Ionicons color="#FFE58D" name="hourglass-outline" size={16} />
-      </LinearGradient>
-
-      <View style={styles.pointsMetaCopy}>
-        <Text style={styles.pointsMetaLabel}>Điểm sắp hết hạn:</Text>
-        <Text style={styles.pointsMetaValue}>8.000 điểm</Text>
-      </View>
-    </Pressable>
-  </View>
-</LinearGradient>
+        <View style={styles.pointsCard}>
+          <View pointerEvents="none" style={styles.pointsGlowLarge} />
+          <View pointerEvents="none" style={styles.pointsGlowSmall} />
+          <View style={styles.pointsTopRow}>
+            <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
+            <View style={styles.secureBadge}>
+              <Ionicons color={colors.white} name="shield-checkmark" size={14} />
+              <Text style={styles.secureText}>Đã xác thực</Text>
+            </View>
+          </View>
+          <View style={styles.pointsRow}>
+            <Text style={styles.pointsValue}>{formatPoints(points)}</Text>
+            <Text style={styles.pointsUnit}>pts</Text>
+          </View>
+          <View style={styles.pendingRow}>
+            <Ionicons color={colors.white} name="time-outline" size={16} />
+            <Text style={styles.pendingText}>2.400 điểm đang chờ xác nhận</Text>
+          </View>
+          <Pressable onPress={() => onNavigate('offers')} style={styles.expiryRow}>
+            <Ionicons color="#FFD788" name="warning-outline" size={16} />
+            <Text style={styles.expiryText}>8.000 điểm sắp hết hạn trong 30 ngày</Text>
+            <Ionicons color="#FFD788" name="chevron-forward" size={17} />
+          </Pressable>
+        </View>
 
         <View style={styles.quickGrid}>
           {quickActions.map((action) => (
@@ -308,172 +256,110 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   pointsCard: {
-  position: 'relative',
-  overflow: 'hidden',
-  marginHorizontal: 20,
-  borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.35)',
-  borderRadius: 20,
-  paddingHorizontal: 16,
-  paddingTop: 18,
-  paddingBottom: 14,
-  minHeight: 166,
-  shadowColor: '#072C57',
-  shadowOffset: { width: 0, height: 16 },
-  shadowOpacity: 0.38,
-  shadowRadius: 24,
-  elevation: 12,
-},
-
-pointsTopShine: {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  height: 72,
-  opacity: 0.8,
-},
-
-pointsDiagonalShine: {
-  position: 'absolute',
-  top: -42,
-  left: '35%',
-  width: 92,
-  height: 230,
-  opacity: 0.9,
-  transform: [{ rotate: '22deg' }],
-},
-
-pointsGlowRight: {
-  position: 'absolute',
-  top: -42,
-  right: -42,
-  width: 158,
-  height: 158,
-  borderRadius: 79,
-  backgroundColor: 'rgba(111,183,235,0.34)',
-},
-
-pointsGlowLeft: {
-  position: 'absolute',
-  bottom: -64,
-  left: -38,
-  width: 150,
-  height: 150,
-  borderRadius: 75,
-  backgroundColor: 'rgba(1,31,77,0.42)',
-},
-
-pointsBorderGlow: {
-  position: 'absolute',
-  top: 1,
-  left: 1,
-  right: 1,
-  bottom: 1,
-  borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.14)',
-  borderRadius: 19,
-},
-
-pointsHeader: {
-  position: 'relative',
-  zIndex: 2,
-  flexDirection: 'row',
-  alignItems: 'flex-start',
-  justifyContent: 'space-between',
-},
-
-pointsLabel: {
-  color: '#D8ECFF',
-  fontSize: 12,
-  fontWeight: '800',
-  letterSpacing: 0.8,
-},
-
-pointsRow: {
-  flexDirection: 'row',
-  alignItems: 'baseline',
-  marginTop: 6,
-},
-
-pointsValue: {
-  color: colors.white,
-  fontSize: 30,
-  fontWeight: '900',
-  letterSpacing: -1.4,
-  textShadowColor: 'rgba(0,0,0,0.22)',
-  textShadowOffset: { width: 0, height: 2 },
-  textShadowRadius: 5,
-},
-
-pointsUnit: {
-  marginLeft: 7,
-  color: '#F2FAFF',
-  fontSize: 24,
-  fontWeight: '500',
-},
-
-napasLogoBox: {
-  minWidth: 92,
-  alignItems: 'flex-end',
-  marginTop: -2,
-},
-
-pointsDivider: {
-  position: 'relative',
-  zIndex: 2,
-  height: 1,
-  marginTop: 22,
-  marginBottom: 13,
-  backgroundColor: 'rgba(221,240,255,0.27)',
-},
-
-pointsMetaRow: {
-  position: 'relative',
-  zIndex: 2,
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-},
-
-pointsMetaItem: {
-  width: '48%',
-  flexDirection: 'row',
-  alignItems: 'center',
-},
-
-pointsMetaIcon: {
-  width: 36,
-  height: 36,
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.14)',
-  borderRadius: 13,
-},
-
-pointsMetaCopy: {
-  flex: 1,
-  marginLeft: 8,
-},
-
-pointsMetaLabel: {
-  color: '#D8ECFF',
-  fontSize: 11,
-  fontWeight: '700',
-  lineHeight: 15,
-},
-
-pointsMetaValue: {
-  marginTop: 2,
-  color: colors.white,
-  fontSize: 13,
-  fontWeight: '900',
-  lineHeight: 17,
-  textShadowColor: 'rgba(0,0,0,0.18)',
-  textShadowOffset: { width: 0, height: 1 },
-  textShadowRadius: 3,
-},
+    overflow: 'hidden',
+    marginHorizontal: 20,
+    borderRadius: 22,
+    backgroundColor: colors.primary,
+    padding: 20,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    elevation: 7,
+  },
+  pointsGlowLarge: {
+    position: 'absolute',
+    top: -76,
+    right: -54,
+    width: 190,
+    height: 190,
+    borderRadius: 95,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+  },
+  pointsGlowSmall: {
+    position: 'absolute',
+    bottom: -66,
+    left: -34,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(27,160,220,0.28)',
+  },
+  pointsTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  secureBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.24)',
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+  },
+  secureText: {
+    marginLeft: 4,
+    color: colors.white,
+    fontSize: 8,
+    fontWeight: '800',
+  },
+  pointsLabel: {
+    color: '#CDE7FA',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  pointsRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 18,
+    marginTop: 5,
+  },
+  pointsValue: {
+    color: colors.white,
+    fontSize: 31,
+    fontWeight: '900',
+  },
+  pointsUnit: {
+    marginLeft: 6,
+    color: '#CDE7FA',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  pendingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    padding: 11,
+  },
+  pendingText: {
+    marginLeft: 8,
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  expiryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,200,80,0.28)',
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,181,33,0.13)',
+    padding: 11,
+  },
+  expiryText: {
+    flex: 1,
+    marginLeft: 8,
+    color: '#FFD788',
+    fontSize: 11,
+    fontWeight: '700',
+  },
   quickGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
