@@ -8,6 +8,14 @@ import { TransactionRow } from '../../shared/components/TransactionRow';
 import { colors } from '../../theme/colors';
 import type { AppScreen, Transaction } from '../../types';
 import { formatPoints } from '../../utils/format';
+import Svg, {
+  Circle,
+  Defs,
+  LinearGradient,
+  Path,
+  Rect,
+  Stop,
+} from 'react-native-svg';
 
 type HomeScreenProps = {
   points: number;
@@ -19,18 +27,13 @@ type HomeScreenProps = {
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-const quickActions: Array<{ label: string; icon: IconName; route: AppScreen; color: string }> = [
-  { label: 'Đổi điểm', icon: 'gift-outline', route: 'offers', color: colors.success },
-  { label: 'Tặng điểm', icon: 'paper-plane-outline', route: 'transfer', color: colors.warning },
-  {
-    label: 'Thông báo',
-    icon: 'notifications-outline',
-    route: 'notifications',
-    color: colors.purple,
-  },
-  { label: 'Voucher của tôi', icon: 'wallet-outline', route: 'voucher-wallet', color: colors.purple },
-  { label: 'Liên kết', icon: 'card-outline', route: 'cards', color: colors.primary },
-  { label: 'Mua sắm', icon: 'cart-outline', route: 'payment', color: colors.gold },
+const quickActions: Array<{ label: string; icon: IconName; route: AppScreen }> = [
+  { label: 'Đổi điểm', icon: 'sync-outline', route: 'offers' },
+  { label: 'Tặng điểm', icon: 'gift-outline', route: 'transfer' },
+  { label: 'Thông báo', icon: 'notifications-outline', route: 'notifications' },
+  { label: 'Voucher của tôi', icon: 'ticket-outline', route: 'voucher-wallet' },
+  { label: 'Liên kết', icon: 'link-outline', route: 'cards' },
+  { label: 'Mua sắm', icon: 'bag-outline', route: 'payment' },
 ];
 
 export function HomeScreen({
@@ -79,49 +82,70 @@ export function HomeScreen({
         </View>
 
         <View style={styles.pointsCard}>
-          <View pointerEvents="none" style={styles.pointsGlowLarge} />
-          <View pointerEvents="none" style={styles.pointsGlowSmall} />
-          <View style={styles.pointsTopRow}>
-            <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
-            <View style={styles.secureBadge}>
-              <Ionicons color={colors.white} name="shield-checkmark" size={14} />
-              <Text style={styles.secureText}>Đã xác thực</Text>
-            </View>
-          </View>
-          <View style={styles.pointsRow}>
-            <Text style={styles.pointsValue}>{formatPoints(points)}</Text>
-            <Text style={styles.pointsUnit}>pts</Text>
-          </View>
-          <View style={styles.pendingRow}>
-            <Ionicons color={colors.white} name="time-outline" size={16} />
-            <Text style={styles.pendingText}>2.400 điểm đang chờ xác nhận</Text>
-          </View>
-          <Pressable onPress={() => onNavigate('offers')} style={styles.expiryRow}>
-            <Ionicons color="#FFD788" name="warning-outline" size={16} />
-            <Text style={styles.expiryText}>8.000 điểm sắp hết hạn trong 30 ngày</Text>
-            <Ionicons color="#FFD788" name="chevron-forward" size={17} />
-          </Pressable>
+  <PointsCardBackground />
+
+  <View style={styles.pointsCardContent}>
+    <View style={styles.pointsHeader}>
+      <View>
+        <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
+
+        <View style={styles.pointsRow}>
+          <Text style={styles.pointsValue}>{formatPoints(points)}</Text>
+          <Text style={styles.pointsUnit}>pts</Text>
+        </View>
+      </View>
+
+      <View style={styles.pointsLogo}>
+        <BrandLogo width={88} />
+      </View>
+    </View>
+
+    <View style={styles.pointsDivider} />
+
+    <View style={styles.pointsMetaRow}>
+      <View style={styles.pointsMetaItem}>
+        <View style={styles.pointsMetaIcon}>
+          <Ionicons color="#EAF6FF" name="time-outline" size={17} />
         </View>
 
-        <View style={styles.quickGrid}>
-          {quickActions.map((action) => (
-            <Pressable
-              key={action.label}
-              onPress={() => onNavigate(action.route)}
-              style={({ pressed }) => [styles.quickAction, pressed && styles.pressed]}
-            >
-              <View
-                style={[
-                  styles.quickIcon,
-                  { borderColor: `${action.color}26`, backgroundColor: `${action.color}12` },
-                ]}
-              >
-                <Ionicons color={action.color} name={action.icon} size={30} />
-              </View>
-              <Text style={styles.quickLabel}>{action.label}</Text>
-            </Pressable>
-          ))}
+        <View style={styles.pointsMetaCopy}>
+          <Text style={styles.pointsMetaLabel}>Điểm chờ xác nhận:</Text>
+          <Text style={styles.pointsMetaValue}>2.400 điểm</Text>
         </View>
+      </View>
+
+      <Pressable
+        onPress={() => onNavigate('offers')}
+        style={({ pressed }) => [styles.pointsMetaItem, pressed && styles.pressed]}
+      >
+        <View style={[styles.pointsMetaIcon, styles.pointsMetaIconGold]}>
+          <Ionicons color="#FFE58A" name="hourglass-outline" size={17} />
+        </View>
+
+        <View style={styles.pointsMetaCopy}>
+          <Text style={styles.pointsMetaLabel}>Điểm sắp hết hạn:</Text>
+          <Text style={styles.pointsMetaValue}>8.000 điểm</Text>
+        </View>
+      </Pressable>
+    </View>
+  </View>
+</View>
+
+        <View style={styles.quickGrid}>
+  {quickActions.map((action) => (
+    <Pressable
+      key={action.label}
+      onPress={() => onNavigate(action.route)}
+      style={({ pressed }) => [styles.quickAction, pressed && styles.pressed]}
+    >
+      <View style={styles.quickButton}>
+        <View pointerEvents="none" style={styles.quickButtonShine} />
+        <Ionicons color="#EAF6FF" name={action.icon} size={25} />
+        <Text style={styles.quickButtonLabel}>{action.label}</Text>
+      </View>
+    </Pressable>
+  ))}
+</View>
 
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
@@ -157,7 +181,49 @@ export function HomeScreen({
     </View>
   );
 }
+function PointsCardBackground() {
+  return (
+    <Svg
+      height="100%"
+      pointerEvents="none"
+      preserveAspectRatio="none"
+      style={StyleSheet.absoluteFillObject}
+      viewBox="0 0 335 158"
+      width="100%"
+    >
+      <Defs>
+        <LinearGradient id="pointsBg" x1="0" x2="1" y1="0" y2="1">
+          <Stop offset="0" stopColor="#2D75AF" />
+          <Stop offset="0.38" stopColor="#0E5797" />
+          <Stop offset="0.72" stopColor="#073C77" />
+          <Stop offset="1" stopColor="#052D5E" />
+        </LinearGradient>
 
+        <LinearGradient id="shine" x1="0" x2="1" y1="0" y2="1">
+          <Stop offset="0" stopColor="#FFFFFF" stopOpacity="0" />
+          <Stop offset="0.5" stopColor="#FFFFFF" stopOpacity="0.32" />
+          <Stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
+        </LinearGradient>
+      </Defs>
+
+      <Rect fill="url(#pointsBg)" height="158" rx="18" width="335" x="0" y="0" />
+      <Circle cx="292" cy="22" fill="#7AB8E7" opacity="0.22" r="95" />
+      <Circle cx="28" cy="162" fill="#043063" opacity="0.42" r="86" />
+      <Path d="M214 -42 L260 -42 L188 203 L142 203 Z" fill="url(#shine)" opacity="0.82" />
+      <Rect
+        fill="none"
+        height="156"
+        rx="17"
+        stroke="#D9EEFF"
+        strokeOpacity="0.36"
+        strokeWidth="1"
+        width="333"
+        x="1"
+        y="1"
+      />
+    </Svg>
+  );
+}
 const styles = StyleSheet.create({
   root: {
     flex: 1,
@@ -256,138 +322,167 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   pointsCard: {
-    overflow: 'hidden',
-    marginHorizontal: 20,
-    borderRadius: 22,
-    backgroundColor: colors.primary,
-    padding: 20,
-    shadowColor: colors.primaryDark,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 14,
-    elevation: 7,
-  },
-  pointsGlowLarge: {
-    position: 'absolute',
-    top: -76,
-    right: -54,
-    width: 190,
-    height: 190,
-    borderRadius: 95,
-    backgroundColor: 'rgba(255,255,255,0.10)',
-  },
-  pointsGlowSmall: {
-    position: 'absolute',
-    bottom: -66,
-    left: -34,
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: 'rgba(27,160,220,0.28)',
-  },
-  pointsTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  secureBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.24)',
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-  },
-  secureText: {
-    marginLeft: 4,
-    color: colors.white,
-    fontSize: 8,
-    fontWeight: '800',
-  },
-  pointsLabel: {
-    color: '#CDE7FA',
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-  },
-  pointsRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: 18,
-    marginTop: 5,
-  },
-  pointsValue: {
-    color: colors.white,
-    fontSize: 31,
-    fontWeight: '900',
-  },
-  pointsUnit: {
-    marginLeft: 6,
-    color: '#CDE7FA',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  pendingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    padding: 11,
-  },
-  pendingText: {
-    marginLeft: 8,
-    color: colors.white,
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  expiryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255,200,80,0.28)',
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,181,33,0.13)',
-    padding: 11,
-  },
-  expiryText: {
-    flex: 1,
-    marginLeft: 8,
-    color: '#FFD788',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  quickGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingBottom: 8,
-    paddingTop: 22,
-  },
-  quickAction: {
-    width: '31%',
-    alignItems: 'center',
-    marginBottom: 18,
-  },
-  quickIcon: {
-    width: 58,
-    height: 58,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderRadius: 17,
-  },
-  quickLabel: {
-    marginTop: 7,
-    textAlign: 'center',
-    color: colors.text,
-    fontSize: 10,
-    fontWeight: '700',
-  },
+  position: 'relative',
+  overflow: 'hidden',
+  height: 158,
+  marginHorizontal: 20,
+  borderRadius: 18,
+  shadowColor: '#062C57',
+  shadowOffset: { width: 0, height: 14 },
+  shadowOpacity: 0.32,
+  shadowRadius: 18,
+  elevation: 10,
+},
+
+pointsCardContent: {
+  position: 'relative',
+  zIndex: 1,
+  flex: 1,
+  paddingHorizontal: 18,
+  paddingTop: 18,
+  paddingBottom: 13,
+},
+
+pointsHeader: {
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  justifyContent: 'space-between',
+},
+
+pointsLogo: {
+  alignItems: 'flex-end',
+  marginTop: -2,
+},
+
+pointsLabel: {
+  color: '#D9ECFB',
+  fontSize: 12,
+  fontWeight: '700',
+  letterSpacing: 0.7,
+},
+
+pointsRow: {
+  flexDirection: 'row',
+  alignItems: 'baseline',
+  marginTop: 5,
+},
+
+pointsValue: {
+  color: colors.white,
+  fontSize: 40,
+  fontWeight: '800',
+  letterSpacing: -1.2,
+  textShadowColor: 'rgba(0,0,0,0.22)',
+  textShadowOffset: { width: 0, height: 2 },
+  textShadowRadius: 4,
+},
+
+pointsUnit: {
+  marginLeft: 8,
+  color: '#F2FAFF',
+  fontSize: 24,
+  fontWeight: '400',
+},
+
+pointsDivider: {
+  height: 1,
+  marginTop: 18,
+  marginBottom: 12,
+  backgroundColor: 'rgba(218,238,255,0.28)',
+},
+
+pointsMetaRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+
+pointsMetaItem: {
+  flex: 1,
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+
+pointsMetaIcon: {
+  width: 34,
+  height: 34,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 12,
+  backgroundColor: 'rgba(255,255,255,0.16)',
+},
+
+pointsMetaIconGold: {
+  backgroundColor: 'rgba(255,220,98,0.20)',
+},
+
+pointsMetaCopy: {
+  flex: 1,
+  marginLeft: 8,
+},
+
+pointsMetaLabel: {
+  color: '#D8ECFF',
+  fontSize: 12,
+  fontWeight: '600',
+  lineHeight: 15,
+},
+
+pointsMetaValue: {
+  marginTop: 2,
+  color: colors.white,
+  fontSize: 14,
+  fontWeight: '800',
+  lineHeight: 17,
+},
+
+quickGrid: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  justifyContent: 'space-between',
+  paddingHorizontal: 20,
+  paddingTop: 14,
+  paddingBottom: 10,
+},
+
+quickAction: {
+  width: '31%',
+  marginBottom: 12,
+},
+
+quickButton: {
+  position: 'relative',
+  overflow: 'hidden',
+  height: 66,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: 'rgba(216,236,255,0.26)',
+  backgroundColor: '#0A4F91',
+  shadowColor: '#062C57',
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.26,
+  shadowRadius: 10,
+  elevation: 7,
+},
+
+quickButtonShine: {
+  position: 'absolute',
+  top: -26,
+  right: -18,
+  width: 78,
+  height: 78,
+  borderRadius: 39,
+  backgroundColor: 'rgba(255,255,255,0.13)',
+},
+
+quickButtonLabel: {
+  marginTop: 6,
+  textAlign: 'center',
+  color: colors.white,
+  fontSize: 11,
+  fontWeight: '800',
+},
   sectionCard: {
     marginBottom: 14,
     marginHorizontal: 20,
