@@ -106,26 +106,11 @@ export function NotificationsScreen({
   }
   title="Thông báo"
 />
-
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.titleRow}>
-          <View>
-            <Text style={styles.pageTitle}>Giao dịch & cập nhật</Text>
-            <Text style={styles.pageSubtitle}>
-              Lịch sử điểm và thông tin quan trọng trong cùng một nơi
-            </Text>
-          </View>
-          {unreadCount ? (
-            <View style={styles.unreadBadge}>
-              <Text style={styles.unreadBadgeText}>{unreadCount} mới</Text>
-            </View>
-          ) : null}
-        </View>
-
         <View style={styles.searchBox}>
           <Ionicons color={colors.textMuted} name="search-outline" size={20} />
           <TextInput

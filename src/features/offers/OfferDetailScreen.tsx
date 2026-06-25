@@ -5,6 +5,7 @@ import { ScreenHeader } from '../../shared/components/ScreenHeader';
 import { colors } from '../../theme/colors';
 import type { Offer } from '../../types';
 import { formatPoints } from '../../utils/format';
+import { OfferMediaFrame } from './components/OfferMediaFrame';
 
 type OfferDetailScreenProps = {
   offer: Offer;
@@ -40,11 +41,19 @@ export function OfferDetailScreen({ offer, points, onBack, onRedeem }: OfferDeta
     </>
   ) : null}
 
+  <OfferMediaFrame
+  fallbackColor={offer.accent}
+  height={250}
+  media={offer.media}
+  overlayOpacity={0.34}
+  style={styles.hero}
+>
   <View style={styles.heroTextLayer}>
     <Text style={styles.category}>{offer.category.toUpperCase()}</Text>
     <Text style={styles.heroTitle}>{offer.title}</Text>
     <Text style={styles.partner}>{offer.partner}</Text>
   </View>
+</OfferMediaFrame>
 </View>
 
         <View style={styles.balanceCard}>
@@ -69,7 +78,6 @@ export function OfferDetailScreen({ offer, points, onBack, onRedeem }: OfferDeta
           <Text style={styles.bullet}>• Hạn sử dụng: {offer.expiresAt}.</Text>
           <Text style={styles.bullet}>• Mỗi hóa đơn áp dụng tối đa một voucher.</Text>
           <Text style={styles.bullet}>• Không quy đổi thành tiền mặt.</Text>
-          <Text style={styles.bullet}>• Giao dịch demo không thể hoàn điểm.</Text>
         </View>
 
         <View style={styles.notice}>
@@ -100,11 +108,7 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
  hero: {
-  position: 'relative',
-  overflow: 'hidden',
-  minHeight: 230,
-  justifyContent: 'flex-end',
-  padding: 24,
+  borderRadius: 0,
 },
 heroImage: {
   ...StyleSheet.absoluteFillObject,
@@ -118,8 +122,9 @@ heroOverlay: {
 },
 
 heroTextLayer: {
-  position: 'relative',
-  zIndex: 1,
+  flex: 1,
+  justifyContent: 'flex-end',
+  padding: 24,
 },
   category: {
     color: 'rgba(255,255,255,0.75)',

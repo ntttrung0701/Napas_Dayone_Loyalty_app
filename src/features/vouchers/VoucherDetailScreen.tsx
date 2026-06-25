@@ -7,6 +7,8 @@ import { colors } from '../../theme/colors';
 import type { UserVoucher } from '../../types';
 import { formatPoints } from '../../utils/format';
 import { VoucherFactory } from './domain/VoucherFactory';
+import { OfferMediaFrame } from '../offers/components/OfferMediaFrame';
+
 
 type VoucherDetailScreenProps = {
   voucher: UserVoucher | null;
@@ -36,14 +38,13 @@ const imageSource = OfferMediaResolver.getImageSource(voucher.media);
       <ScreenHeader onBack={onBack} title="Chi tiết Voucher" />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.heroCard}>
-  {imageSource ? (
-    <>
-      <Image source={imageSource} style={styles.heroImage} resizeMode="cover" />
-      <View style={styles.heroOverlay} />
-    </>
-  ) : null}
-
+        <OfferMediaFrame
+  fallbackColor={colors.primary}
+  height={230}
+  media={voucher.media}
+  overlayOpacity={0.34}
+  style={styles.heroCard}
+>
   <View style={styles.heroTextLayer}>
     <Text style={styles.eyebrow}>VOUCHER</Text>
     <Text style={styles.title}>{voucher.title}</Text>
@@ -55,7 +56,7 @@ const imageSource = OfferMediaResolver.getImageSource(voucher.media);
       </Text>
     </View>
   </View>
-</View>
+</OfferMediaFrame>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>THÔNG TIN VOUCHER</Text>
@@ -121,31 +122,15 @@ const styles = StyleSheet.create({
     paddingBottom: 96,
   },
   heroCard: {
-  position: 'relative',
-  overflow: 'hidden',
-  alignItems: 'center',
-  minHeight: 230,
   borderRadius: 24,
-  backgroundColor: colors.primary,
-  padding: 24,
-},
-heroImage: {
-  ...StyleSheet.absoluteFillObject,
-  width: '100%',
-  height: '100%',
-},
 
-heroOverlay: {
-  ...StyleSheet.absoluteFillObject,
-  backgroundColor: 'rgba(0,0,0,0.34)',
 },
 
 heroTextLayer: {
-  position: 'relative',
-  zIndex: 1,
+    flex: 1,
   alignItems: 'center',
   justifyContent: 'center',
-  flex: 1,
+  padding: 24,
 },
   eyebrow: {
     color: '#CDE7FA',

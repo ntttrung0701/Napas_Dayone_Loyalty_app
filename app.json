@@ -30,7 +30,8 @@
           "cameraPermission": "Cho phép Napas DayOne sử dụng camera trước để xác minh khuôn mặt.",
           "recordAudioAndroid": false
         }
-      ]
+      ],
+      "expo-asset"
     ]
   }
 }

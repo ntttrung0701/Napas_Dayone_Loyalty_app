@@ -2,31 +2,31 @@ import type { LoyaltyNotification, Offer, Transaction , UserVoucher } from '../t
 
 export const offers: Offer[] = [
   {
-    id: 'highlands-50',
-    category: 'Voucher',
-    title: 'Highlands Coffee 50K',
-    partner: 'Highlands Coffee',
-    description: 'Áp dụng cho mọi loại đồ uống tại hệ thống Highlands Coffee toàn quốc.',
-    points: 500,
-    accent: '#C2410C',
-    expiresAt: '30 ngày kể từ lúc đổi',
-    media: {
-      imageKey: 'highlands',
-    },
+  id: 'highlands-50',
+  category: 'Voucher',
+  title: 'Highlands Coffee 50K',
+  partner: 'Highlands Coffee',
+  description: 'Áp dụng cho mọi loại đồ uống tại hệ thống Highlands Coffee toàn quốc.',
+  points: 500,
+  accent: '#C2410C',
+  expiresAt: '30 ngày kể từ lúc đổi',
+  media: {
+    imageKey: 'highlands',
   },
-  {
-    id: 'winmart-10',
-    category: 'Hoàn tiền',
-    title: 'Hoàn 10% tại WinMart',
-    partner: 'WinMart',
-    description: 'Giảm trực tiếp 10%, tối đa 50.000đ cho hóa đơn từ 300.000đ.',
-    points: 1_200,
-    accent: '#D71920',
-    expiresAt: '31/12/2026',
-    media: {
-      imageKey: 'winmart',
-    },
+},
+{
+  id: 'winmart-10',
+  category: 'Hoàn tiền',
+  title: 'Hoàn 10% tại WinMart',
+  partner: 'WinMart',
+  description: 'Giảm trực tiếp 10%, tối đa 50.000đ cho hóa đơn từ 300.000đ.',
+  points: 1_200,
+  accent: '#D71920',
+  expiresAt: '31/12/2026',
+  media: {
+    imageKey: 'winmart',
   },
+},
   {
     id: 'travel-100',
     category: 'Quà tặng',

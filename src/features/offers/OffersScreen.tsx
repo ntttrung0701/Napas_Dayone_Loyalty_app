@@ -18,6 +18,7 @@ import type { AppScreen, MainTab, Offer } from '../../types';
 import { formatPoints } from '../../utils/format';
 import { OfferCatalog } from './domain/OfferCatalog';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { OfferMediaFrame } from './components/OfferMediaFrame';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -69,31 +70,13 @@ export function OffersScreen({
     </Pressable>
   }
 />
-
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.titleRow}>
   <View style={styles.titleCopy}>
   </View>
-
-  <View style={styles.balanceBox}>
-    <Text style={styles.balanceLabel}>Điểm khả dụng</Text>
-    <Text style={styles.balanceValue}>{formatPoints(points)} pts</Text>
-  </View>
 </View>
 
-        <Pressable
-  onPress={() => onNavigate('voucher-wallet')}
-  style={({ pressed }) => [styles.walletShortcut, pressed && styles.pressed]}
->
-  <View style={styles.walletCopy}>
-    <Text style={styles.walletTitle}>Kho voucher của tôi</Text>
-    <Text style={styles.walletSubtitle}>
-      Xem voucher còn hạn, đã dùng hoặc hết hạn
-    </Text>
-  </View>
-
-  <Ionicons color={colors.textMuted} name="chevron-forward" size={22} />
-</Pressable>
+        
 
         <View style={styles.searchBox}>
           <Ionicons color={colors.textMuted} name="search-outline" size={19} />
@@ -113,6 +96,20 @@ export function OffersScreen({
             </Pressable>
           ) : null}
         </View>
+
+        <Pressable
+  onPress={() => onNavigate('voucher-wallet')}
+  style={({ pressed }) => [styles.walletShortcut, pressed && styles.pressed]}
+>
+  <View style={styles.walletCopy}>
+    <Text style={styles.walletTitle}>Voucher của tôi</Text>
+    <Text style={styles.walletSubtitle}>
+      Xem voucher còn hạn, đã dùng hoặc hết hạn
+    </Text>
+  </View>
+
+  <Ionicons color={colors.textMuted} name="chevron-forward" size={22} />
+</Pressable>
 
         <ScrollView
           horizontal
@@ -152,19 +149,13 @@ const imageSource = OfferMediaResolver.getImageSource(offer.media);
               onPress={() => onSelectOffer(offer)}
               style={({ pressed }) => [styles.offerCard, pressed && styles.offerCardPressed]}
             >
-              <View style={[styles.offerVisual, !imageSource && { backgroundColor: offer.accent }]}>
-  {imageSource ? (
-    <>
-      <Image source={imageSource} style={styles.offerImage} resizeMode="cover" />
-      <View style={styles.imageOverlay} />
-    </>
-  ) : (
-    <>
-      <View style={styles.visualGlowLarge} />
-      <View style={styles.visualGlowSmall} />
-    </>
-  )}
-
+              <OfferMediaFrame
+  fallbackColor={offer.accent}
+  height={162}
+  media={offer.media}
+  overlayOpacity={0.18}
+  style={styles.offerVisual}
+>
   <View style={styles.hotBadge}>
     <Ionicons color="#FFD79A" name="sparkles" size={12} />
     <Text style={styles.hotText}>
@@ -172,8 +163,11 @@ const imageSource = OfferMediaResolver.getImageSource(offer.media);
     </Text>
   </View>
 
-  {!imageSource ? (
+  {!offer.media ? (
     <>
+      <View style={styles.visualGlowLarge} />
+      <View style={styles.visualGlowSmall} />
+
       <View style={styles.offerIcon}>
         <Ionicons color={colors.white} name={icon} size={34} />
       </View>
@@ -181,7 +175,7 @@ const imageSource = OfferMediaResolver.getImageSource(offer.media);
       <Text style={styles.visualPartner}>{offer.partner}</Text>
     </>
   ) : null}
-</View>
+</OfferMediaFrame>
 
               <View style={styles.offerInfo}>
                 <Text style={styles.offerTitle}>{offer.title}</Text>
@@ -274,23 +268,6 @@ pageSubtitle: {
   fontSize: 13,
   fontWeight: '700',
   lineHeight: 19,
-},
-
-balanceBox: {
-  minWidth: 116,
-  alignItems: 'flex-end',
-},
-  balanceLabel: {
-  color: colors.textMuted,
-  fontSize: 11,
-  fontWeight: '700',
-},
-
-balanceValue: {
-  marginTop: 4,
-  color: colors.success,
-  fontSize: 16,
-  fontWeight: '900',
 },
   walletShortcut: {
   flexDirection: 'row',
@@ -417,12 +394,8 @@ imageOverlay: {
     transform: [{ scale: 0.995 }],
   },
   offerVisual: {
-    overflow: 'hidden',
-    minHeight: 162,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative'
-  },
+  overflow: 'hidden',
+},
   visualGlowLarge: {
     position: 'absolute',
     top: -85,

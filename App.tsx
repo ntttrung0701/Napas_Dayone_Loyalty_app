@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Platform,
   SafeAreaView,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import { OfferMediaResolver } from './src/features/offers/domain/OfferMediaResolver';
 
 import { AuthFlow } from './src/features/auth/AuthFlow';
 import { CardsScreen } from './src/features/cards/CardsScreen';
@@ -112,6 +113,13 @@ export default function App() {
       current?.id === voucherId ? { ...current, status: 'used', usedAt } : current,
     );
   };
+
+  useEffect(() => {
+  OfferMediaResolver.preloadMany([
+    ...offers.map((offer) => offer.media),
+    ...seedUserVouchers.map((voucher) => voucher.media),
+  ]).catch(() => undefined);
+}, []);
 
   const markNotificationRead = (notificationId: string) => {
     setNotifications((current) =>
