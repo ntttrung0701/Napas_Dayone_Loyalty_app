@@ -34,7 +34,7 @@ const quickActions: Array<{ label: string; icon: IconName; route: AppScreen }> =
   { label: 'Đổi điểm', icon: 'sync-outline', route: 'offers' },
   { label: 'Tặng điểm', icon: 'gift-outline', route: 'transfer' },
   { label: 'Liên kết', icon: 'link-outline', route: 'cards' },
-  { label: 'Thanh toán', icon: 'bag-outline', route: 'payment' },
+  { label: 'Thanh toán', icon: 'bag-outline', route: 'payment' },
 ];
 
 export function HomeScreen({

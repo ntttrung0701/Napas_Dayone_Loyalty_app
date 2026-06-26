@@ -151,9 +151,10 @@ const imageSource = OfferMediaResolver.getImageSource(offer.media);
             >
               <OfferMediaFrame
   fallbackColor={offer.accent}
-  height={162}
+  height={190}
   media={offer.media}
-  overlayOpacity={0.18}
+  borderRadius={0}
+  overlayOpacity={0}
   style={styles.offerVisual}
 >
   <View style={styles.hotBadge}>
@@ -268,15 +269,15 @@ pageSubtitle: {
   walletShortcut: {
   flexDirection: 'row',
   alignItems: 'center',
-  marginBottom: 14,
+  marginBottom: 20,
   borderWidth: 1,
   borderColor: colors.border,
-  borderRadius: 16,
+  borderRadius: 22,
   backgroundColor: colors.surface,
   paddingHorizontal: 18,
-  paddingVertical: 17,
+  paddingVertical: 18,
   shadowColor: colors.primaryDark,
-  shadowOffset: { width: 0, height: 4 },
+  shadowOffset: { width: 0, height: 5 },
   shadowOpacity: 0.05,
   shadowRadius: 10,
   elevation: 2,
@@ -303,14 +304,15 @@ pageSubtitle: {
 },
 
   searchBox: {
-  minHeight: 52,
+  minHeight: 56,
   flexDirection: 'row',
   alignItems: 'center',
+  marginBottom: 14,
   borderWidth: 1,
   borderColor: colors.border,
-  borderRadius: 16,
+  borderRadius: 22,
   backgroundColor: colors.surface,
-  paddingHorizontal: 14,
+  paddingHorizontal: 16,
   shadowColor: colors.primaryDark,
   shadowOffset: { width: 0, height: 4 },
   shadowOpacity: 0.04,
@@ -379,10 +381,10 @@ imageOverlay: {
   },
   offerCard: {
   overflow: 'hidden',
-  marginBottom: 18,
+  marginBottom: 20,
   borderWidth: 1,
   borderColor: colors.border,
-  borderRadius: 22,
+  borderRadius: 20,
   backgroundColor: colors.surface,
   shadowColor: colors.primaryDark,
   shadowOffset: { width: 0, height: 8 },
@@ -396,6 +398,11 @@ imageOverlay: {
   },
   offerVisual: {
   overflow: 'hidden',
+  height: 190,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  borderBottomLeftRadius: 0,
+  borderBottomRightRadius: 0,
 },
   visualGlowLarge: {
     position: 'absolute',
@@ -454,7 +461,7 @@ imageOverlay: {
   offerInfo: {
   paddingHorizontal: 18,
   paddingTop: 16,
-  paddingBottom: 17,
+  paddingBottom: 18,
 },
   offerTitle: {
     color: colors.primaryDark,
