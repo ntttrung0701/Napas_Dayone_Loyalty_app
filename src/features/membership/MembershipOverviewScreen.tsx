@@ -193,12 +193,12 @@ export function MembershipOverviewScreen({
         </Pressable>
 
         <Pressable
-          onPress={() => onNavigate('notifications')}
-          style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}
-        >
-          <Ionicons color={colors.text} name="calendar-outline" size={20} />
-          <Text style={styles.secondaryButtonText}>Xem điểm sắp hết hạn</Text>
-        </Pressable>
+  onPress={() => onNavigate('expiring-points')}
+  style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}
+>
+  <Ionicons color={colors.text} name="calendar-outline" size={20} />
+  <Text style={styles.secondaryButtonText}>Xem điểm sắp hết hạn</Text>
+</Pressable>
       </ScrollView>
 
       <BottomNav active={activeTab} onNavigate={onNavigate} />

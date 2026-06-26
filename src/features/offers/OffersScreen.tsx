@@ -59,7 +59,7 @@ export function OffersScreen({
   return (
     <View style={styles.root}>
       <ScreenHeader
-  title="Ưu đãi & Quà tặng"
+  title="Ưu đãi & quà tặng"
   rightContent={
     <Pressable
       onPress={() => onNavigate('notifications')}
@@ -104,7 +104,7 @@ export function OffersScreen({
   <View style={styles.walletCopy}>
     <Text style={styles.walletTitle}>Voucher của tôi</Text>
     <Text style={styles.walletSubtitle}>
-      Xem voucher còn hạn, đã dùng hoặc hết hạn
+      Sử dụng voucher của bạn để đổi những ưu đãi
     </Text>
   </View>
 
@@ -185,13 +185,9 @@ const imageSource = OfferMediaResolver.getImageSource(offer.media);
 
                 <View style={styles.offerFooter}>
                   <View>
-                    <Text style={styles.metaLabel}>Đổi bằng</Text>
+                    <Text style={styles.metaLabel}>Điểm quy đổi</Text>
                     <View style={styles.pointsRow}>
-                      <Ionicons
-                        color={affordable ? colors.success : colors.warning}
-                        name="diamond-outline"
-                        size={14}
-                      />
+                      
                       <Text style={[styles.points, !affordable && styles.pointsDisabled]}>
                         {formatPoints(offer.points)} pts
                       </Text>
@@ -477,6 +473,7 @@ imageOverlay: {
   metaLabel: {
     color: colors.textMuted,
     fontSize: 9,
+    fontWeight: 700,
   },
   pointsRow: {
     flexDirection: 'row',
@@ -490,7 +487,7 @@ imageOverlay: {
     fontWeight: '900',
   },
   pointsDisabled: {
-    color: colors.warning,
+    color: colors.danger,
   },
   expiryBlock: {
     maxWidth: '48%',

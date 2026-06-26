@@ -31,8 +31,6 @@ const pointCardBackground = require('../../../assets/Card.png');
 const quickActions: Array<{ label: string; icon: IconName; route: AppScreen }> = [
   { label: 'Đổi điểm', icon: 'sync-outline', route: 'offers' },
   { label: 'Tặng điểm', icon: 'gift-outline', route: 'transfer' },
-  { label: 'Thông báo', icon: 'notifications-outline', route: 'notifications' },
-  { label: 'Voucher của tôi', icon: 'ticket-outline', route: 'voucher-wallet' },
   { label: 'Liên kết', icon: 'link-outline', route: 'cards' },
   { label: 'Thanh toán', icon: 'bag-outline', route: 'payment' },
 ];
@@ -72,13 +70,20 @@ export function HomeScreen({
           </Pressable>
         </View>
 
-        <View style={styles.greetingRow}>
-          <View>
-            <Text style={styles.hello}>Xin chào,</Text>
-            <Text style={styles.name}>Nguyễn Văn Anh</Text>
-          </View>
-          
-        </View>
+        <Pressable
+  onPress={() => onNavigate('profile')}
+  style={({ pressed }) => [styles.greetingRow, pressed && styles.pressed]}
+>
+  <View style={styles.greetingCopy}>
+    <Text style={styles.hello}>Xin chào,</Text>
+    <Text style={styles.name}>Nguyễn Văn Anh</Text>
+  </View>
+
+  <View style={styles.memberBadge}>
+    <Ionicons color="#B7791F" name="ribbon-outline" size={15} />
+    <Text style={styles.memberBadgeText}>GOLD</Text>
+  </View>
+</Pressable>
         
         <Pressable
   onPress={() => onNavigate('membership')}
@@ -297,6 +302,10 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontWeight: '900',
   },
+  greetingCopy: {
+  flex: 1,
+  paddingRight: 12,
+},
   greetingRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -315,6 +324,28 @@ const styles = StyleSheet.create({
     fontSize: 21,
     fontWeight: '900',
   },
+  memberBadge: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  borderWidth: 1,
+  borderColor: '#E9D8A6',
+  borderRadius: 999,
+  backgroundColor: '#FFF8DF',
+  paddingHorizontal: 11,
+  paddingVertical: 7,
+  shadowColor: '#B7791F',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.1,
+  shadowRadius: 8,
+  elevation: 2,
+},
+memberBadgeText: {
+  marginLeft: 5,
+  color: '#B7791F',
+  fontSize: 11,
+  fontWeight: '900',
+  letterSpacing: 0.4,
+},
   rankBadge: {
     paddingHorizontal: 1,
     paddingVertical: 1,
