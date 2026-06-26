@@ -94,6 +94,7 @@ export function HomeScreen({
   onPress={() => onNavigate('membership')}
   style={({ pressed }) => [styles.pointsCardPressable, pressed && styles.pressed]}
 >
+  <View style={styles.pointsCardShadow}>
   <ImageBackground
     source={pointCardBackground}
     resizeMode="cover"
@@ -141,6 +142,7 @@ export function HomeScreen({
       </View>
     </View>
   </ImageBackground>
+  </View>
 </Pressable>
 
         <View style={styles.quickGrid}>
@@ -379,13 +381,13 @@ const styles = StyleSheet.create({
   paddingRight: 12,
 },
   greetingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 14,
-    paddingTop: 20,
-  },
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  paddingHorizontal: 20,
+  paddingTop: 22,
+  paddingBottom: 16,
+},
   hello: {
     color: colors.textMuted,
     fontSize: 12,
@@ -431,11 +433,6 @@ pointsCard: {
   overflow: 'hidden',
   height: 195,
   borderRadius: 24,
-  shadowColor: '#062C57',
-  shadowOffset: { width: 0, height: 12 },
-  shadowOpacity: 0.28,
-  shadowRadius: 18,
-  elevation: 9,
 },
 pointsCardImage: {
   borderRadius: 24,
@@ -443,6 +440,7 @@ pointsCardImage: {
 
 pointsCardPressable: {
   marginHorizontal: 20,
+  marginBottom: 18,
   borderRadius: 24,
 },
 pointsTopRow: {
@@ -451,6 +449,15 @@ pointsTopRow: {
   justifyContent: 'space-between',
 },
 
+pointsCardShadow: {
+  borderRadius: 24,
+  backgroundColor: colors.background,
+  shadowColor: '#000000',
+  shadowOffset: { width: 10, height: 20 },
+  shadowOpacity: 0.4,
+  shadowRadius: 10,
+  elevation: 14,
+},
 
 pointsCardContent: {
   flex: 1,
@@ -559,8 +566,8 @@ quickGrid: {
   flexDirection: 'row',
   justifyContent: 'space-between',
   paddingHorizontal: 20,
-  paddingTop: 18,
-  paddingBottom: 16,
+  paddingTop: 0,
+  paddingBottom: 20,
 },
 quickAction: {
   width: '23%',
@@ -595,19 +602,19 @@ quickButtonLabel: {
   textShadowRadius: 6,
 },
   sectionCard: {
-    marginBottom: 14,
-    marginHorizontal: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 18,
-    backgroundColor: colors.surface,
-    padding: 16,
-    shadowColor: colors.primaryDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
+  marginHorizontal: 20,
+  marginBottom: 18,
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 20,
+  backgroundColor: colors.surface,
+  padding: 16,
+  shadowColor: colors.primaryDark,
+  shadowOffset: { width: 0, height: 5 },
+  shadowOpacity: 0.06,
+  shadowRadius: 12,
+  elevation: 2,
+},
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',

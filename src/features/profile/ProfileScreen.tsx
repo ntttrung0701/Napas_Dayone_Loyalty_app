@@ -52,18 +52,6 @@ export function ProfileScreen({
     <View style={styles.root}>
       <ScreenHeader title="Tài khoản" />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.identityRow}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>NA</Text>
-          </View>
-          <View style={styles.identityInfo}>
-            <Text style={styles.name}>Nguyễn Văn Anh</Text>
-            <Text style={styles.phone}>0987 654 321 • Loyalty ID 5829</Text>
-          </View>
-          <View style={styles.verifiedBadge}>
-            <Ionicons color={colors.success} name="checkmark-circle" size={17} />
-          </View>
-        </View>
 
         <Pressable
   onPress={() => onNavigate('membership')}
@@ -134,57 +122,44 @@ export function ProfileScreen({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 18, paddingBottom: 28 },
+  content: {
+  paddingHorizontal: 20,
+  paddingTop: 20,
+  paddingBottom: 108,
+},
   pressed: { opacity: 0.68 },
-  identityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 18,
-    backgroundColor: colors.surface,
-    padding: 14,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 24,
-    backgroundColor: colors.primary,
-  },
-  avatarText: { color: colors.white, fontSize: 15, fontWeight: '900' },
-  identityInfo: { flex: 1, marginLeft: 12 },
-  name: { color: colors.text, fontSize: 16, fontWeight: '900' },
-  phone: { marginTop: 4, color: colors.textMuted, fontSize: 10 },
-  verifiedBadge: {
-    width: 34,
-    height: 34,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 17,
-    backgroundColor: colors.successSoft,
-  },
   goldCard: {
   overflow: 'hidden',
-  minHeight: 176,
+  minHeight: 220,
   justifyContent: 'space-between',
-  borderRadius: 24,
-  padding: 20,
-  shadowColor: '#B66300',
-  shadowOffset: { width: 0, height: 10 },
-  shadowOpacity: 0.3,
-  shadowRadius: 16,
-  elevation: 9,
+  borderRadius: 30,
+  padding: 24,
+  shadowColor: '#000000',
+  shadowOffset: { width: 8, height: 18 },
+  shadowOpacity: 0.22,
+  shadowRadius: 22,
+  elevation: 12,
 },
 goldCardImage: {
-  borderRadius: 24,
+  borderRadius: 30,
 },
  
   goldTopRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
-  goldEyebrow: { color: '#FFF7D6', fontSize: 9, fontWeight: '900', letterSpacing: 0.7 },
-  goldTitle: { marginTop: 7, color: colors.white, fontSize: 25, fontWeight: '900' },
+  
+  goldEyebrow: {
+  color: '#FFF7D6',
+  fontSize: 11,
+  fontWeight: '900',
+  letterSpacing: 0.8,
+},
+
+  goldTitle: {
+  marginTop: 8,
+  color: colors.white,
+  fontSize: 32,
+  fontWeight: '600',
+},
+
   sparkleBadge: {
     width: 49,
     height: 49,
@@ -196,32 +171,47 @@ goldCardImage: {
     backgroundColor: 'rgba(255,255,255,0.16)',
   },
   goldBottomRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
-  goldName: { color: colors.white, fontSize: 13, fontWeight: '900' },
-  goldPoints: { marginTop: 4, color: '#FFF7D6', fontSize: 10 },
+  goldName: {
+  color: colors.white,
+  fontSize: 16,
+  fontWeight: '900',
+},
+
+  goldPoints: {
+  marginTop: 6,
+  color: '#FFF7D6',
+  fontSize: 13,
+  fontWeight: '700',
+},
+
+goldCardPressable: {
+  borderRadius: 30,
+  marginBottom: 24,
+},
   goldMemberBadge: {
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.42)',
-    borderRadius: 7,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  goldMemberText: { color: colors.white, fontSize: 8, fontWeight: '900' },
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.42)',
+  borderRadius: 10,
+  backgroundColor: 'rgba(255,255,255,0.18)',
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+},
   
-  goldCardPressable: {
-  borderRadius: 24,
-  marginBottom: 18,
+goldMemberText: {
+  color: colors.white,
+  fontSize: 9,
+  fontWeight: '900',
 },
 
   sectionHeading: {
-    marginBottom: 10,
-    marginTop: 22,
-    marginLeft: 3,
-    color: colors.primaryDark,
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 0.8,
-  },
+  marginBottom: 10,
+  marginTop: 2,
+  marginLeft: 3,
+  color: colors.primaryDark,
+  fontSize: 11,
+  fontWeight: '900',
+  letterSpacing: 0.8,
+},
   securityCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -241,13 +231,20 @@ goldCardImage: {
   securityInfo: { flex: 1, marginLeft: 12 },
   securityTitle: { color: colors.success, fontSize: 13, fontWeight: '900' },
   securityText: { marginTop: 3, color: '#397A5E', fontSize: 10 },
+  
   settingsCard: {
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 20,
-    backgroundColor: colors.surface,
-  },
+  overflow: 'hidden',
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 20,
+  backgroundColor: colors.surface,
+  shadowColor: colors.primaryDark,
+  shadowOffset: { width: 0, height: 5 },
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
+  elevation: 2,
+},
+
   settingRow: {
     minHeight: 66,
     flexDirection: 'row',
