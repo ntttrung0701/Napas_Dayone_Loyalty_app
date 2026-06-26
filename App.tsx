@@ -423,12 +423,14 @@ case 'membership-tier':
       default:
         return (
           <HomeScreen
-            points={points}
-            transactions={transactions}
-            unreadNotifications={unreadNotifications}
-            onNavigate={navigate}
-            onSelectTransaction={openTransaction}
-          />
+  points={points}
+  transactions={transactions}
+  offers={offers}
+  unreadNotifications={unreadNotifications}
+  onNavigate={navigate}
+  onSelectTransaction={openTransaction}
+  onSelectOffer={openOffer}
+/>
         );
     }
   };

@@ -1,12 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { OfferMediaResolver } from '../offers/domain/OfferMediaResolver';
 import type { ComponentProps } from 'react';
-import { ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-
+import { Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BrandLogo } from '../../shared/components/BrandLogo';
 import { BottomNav } from '../../shared/components/BottomNav';
 import { TransactionRow } from '../../shared/components/TransactionRow';
 import { colors } from '../../theme/colors';
-import type { AppScreen, Transaction } from '../../types';
+import type { AppScreen, Offer, Transaction } from '../../types';
 import { formatPoints } from '../../utils/format';
 import Svg, {
   Circle,
@@ -20,9 +20,11 @@ import Svg, {
 type HomeScreenProps = {
   points: number;
   transactions: Transaction[];
+  offers: Offer[];
   unreadNotifications: number;
   onNavigate: (screen: AppScreen) => void;
   onSelectTransaction: (transaction: Transaction) => void;
+  onSelectOffer: (offer: Offer) => void;
 };
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -38,10 +40,13 @@ const quickActions: Array<{ label: string; icon: IconName; route: AppScreen }> =
 export function HomeScreen({
   points,
   transactions,
+  offers,
   unreadNotifications,
   onNavigate,
   onSelectTransaction,
+  onSelectOffer,
 }: HomeScreenProps) {
+  const suggestedOffers = offers.slice(0, 6);
   return (
     <View style={styles.root}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -140,18 +145,20 @@ export function HomeScreen({
 
         <View style={styles.quickGrid}>
   {quickActions.map((action) => (
-  <Pressable
-    key={action.label}
-    onPress={() => onNavigate(action.route)}
-    style={({ pressed }) => [styles.quickAction, pressed && styles.pressed]}
-  >
-    <View style={styles.quickButton}>
-      <Ionicons color={colors.white} name={action.icon} size={34} />
-    </View>
-
-    <Text style={styles.quickButtonLabel}>{action.label}</Text>
-  </Pressable>
-))}
+    <Pressable
+      key={action.label}
+      onPress={() => onNavigate(action.route)}
+      style={({ pressed }) => [
+        styles.quickAction,
+        pressed && { transform: [{ scale: 0.97 }], opacity: 0.9 },
+      ]}
+    >
+      <View style={styles.quickButton}>
+        <Ionicons color="#3E5D9B" name={action.icon} size={30} />
+      </View>
+      <Text style={styles.quickButtonLabel}>{action.label}</Text>
+    </Pressable>
+  ))}
 </View>
 
         <Pressable
@@ -188,6 +195,71 @@ export function HomeScreen({
             />
           ))}
         </View>
+        <View style={styles.sectionCard}>
+  <View style={styles.sectionHeader}>
+    <Text style={styles.sectionTitle}>Voucher dành cho bạn</Text>
+    <Pressable onPress={() => onNavigate('offers')}>
+      <Text style={styles.link}>Xem tất cả</Text>
+    </Pressable>
+  </View>
+
+  <ScrollView
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={styles.voucherRow}
+  >
+    {suggestedOffers.map((offer) => {
+      const imageSource = OfferMediaResolver.getImageSource(offer.media);
+
+      return (
+        <Pressable
+          key={offer.id}
+          onPress={() => onSelectOffer(offer)}
+          style={({ pressed }) => [
+            styles.suggestedVoucherCard,
+            pressed && styles.pressed,
+          ]}
+        >
+          <View style={styles.suggestedVoucherImageWrap}>
+            {imageSource ? (
+              <Image
+                source={imageSource}
+                style={styles.suggestedVoucherImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.suggestedVoucherFallback}>
+                <Ionicons name="gift-outline" size={24} color={colors.primary} />
+              </View>
+            )}
+          </View>
+
+          <View style={styles.suggestedVoucherBody}>
+            <Text style={styles.suggestedVoucherTitle} numberOfLines={2}>
+              {offer.title}
+            </Text>
+
+            <Text style={styles.suggestedVoucherPartner} numberOfLines={1}>
+              {offer.partner}
+            </Text>
+
+            <View style={styles.suggestedVoucherPointsRow}>
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={15}
+                color={colors.success}
+              />
+              <Text style={styles.suggestedVoucherPoints}>
+                {formatPoints(offer.points)} đ
+              </Text>
+            </View>
+          </View>
+        </Pressable>
+      );
+    })}
+  </ScrollView>
+</View>
+        
       </ScrollView>
       <BottomNav active="home" onNavigate={onNavigate} />
     </View>
@@ -488,7 +560,7 @@ quickGrid: {
   justifyContent: 'space-between',
   paddingHorizontal: 20,
   paddingTop: 18,
-  paddingBottom: 12,
+  paddingBottom: 16,
 },
 quickAction: {
   width: '23%',
@@ -496,26 +568,31 @@ quickAction: {
 },
 
 quickButton: {
-  width: 68,
-  height: 68,
+  width: 74,
+  height: 74,
+  borderRadius: 28,
   alignItems: 'center',
   justifyContent: 'center',
-  borderRadius: 34,
-  backgroundColor: '#5577BE',
-  shadowColor: '#294D93',
+  backgroundColor: colors.background,
+  borderWidth: 1,
+  borderColor: 'rgba(50, 70, 120, 0.06)',
+  shadowColor: '#000000',
   shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.3,
-  shadowRadius: 10,
+  shadowOpacity: 0.14,
+  shadowRadius: 16,
   elevation: 8,
 },
 
 quickButtonLabel: {
-  marginTop: 8,
+  marginTop: 10,
   textAlign: 'center',
-  color: '#24427C',
+  color: '#3E5D9B',
   fontSize: 11,
   fontWeight: '700',
   lineHeight: 15,
+  textShadowColor: 'rgba(62, 93, 155, 0.18)',
+  textShadowOffset: { width: 0, height: 3 },
+  textShadowRadius: 6,
 },
   sectionCard: {
     marginBottom: 14,
@@ -542,6 +619,72 @@ quickButtonLabel: {
     fontSize: 14,
     fontWeight: '900',
   },
+  voucherRow: {
+  paddingRight: 6,
+},
+
+suggestedVoucherCard: {
+  width: 150,
+  marginRight: 12,
+  overflow: 'hidden',
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 16,
+  backgroundColor: colors.surface,
+  shadowColor: colors.primaryDark,
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.06,
+  shadowRadius: 10,
+  elevation: 2,
+},
+
+suggestedVoucherImageWrap: {
+  height: 92,
+  backgroundColor: '#EEF2F7',
+},
+
+suggestedVoucherImage: {
+  width: '100%',
+  height: '100%',
+},
+
+suggestedVoucherFallback: {
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+suggestedVoucherBody: {
+  paddingHorizontal: 12,
+  paddingTop: 10,
+  paddingBottom: 12,
+},
+
+suggestedVoucherTitle: {
+  color: colors.text,
+  fontSize: 12,
+  fontWeight: '800',
+  lineHeight: 17,
+},
+
+suggestedVoucherPartner: {
+  marginTop: 4,
+  color: colors.textMuted,
+  fontSize: 10,
+},
+
+suggestedVoucherPointsRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginTop: 10,
+},
+
+suggestedVoucherPoints: {
+  marginLeft: 4,
+  color: colors.success,
+  fontSize: 13,
+  fontWeight: '900',
+},
   goldText: {
     color: colors.gold,
     fontSize: 9,
