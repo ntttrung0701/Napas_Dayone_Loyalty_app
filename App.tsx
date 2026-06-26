@@ -334,8 +334,22 @@ export default function App() {
       overview={{
         ...seedMembershipOverview,
         availablePoints: points,
-        
       }}
+      initialFocus="top"
+      onBack={goBack}
+      onNavigate={navigate}
+    />
+  );
+
+case 'membership-tier':
+  return (
+    <MembershipOverviewScreen
+      activeTab="profile"
+      overview={{
+        ...seedMembershipOverview,
+        availablePoints: points,
+      }}
+      initialFocus="tier"
       onBack={goBack}
       onNavigate={navigate}
     />

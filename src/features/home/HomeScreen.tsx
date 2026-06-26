@@ -34,7 +34,7 @@ const quickActions: Array<{ label: string; icon: IconName; route: AppScreen }> =
   { label: 'Thông báo', icon: 'notifications-outline', route: 'notifications' },
   { label: 'Voucher của tôi', icon: 'ticket-outline', route: 'voucher-wallet' },
   { label: 'Liên kết', icon: 'link-outline', route: 'cards' },
-  { label: 'Mua sắm', icon: 'bag-outline', route: 'payment' },
+  { label: 'Thanh toán', icon: 'bag-outline', route: 'payment' },
 ];
 
 export function HomeScreen({
@@ -140,39 +140,32 @@ export function HomeScreen({
     onPress={() => onNavigate(action.route)}
     style={({ pressed }) => [styles.quickAction, pressed && styles.pressed]}
   >
-    <View style={styles.quickButtonOuter}>
-      <ImageBackground
-        source={pointCardBackground}
-        resizeMode="cover"
-        imageStyle={styles.quickButtonGlowImage}
-        style={styles.quickButtonGlow}
-      >
-        <View style={styles.quickButtonInner}>
-          <Ionicons
-            color={colors.primary}
-            name={action.icon}
-            size={28}
-          />
-          <Text style={styles.quickButtonLabel}>{action.label}</Text>
-        </View>
-      </ImageBackground>
+    <View style={styles.quickButton}>
+      <Ionicons color={colors.white} name={action.icon} size={34} />
     </View>
+
+    <Text style={styles.quickButtonLabel}>{action.label}</Text>
   </Pressable>
 ))}
 </View>
 
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Tiến trình thăng hạng</Text>
-            <Text style={styles.goldText}>GOLD → PLATINUM</Text>
-          </View>
-          <View style={styles.progressTrack}>
-            <View style={styles.progressValue} />
-          </View>
-          <Text style={styles.progressText}>
-            Chỉ cần <Text style={styles.progressStrong}>15.000 điểm</Text> nữa để thăng hạng.
-          </Text>
-        </View>
+        <Pressable
+  onPress={() => onNavigate('membership-tier')}
+  style={({ pressed }) => [styles.sectionCard, pressed && styles.pressed]}
+>
+  <View style={styles.sectionHeader}>
+    <Text style={styles.sectionTitle}>Tiến trình thăng hạng</Text>
+    <Text style={styles.goldText}>GOLD → PLATINUM</Text>
+  </View>
+
+  <View style={styles.progressTrack}>
+    <View style={styles.progressValue} />
+  </View>
+
+  <Text style={styles.progressText}>
+    Chỉ cần <Text style={styles.progressStrong}>15.000 điểm</Text> nữa để thăng hạng.
+  </Text>
+</Pressable>
 
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
@@ -464,58 +457,33 @@ quickGrid: {
   flexWrap: 'wrap',
   justifyContent: 'space-between',
   paddingHorizontal: 20,
-  paddingTop: 14,
-  paddingBottom: 10,
+  paddingTop: 18,
+  paddingBottom: 12,
 },
-
 quickAction: {
   width: '31.5%',
-  marginBottom: 14,
+  alignItems: 'center',
+  marginBottom: 20,
 },
-quickButtonInner: {
-  minHeight: 102,
-  borderRadius: 16,
-  backgroundColor: colors.white,
+quickButton: {
+  width: 72,
+  height: 72,
   alignItems: 'center',
   justifyContent: 'center',
-  paddingHorizontal: 8,
-  paddingVertical: 12,
-},
-
-quickButtonOuter: {
-  overflow: 'hidden',
-  borderRadius: 18,
-  backgroundColor: '#0A5AA8',
-  shadowColor: '#062C57',
+  borderRadius: 20,
+  backgroundColor: '#5577BE',
+  shadowColor: '#294D93',
   shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.24,
-  shadowRadius: 12,
-  elevation: 7,
-},
-
-quickButtonShine: {
-  position: 'absolute',
-  top: -26,
-  right: -18,
-  width: 78,
-  height: 78,
-  borderRadius: 39,
-  backgroundColor: 'rgba(255,255,255,0.13)',
-},
-quickButtonGlow: {
-  borderRadius: 18,
-  padding: 3,
-},
-quickButtonGlowImage: {
-  borderRadius: 18,
-  opacity: 0.3,
+  shadowOpacity: 0.34,
+  shadowRadius: 10,
+  elevation: 8,
 },
 quickButtonLabel: {
-  marginTop: 8,
+  marginTop: 9,
   textAlign: 'center',
-  color: colors.primary,
+  color: '#24427C',
   fontSize: 12,
-  fontWeight: '800',
+  fontWeight: '700',
   lineHeight: 16,
 },
   sectionCard: {
