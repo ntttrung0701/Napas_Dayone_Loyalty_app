@@ -485,37 +485,37 @@ pointsMain: {
 
 quickGrid: {
   flexDirection: 'row',
-  flexWrap: 'wrap',
   justifyContent: 'space-between',
   paddingHorizontal: 20,
   paddingTop: 18,
   paddingBottom: 12,
 },
 quickAction: {
-  width: '31.5%',
+  width: '23%',
   alignItems: 'center',
-  marginBottom: 20,
 },
+
 quickButton: {
-  width: 72,
-  height: 72,
+  width: 68,
+  height: 68,
   alignItems: 'center',
   justifyContent: 'center',
-  borderRadius: 20,
+  borderRadius: 34,
   backgroundColor: '#5577BE',
   shadowColor: '#294D93',
   shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.34,
+  shadowOpacity: 0.3,
   shadowRadius: 10,
   elevation: 8,
 },
+
 quickButtonLabel: {
-  marginTop: 9,
+  marginTop: 8,
   textAlign: 'center',
   color: '#24427C',
-  fontSize: 12,
+  fontSize: 11,
   fontWeight: '700',
-  lineHeight: 16,
+  lineHeight: 15,
 },
   sectionCard: {
     marginBottom: 14,
