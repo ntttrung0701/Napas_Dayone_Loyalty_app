@@ -86,41 +86,47 @@ export function HomeScreen({
 >
   <ImageBackground
     source={pointCardBackground}
-    resizeMode="stretch"
-    style={styles.pointsCard}
+    resizeMode="cover"
     imageStyle={styles.pointsCardImage}
+    style={styles.pointsCard}
   >
-    <View style={styles.pointsTopRow}>
-      <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
-    </View>
+    <View style={styles.pointsCardContent}>
+      <View style={styles.pointsMain}>
+        <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
 
-    <View style={styles.pointsRow}>
-      <Text style={styles.pointsValue}>{formatPoints(points)}</Text>
-      <Text style={styles.pointsUnit}>pts</Text>
-    </View>
-
-    <View style={styles.pointsDivider} />
-
-    <View style={styles.pointsMetaRow}>
-      <View style={styles.pointsMetaItem}>
-        <View style={styles.pointsMetaIcon}>
-          <Ionicons color="#EAF6FF" name="time-outline" size={16} />
-        </View>
-
-        <View style={styles.pointsMetaCopy}>
-          <Text style={styles.pointsMetaLabel}>Điểm chờ xác nhận:</Text>
-          <Text style={styles.pointsMetaValue}>2.400 điểm</Text>
+        <View style={styles.pointsRow}>
+          <Text style={styles.pointsValue}>{formatPoints(points)}</Text>
+          <Text style={styles.pointsUnit}>pts</Text>
         </View>
       </View>
 
-      <View style={styles.pointsMetaItem}>
-        <View style={[styles.pointsMetaIcon, styles.pointsMetaIconGold]}>
-          <Ionicons color="#FFE58A" name="hourglass-outline" size={16} />
-        </View>
+      <View style={styles.pointsBottom}>
+        <View style={styles.pointsDivider} />
 
-        <View style={styles.pointsMetaCopy}>
-          <Text style={styles.pointsMetaLabel}>Điểm sắp hết hạn:</Text>
-          <Text style={styles.pointsMetaValue}>8.000 điểm</Text>
+        <View style={styles.pointsMetaRow}>
+          <View style={styles.pointsMetaItem}>
+            <View style={styles.pointsMetaIcon}>
+              <Ionicons color={colors.white} name="time-outline" size={18} />
+            </View>
+
+            <View style={styles.pointsMetaCopy}>
+              <Text style={styles.pointsMetaLabel}>Điểm chờ xác nhận:</Text>
+              <Text style={styles.pointsMetaValue}>2.400 điểm</Text>
+            </View>
+          </View>
+
+          <View style={styles.pointsMetaSpacer} />
+
+          <View style={styles.pointsMetaItem}>
+            <View style={[styles.pointsMetaIcon, styles.pointsMetaIconGold]}>
+              <Ionicons color="#F4D35E" name="hourglass-outline" size={18} />
+            </View>
+
+            <View style={styles.pointsMetaCopy}>
+              <Text style={styles.pointsMetaLabel}>Điểm sắp hết hạn:</Text>
+              <Text style={styles.pointsMetaValue}>8.000 điểm</Text>
+            </View>
+          </View>
         </View>
       </View>
     </View>
@@ -129,18 +135,30 @@ export function HomeScreen({
 
         <View style={styles.quickGrid}>
   {quickActions.map((action) => (
-    <Pressable
-      key={action.label}
-      onPress={() => onNavigate(action.route)}
-      style={({ pressed }) => [styles.quickAction, pressed && styles.pressed]}
-    >
-      <View style={styles.quickButton}>
-        <View pointerEvents="none" style={styles.quickButtonShine} />
-        <Ionicons color="#EAF6FF" name={action.icon} size={25} />
-        <Text style={styles.quickButtonLabel}>{action.label}</Text>
-      </View>
-    </Pressable>
-  ))}
+  <Pressable
+    key={action.label}
+    onPress={() => onNavigate(action.route)}
+    style={({ pressed }) => [styles.quickAction, pressed && styles.pressed]}
+  >
+    <View style={styles.quickButtonOuter}>
+      <ImageBackground
+        source={pointCardBackground}
+        resizeMode="cover"
+        imageStyle={styles.quickButtonGlowImage}
+        style={styles.quickButtonGlow}
+      >
+        <View style={styles.quickButtonInner}>
+          <Ionicons
+            color={colors.primary}
+            name={action.icon}
+            size={28}
+          />
+          <Text style={styles.quickButtonLabel}>{action.label}</Text>
+        </View>
+      </ImageBackground>
+    </View>
+  </Pressable>
+))}
 </View>
 
         <View style={styles.sectionCard}>
@@ -315,11 +333,8 @@ const styles = StyleSheet.create({
   },
 pointsCard: {
   overflow: 'hidden',
-  height: 178,
-  borderRadius: 20,
-  paddingHorizontal: 18,
-  paddingTop: 18,
-  paddingBottom: 14,
+  height: 195,
+  borderRadius: 24,
   shadowColor: '#062C57',
   shadowOffset: { width: 0, height: 12 },
   shadowOpacity: 0.28,
@@ -327,11 +342,12 @@ pointsCard: {
   elevation: 9,
 },
 pointsCardImage: {
-  borderRadius: 20,
+  borderRadius: 24,
 },
+
 pointsCardPressable: {
   marginHorizontal: 20,
-  borderRadius: 20,
+  borderRadius: 24,
 },
 pointsTopRow: {
   flexDirection: 'row',
@@ -341,12 +357,11 @@ pointsTopRow: {
 
 
 pointsCardContent: {
-  position: 'relative',
-  zIndex: 1,
   flex: 1,
+  justifyContent: 'space-between',
   paddingHorizontal: 18,
   paddingTop: 18,
-  paddingBottom: 13,
+  paddingBottom: 12,
 },
 
 pointsHeader: {
@@ -361,10 +376,11 @@ pointsLabel: {
   letterSpacing: 0.7,
 },
 
+
 pointsRow: {
   flexDirection: 'row',
   alignItems: 'baseline',
-  marginTop: 5,
+  marginTop: 8,
 },
 
 pointsValue: {
@@ -374,7 +390,12 @@ pointsValue: {
   textShadowColor: 'rgba(0,0,0,0.22)',
   textShadowOffset: { width: 0, height: 2 },
   textShadowRadius: 4,
-
+},
+pointsBottom: {
+  marginTop: 'auto',
+},
+pointsMetaSpacer: {
+  width: 10,
 },
 
 pointsUnit: {
@@ -383,12 +404,10 @@ pointsUnit: {
   fontSize: 24,
   fontWeight: '400',
 },
-
 pointsDivider: {
   height: 1,
-  marginTop: 20,
-  marginBottom: 12,
   backgroundColor: 'rgba(218,238,255,0.28)',
+  marginBottom: 12,
 },
 
 pointsMetaRow: {
@@ -403,17 +422,19 @@ pointsMetaItem: {
 },
 
 pointsMetaIcon: {
-  width: 34,
-  height: 34,
+  width: 38,
+  height: 38,
   alignItems: 'center',
   justifyContent: 'center',
-  borderRadius: 12,
+  borderRadius: 14,
   backgroundColor: 'rgba(255,255,255,0.16)',
 },
+
 
 pointsMetaIconGold: {
   backgroundColor: 'rgba(255,220,98,0.20)',
 },
+
 
 pointsMetaCopy: {
   flex: 1,
@@ -434,6 +455,9 @@ pointsMetaValue: {
   fontWeight: '800',
   lineHeight: 17,
 },
+pointsMain: {
+  justifyContent: 'flex-start',
+},
 
 quickGrid: {
   flexDirection: 'row',
@@ -445,24 +469,27 @@ quickGrid: {
 },
 
 quickAction: {
-  width: '31%',
-  marginBottom: 12,
+  width: '31.5%',
+  marginBottom: 14,
 },
-
-quickButton: {
-  position: 'relative',
-  overflow: 'hidden',
-  height: 66,
+quickButtonInner: {
+  minHeight: 102,
+  borderRadius: 16,
+  backgroundColor: colors.white,
   alignItems: 'center',
   justifyContent: 'center',
-  borderRadius: 12,
-  borderWidth: 1,
-  borderColor: 'rgba(216,236,255,0.26)',
-  backgroundColor: '#0A4F91',
+  paddingHorizontal: 8,
+  paddingVertical: 12,
+},
+
+quickButtonOuter: {
+  overflow: 'hidden',
+  borderRadius: 18,
+  backgroundColor: '#0A5AA8',
   shadowColor: '#062C57',
   shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.26,
-  shadowRadius: 10,
+  shadowOpacity: 0.24,
+  shadowRadius: 12,
   elevation: 7,
 },
 
@@ -475,13 +502,21 @@ quickButtonShine: {
   borderRadius: 39,
   backgroundColor: 'rgba(255,255,255,0.13)',
 },
-
+quickButtonGlow: {
+  borderRadius: 18,
+  padding: 3,
+},
+quickButtonGlowImage: {
+  borderRadius: 18,
+  opacity: 0.3,
+},
 quickButtonLabel: {
-  marginTop: 6,
+  marginTop: 8,
   textAlign: 'center',
-  color: colors.white,
-  fontSize: 11,
+  color: colors.primary,
+  fontSize: 12,
   fontWeight: '800',
+  lineHeight: 16,
 },
   sectionCard: {
     marginBottom: 14,
