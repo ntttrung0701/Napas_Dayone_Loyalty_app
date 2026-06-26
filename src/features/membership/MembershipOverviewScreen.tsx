@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BottomNav } from '../../shared/components/BottomNav';
@@ -11,6 +12,7 @@ import { MembershipService } from './domain/MembershipService';
 type MembershipOverviewScreenProps = {
   activeTab: MainTab;
   overview: MembershipOverview;
+  initialFocus?: 'top' | 'tier';
   onBack: () => void;
   onNavigate: (screen: AppScreen) => void;
 };
@@ -18,17 +20,38 @@ type MembershipOverviewScreenProps = {
 export function MembershipOverviewScreen({
   activeTab,
   overview,
+  initialFocus = 'top',
   onBack,
   onNavigate,
 }: MembershipOverviewScreenProps) {
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [tierCardY, setTierCardY] = useState<number | null>(null);
+
   const tierSummary = MembershipService.getTierSummary(overview);
   const maxMonthlyPoint = MembershipService.getMaxMonthlyPoint(overview);
+
+  useEffect(() => {
+    if (initialFocus !== 'tier' || tierCardY === null) return;
+
+    const timer = setTimeout(() => {
+      scrollViewRef.current?.scrollTo({
+        y: Math.max(tierCardY - 12, 0),
+        animated: true,
+      });
+    }, 120);
+
+    return () => clearTimeout(timer);
+  }, [initialFocus, tierCardY]);
 
   return (
     <View style={styles.root}>
       <ScreenHeader onBack={onBack} title="Tổng quan điểm" />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+  ref={scrollViewRef}
+  contentContainerStyle={styles.content}
+  showsVerticalScrollIndicator={false}
+>
         <View style={styles.titleBlock}>
           <Text style={styles.pageTitle}>Tổng quan điểm</Text>
           <Text style={styles.updatedText}>Cập nhật lúc {overview.lastUpdated}</Text>
@@ -111,7 +134,10 @@ export function MembershipOverviewScreen({
           </View>
         </View>
 
-        <View style={styles.tierCard}>
+        <View
+  onLayout={(event) => setTierCardY(event.nativeEvent.layout.y)}
+  style={styles.tierCard}
+>
           <View style={styles.tierHeader}>
             <View>
               <Text style={styles.sectionTitle}>Tiến trình hạng</Text>
@@ -167,12 +193,12 @@ export function MembershipOverviewScreen({
         </Pressable>
 
         <Pressable
-          onPress={() => onNavigate('notifications')}
-          style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}
-        >
-          <Ionicons color={colors.text} name="calendar-outline" size={20} />
-          <Text style={styles.secondaryButtonText}>Xem điểm sắp hết hạn</Text>
-        </Pressable>
+  onPress={() => onNavigate('expiring-points')}
+  style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}
+>
+  <Ionicons color={colors.text} name="calendar-outline" size={20} />
+  <Text style={styles.secondaryButtonText}>Xem điểm sắp hết hạn</Text>
+</Pressable>
       </ScrollView>
 
       <BottomNav active={activeTab} onNavigate={onNavigate} />

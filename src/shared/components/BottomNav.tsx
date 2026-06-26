@@ -27,77 +27,110 @@ const tabs: Array<{ id: MainTab; icon: IconName; activeIcon: IconName; label: st
 
 export function BottomNav({ active, onNavigate }: BottomNavProps) {
   return (
+  <View style={styles.safeArea}>
     <View style={styles.container}>
       {tabs.map((tab) => {
         const selected = active === tab.id;
+
         return (
           <Pressable
-  key={tab.id}
-  onPress={() => {
-    if (tab.id === 'offers') {
-      onNavigate(tab.id);
-      return;
-    }
+            key={tab.id}
+            onPress={() => {
+              if (tab.id === 'offers') {
+                onNavigate(tab.id);
+                return;
+              }
 
-    if (!selected) {
-      onNavigate(tab.id);
-    }
-  }}
-  style={styles.tab}
->
+              if (!selected) {
+                onNavigate(tab.id);
+              }
+            }}
+            style={({ pressed }) => [
+              styles.tab,
+              pressed && styles.tabPressed,
+            ]}
+            hitSlop={8}
+          >
             <View style={[styles.iconWrap, selected && styles.iconWrapSelected]}>
               <Ionicons
                 color={selected ? colors.primary : colors.textMuted}
                 name={selected ? tab.activeIcon : tab.icon}
-                size={21}
+                size={22}
               />
             </View>
-            <Text style={[styles.label, selected && styles.selected]}>{tab.label}</Text>
+
+            <Text style={[styles.label, selected && styles.selected]}>
+              {tab.label}
+            </Text>
           </Pressable>
         );
       })}
     </View>
-  );
+  </View>
+);
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    backgroundColor: 'transparent',
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+
   container: {
-    minHeight: 72,
+    minHeight: 66,
     flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'rgba(223,231,239,0.92)',
+    borderRadius: 28,
+    backgroundColor: 'rgba(255,255,255,0.96)',
+    paddingHorizontal: 8,
+    paddingTop: 7,
     paddingBottom: 7,
-    paddingTop: 6,
-    shadowColor: colors.primaryDark,
-    shadowOffset: { width: 0, height: -5 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 9,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 18,
+    elevation: 12,
   },
+
   tab: {
-    flex: 1,
+    width: 58,
+    minHeight: 52,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 20,
   },
+
+  tabPressed: {
+    opacity: 0.72,
+    transform: [{ scale: 0.96 }],
+  },
+
   iconWrap: {
-    width: 39,
-    height: 30,
+    width: 34,
+    height: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 15,
+    borderRadius: 14,
   },
+
   iconWrapSelected: {
     backgroundColor: colors.primarySoft,
   },
+
   label: {
-    marginTop: 2,
+    marginTop: 3,
     color: colors.textMuted,
     fontSize: 9,
-    fontWeight: '600',
+    fontWeight: '700',
+    lineHeight: 12,
   },
+
   selected: {
     color: colors.primary,
-    fontWeight: '800',
+    fontWeight: '900',
   },
 });

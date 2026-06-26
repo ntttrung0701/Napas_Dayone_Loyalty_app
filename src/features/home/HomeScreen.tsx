@@ -1,12 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { OfferMediaResolver } from '../offers/domain/OfferMediaResolver';
 import type { ComponentProps } from 'react';
-import { ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-
+import { Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BrandLogo } from '../../shared/components/BrandLogo';
 import { BottomNav } from '../../shared/components/BottomNav';
 import { TransactionRow } from '../../shared/components/TransactionRow';
 import { colors } from '../../theme/colors';
-import type { AppScreen, Transaction } from '../../types';
+import type { AppScreen, Offer, Transaction } from '../../types';
 import { formatPoints } from '../../utils/format';
 import Svg, {
   Circle,
@@ -20,9 +20,11 @@ import Svg, {
 type HomeScreenProps = {
   points: number;
   transactions: Transaction[];
+  offers: Offer[];
   unreadNotifications: number;
   onNavigate: (screen: AppScreen) => void;
   onSelectTransaction: (transaction: Transaction) => void;
+  onSelectOffer: (offer: Offer) => void;
 };
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -31,19 +33,20 @@ const pointCardBackground = require('../../../assets/Card.png');
 const quickActions: Array<{ label: string; icon: IconName; route: AppScreen }> = [
   { label: 'Đổi điểm', icon: 'sync-outline', route: 'offers' },
   { label: 'Tặng điểm', icon: 'gift-outline', route: 'transfer' },
-  { label: 'Thông báo', icon: 'notifications-outline', route: 'notifications' },
-  { label: 'Voucher của tôi', icon: 'ticket-outline', route: 'voucher-wallet' },
   { label: 'Liên kết', icon: 'link-outline', route: 'cards' },
-  { label: 'Mua sắm', icon: 'bag-outline', route: 'payment' },
+  { label: 'Thanh toán', icon: 'bag-outline', route: 'payment' },
 ];
 
 export function HomeScreen({
   points,
   transactions,
+  offers,
   unreadNotifications,
   onNavigate,
   onSelectTransaction,
+  onSelectOffer,
 }: HomeScreenProps) {
+  const suggestedOffers = offers.slice(0, 6);
   return (
     <View style={styles.root}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -72,59 +75,74 @@ export function HomeScreen({
           </Pressable>
         </View>
 
-        <View style={styles.greetingRow}>
-          <View>
-            <Text style={styles.hello}>Xin chào,</Text>
-            <Text style={styles.name}>Nguyễn Văn Anh</Text>
-          </View>
-          
-        </View>
+        <Pressable
+  onPress={() => onNavigate('profile')}
+  style={({ pressed }) => [styles.greetingRow, pressed && styles.pressed]}
+>
+  <View style={styles.greetingCopy}>
+    <Text style={styles.hello}>Xin chào,</Text>
+    <Text style={styles.name}>Nguyễn Văn Anh</Text>
+  </View>
+
+  <View style={styles.memberBadge}>
+    <Ionicons color="#B7791F" name="ribbon-outline" size={15} />
+    <Text style={styles.memberBadgeText}>GOLD</Text>
+  </View>
+</Pressable>
         
         <Pressable
   onPress={() => onNavigate('membership')}
   style={({ pressed }) => [styles.pointsCardPressable, pressed && styles.pressed]}
 >
+  <View style={styles.pointsCardShadow}>
   <ImageBackground
     source={pointCardBackground}
-    resizeMode="stretch"
-    style={styles.pointsCard}
+    resizeMode="cover"
     imageStyle={styles.pointsCardImage}
+    style={styles.pointsCard}
   >
-    <View style={styles.pointsTopRow}>
-      <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
-    </View>
+    <View style={styles.pointsCardContent}>
+      <View style={styles.pointsMain}>
+        <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
 
-    <View style={styles.pointsRow}>
-      <Text style={styles.pointsValue}>{formatPoints(points)}</Text>
-      <Text style={styles.pointsUnit}>pts</Text>
-    </View>
-
-    <View style={styles.pointsDivider} />
-
-    <View style={styles.pointsMetaRow}>
-      <View style={styles.pointsMetaItem}>
-        <View style={styles.pointsMetaIcon}>
-          <Ionicons color="#EAF6FF" name="time-outline" size={16} />
-        </View>
-
-        <View style={styles.pointsMetaCopy}>
-          <Text style={styles.pointsMetaLabel}>Điểm chờ xác nhận:</Text>
-          <Text style={styles.pointsMetaValue}>2.400 điểm</Text>
+        <View style={styles.pointsRow}>
+          <Text style={styles.pointsValue}>{formatPoints(points)}</Text>
+          <Text style={styles.pointsUnit}>pts</Text>
         </View>
       </View>
 
-      <View style={styles.pointsMetaItem}>
-        <View style={[styles.pointsMetaIcon, styles.pointsMetaIconGold]}>
-          <Ionicons color="#FFE58A" name="hourglass-outline" size={16} />
-        </View>
+      <View style={styles.pointsBottom}>
+        <View style={styles.pointsDivider} />
 
-        <View style={styles.pointsMetaCopy}>
-          <Text style={styles.pointsMetaLabel}>Điểm sắp hết hạn:</Text>
-          <Text style={styles.pointsMetaValue}>8.000 điểm</Text>
+        <View style={styles.pointsMetaRow}>
+          <View style={styles.pointsMetaItem}>
+            <View style={styles.pointsMetaIcon}>
+              <Ionicons color={colors.white} name="time-outline" size={18} />
+            </View>
+
+            <View style={styles.pointsMetaCopy}>
+              <Text style={styles.pointsMetaLabel}>Điểm chờ xác nhận:</Text>
+              <Text style={styles.pointsMetaValue}>2.400 điểm</Text>
+            </View>
+          </View>
+
+          <View style={styles.pointsMetaSpacer} />
+
+          <View style={styles.pointsMetaItem}>
+            <View style={[styles.pointsMetaIcon, styles.pointsMetaIconGold]}>
+              <Ionicons color="#F4D35E" name="hourglass-outline" size={18} />
+            </View>
+
+            <View style={styles.pointsMetaCopy}>
+              <Text style={styles.pointsMetaLabel}>Điểm sắp hết hạn:</Text>
+              <Text style={styles.pointsMetaValue}>8.000 điểm</Text>
+            </View>
+          </View>
         </View>
       </View>
     </View>
   </ImageBackground>
+  </View>
 </Pressable>
 
         <View style={styles.quickGrid}>
@@ -132,29 +150,36 @@ export function HomeScreen({
     <Pressable
       key={action.label}
       onPress={() => onNavigate(action.route)}
-      style={({ pressed }) => [styles.quickAction, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.quickAction,
+        pressed && { transform: [{ scale: 0.97 }], opacity: 0.9 },
+      ]}
     >
       <View style={styles.quickButton}>
-        <View pointerEvents="none" style={styles.quickButtonShine} />
-        <Ionicons color="#EAF6FF" name={action.icon} size={25} />
-        <Text style={styles.quickButtonLabel}>{action.label}</Text>
+        <Ionicons color="#3E5D9B" name={action.icon} size={30} />
       </View>
+      <Text style={styles.quickButtonLabel}>{action.label}</Text>
     </Pressable>
   ))}
 </View>
 
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Tiến trình thăng hạng</Text>
-            <Text style={styles.goldText}>GOLD → PLATINUM</Text>
-          </View>
-          <View style={styles.progressTrack}>
-            <View style={styles.progressValue} />
-          </View>
-          <Text style={styles.progressText}>
-            Chỉ cần <Text style={styles.progressStrong}>15.000 điểm</Text> nữa để thăng hạng.
-          </Text>
-        </View>
+        <Pressable
+  onPress={() => onNavigate('membership-tier')}
+  style={({ pressed }) => [styles.sectionCard, pressed && styles.pressed]}
+>
+  <View style={styles.sectionHeader}>
+    <Text style={styles.sectionTitle}>Tiến trình thăng hạng</Text>
+    <Text style={styles.goldText}>GOLD → PLATINUM</Text>
+  </View>
+
+  <View style={styles.progressTrack}>
+    <View style={styles.progressValue} />
+  </View>
+
+  <Text style={styles.progressText}>
+    Chỉ cần <Text style={styles.progressStrong}>15.000 điểm</Text> nữa để thăng hạng.
+  </Text>
+</Pressable>
 
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
@@ -172,6 +197,71 @@ export function HomeScreen({
             />
           ))}
         </View>
+        <View style={styles.sectionCard}>
+  <View style={styles.sectionHeader}>
+    <Text style={styles.sectionTitle}>Voucher dành cho bạn</Text>
+    <Pressable onPress={() => onNavigate('offers')}>
+      <Text style={styles.link}>Xem tất cả</Text>
+    </Pressable>
+  </View>
+
+  <ScrollView
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={styles.voucherRow}
+  >
+    {suggestedOffers.map((offer) => {
+      const imageSource = OfferMediaResolver.getImageSource(offer.media);
+
+      return (
+        <Pressable
+          key={offer.id}
+          onPress={() => onSelectOffer(offer)}
+          style={({ pressed }) => [
+            styles.suggestedVoucherCard,
+            pressed && styles.pressed,
+          ]}
+        >
+          <View style={styles.suggestedVoucherImageWrap}>
+            {imageSource ? (
+              <Image
+                source={imageSource}
+                style={styles.suggestedVoucherImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.suggestedVoucherFallback}>
+                <Ionicons name="gift-outline" size={24} color={colors.primary} />
+              </View>
+            )}
+          </View>
+
+          <View style={styles.suggestedVoucherBody}>
+            <Text style={styles.suggestedVoucherTitle} numberOfLines={2}>
+              {offer.title}
+            </Text>
+
+            <Text style={styles.suggestedVoucherPartner} numberOfLines={1}>
+              {offer.partner}
+            </Text>
+
+            <View style={styles.suggestedVoucherPointsRow}>
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={15}
+                color={colors.success}
+              />
+              <Text style={styles.suggestedVoucherPoints}>
+                {formatPoints(offer.points)} đ
+              </Text>
+            </View>
+          </View>
+        </Pressable>
+      );
+    })}
+  </ScrollView>
+</View>
+        
       </ScrollView>
       <BottomNav active="home" onNavigate={onNavigate} />
     </View>
@@ -286,14 +376,18 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontWeight: '900',
   },
+  greetingCopy: {
+  flex: 1,
+  paddingRight: 12,
+},
   greetingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 14,
-    paddingTop: 20,
-  },
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  paddingHorizontal: 20,
+  paddingTop: 22,
+  paddingBottom: 16,
+},
   hello: {
     color: colors.textMuted,
     fontSize: 12,
@@ -304,6 +398,28 @@ const styles = StyleSheet.create({
     fontSize: 21,
     fontWeight: '900',
   },
+  memberBadge: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  borderWidth: 1,
+  borderColor: '#E9D8A6',
+  borderRadius: 999,
+  backgroundColor: '#FFF8DF',
+  paddingHorizontal: 11,
+  paddingVertical: 7,
+  shadowColor: '#B7791F',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.1,
+  shadowRadius: 8,
+  elevation: 2,
+},
+memberBadgeText: {
+  marginLeft: 5,
+  color: '#B7791F',
+  fontSize: 11,
+  fontWeight: '900',
+  letterSpacing: 0.4,
+},
   rankBadge: {
     paddingHorizontal: 1,
     paddingVertical: 1,
@@ -315,23 +431,17 @@ const styles = StyleSheet.create({
   },
 pointsCard: {
   overflow: 'hidden',
-  height: 178,
-  borderRadius: 20,
-  paddingHorizontal: 18,
-  paddingTop: 18,
-  paddingBottom: 14,
-  shadowColor: '#062C57',
-  shadowOffset: { width: 0, height: 12 },
-  shadowOpacity: 0.28,
-  shadowRadius: 18,
-  elevation: 9,
+  height: 195,
+  borderRadius: 24,
 },
 pointsCardImage: {
-  borderRadius: 20,
+  borderRadius: 24,
 },
+
 pointsCardPressable: {
   marginHorizontal: 20,
-  borderRadius: 20,
+  marginBottom: 18,
+  borderRadius: 24,
 },
 pointsTopRow: {
   flexDirection: 'row',
@@ -339,14 +449,22 @@ pointsTopRow: {
   justifyContent: 'space-between',
 },
 
+pointsCardShadow: {
+  borderRadius: 24,
+  backgroundColor: colors.background,
+  shadowColor: '#000000',
+  shadowOffset: { width: 10, height: 20 },
+  shadowOpacity: 0.4,
+  shadowRadius: 10,
+  elevation: 14,
+},
 
 pointsCardContent: {
-  position: 'relative',
-  zIndex: 1,
   flex: 1,
+  justifyContent: 'space-between',
   paddingHorizontal: 18,
   paddingTop: 18,
-  paddingBottom: 13,
+  paddingBottom: 12,
 },
 
 pointsHeader: {
@@ -361,10 +479,11 @@ pointsLabel: {
   letterSpacing: 0.7,
 },
 
+
 pointsRow: {
   flexDirection: 'row',
   alignItems: 'baseline',
-  marginTop: 5,
+  marginTop: 8,
 },
 
 pointsValue: {
@@ -374,7 +493,12 @@ pointsValue: {
   textShadowColor: 'rgba(0,0,0,0.22)',
   textShadowOffset: { width: 0, height: 2 },
   textShadowRadius: 4,
-
+},
+pointsBottom: {
+  marginTop: 'auto',
+},
+pointsMetaSpacer: {
+  width: 10,
 },
 
 pointsUnit: {
@@ -383,12 +507,10 @@ pointsUnit: {
   fontSize: 24,
   fontWeight: '400',
 },
-
 pointsDivider: {
   height: 1,
-  marginTop: 20,
-  marginBottom: 12,
   backgroundColor: 'rgba(218,238,255,0.28)',
+  marginBottom: 12,
 },
 
 pointsMetaRow: {
@@ -403,17 +525,19 @@ pointsMetaItem: {
 },
 
 pointsMetaIcon: {
-  width: 34,
-  height: 34,
+  width: 38,
+  height: 38,
   alignItems: 'center',
   justifyContent: 'center',
-  borderRadius: 12,
+  borderRadius: 14,
   backgroundColor: 'rgba(255,255,255,0.16)',
 },
+
 
 pointsMetaIconGold: {
   backgroundColor: 'rgba(255,220,98,0.20)',
 },
+
 
 pointsMetaCopy: {
   flex: 1,
@@ -434,69 +558,63 @@ pointsMetaValue: {
   fontWeight: '800',
   lineHeight: 17,
 },
+pointsMain: {
+  justifyContent: 'flex-start',
+},
 
 quickGrid: {
   flexDirection: 'row',
-  flexWrap: 'wrap',
   justifyContent: 'space-between',
   paddingHorizontal: 20,
-  paddingTop: 14,
-  paddingBottom: 10,
+  paddingTop: 0,
+  paddingBottom: 20,
 },
-
 quickAction: {
-  width: '31%',
-  marginBottom: 12,
+  width: '23%',
+  alignItems: 'center',
 },
 
 quickButton: {
-  position: 'relative',
-  overflow: 'hidden',
-  height: 66,
+  width: 74,
+  height: 74,
+  borderRadius: 28,
   alignItems: 'center',
   justifyContent: 'center',
-  borderRadius: 12,
+  backgroundColor: colors.background,
   borderWidth: 1,
-  borderColor: 'rgba(216,236,255,0.26)',
-  backgroundColor: '#0A4F91',
-  shadowColor: '#062C57',
+  borderColor: 'rgba(50, 70, 120, 0.06)',
+  shadowColor: '#000000',
   shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.26,
-  shadowRadius: 10,
-  elevation: 7,
-},
-
-quickButtonShine: {
-  position: 'absolute',
-  top: -26,
-  right: -18,
-  width: 78,
-  height: 78,
-  borderRadius: 39,
-  backgroundColor: 'rgba(255,255,255,0.13)',
+  shadowOpacity: 0.14,
+  shadowRadius: 16,
+  elevation: 8,
 },
 
 quickButtonLabel: {
-  marginTop: 6,
+  marginTop: 10,
   textAlign: 'center',
-  color: colors.white,
+  color: '#3E5D9B',
   fontSize: 11,
-  fontWeight: '800',
+  fontWeight: '700',
+  lineHeight: 15,
+  textShadowColor: 'rgba(62, 93, 155, 0.18)',
+  textShadowOffset: { width: 0, height: 3 },
+  textShadowRadius: 6,
 },
   sectionCard: {
-    marginBottom: 14,
-    marginHorizontal: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 18,
-    backgroundColor: colors.surface,
-    padding: 16,
-    shadowColor: colors.primaryDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
+  marginHorizontal: 20,
+  marginBottom: 18,
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 20,
+  backgroundColor: colors.surface,
+  padding: 16,
+  shadowColor: colors.primaryDark,
+  shadowOffset: { width: 0, height: 5 },
+  shadowOpacity: 0.06,
+  shadowRadius: 12,
+  elevation: 2,
+},
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -508,6 +626,72 @@ quickButtonLabel: {
     fontSize: 14,
     fontWeight: '900',
   },
+  voucherRow: {
+  paddingRight: 6,
+},
+
+suggestedVoucherCard: {
+  width: 150,
+  marginRight: 12,
+  overflow: 'hidden',
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 16,
+  backgroundColor: colors.surface,
+  shadowColor: colors.primaryDark,
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.06,
+  shadowRadius: 10,
+  elevation: 2,
+},
+
+suggestedVoucherImageWrap: {
+  height: 92,
+  backgroundColor: '#EEF2F7',
+},
+
+suggestedVoucherImage: {
+  width: '100%',
+  height: '100%',
+},
+
+suggestedVoucherFallback: {
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+suggestedVoucherBody: {
+  paddingHorizontal: 12,
+  paddingTop: 10,
+  paddingBottom: 12,
+},
+
+suggestedVoucherTitle: {
+  color: colors.text,
+  fontSize: 12,
+  fontWeight: '800',
+  lineHeight: 17,
+},
+
+suggestedVoucherPartner: {
+  marginTop: 4,
+  color: colors.textMuted,
+  fontSize: 10,
+},
+
+suggestedVoucherPointsRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginTop: 10,
+},
+
+suggestedVoucherPoints: {
+  marginLeft: 4,
+  color: colors.success,
+  fontSize: 13,
+  fontWeight: '900',
+},
   goldText: {
     color: colors.gold,
     fontSize: 9,

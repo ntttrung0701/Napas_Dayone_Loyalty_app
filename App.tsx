@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { OfferMediaResolver } from './src/features/offers/domain/OfferMediaResolver';
 import { MembershipOverviewScreen } from './src/features/membership/MembershipOverviewScreen';
+import { ExpiringPointsScreen } from './src/features/membership/ExpiringPointsScreen';
 
 import { AuthFlow } from './src/features/auth/AuthFlow';
 import { CardsScreen } from './src/features/cards/CardsScreen';
@@ -221,6 +222,27 @@ export default function App() {
     navigate('receipt');
   };
 
+  const expiringPointItems = [
+  {
+    id: 'EXP-001',
+    date: '31/10/2026',
+    daysText: 'Hết hạn trong 5 ngày',
+    points: 1_500,
+  },
+  {
+    id: 'EXP-002',
+    date: '15/11/2026',
+    daysText: 'Hết hạn trong 20 ngày',
+    points: 2_500,
+  },
+  {
+    id: 'EXP-003',
+    date: '30/11/2026',
+    daysText: 'Hết hạn trong 35 ngày',
+    points: 4_000,
+  },
+];
+
   const renderScreen = (route: AppScreen) => {
     switch (route) {
       case 'splash':
@@ -334,10 +356,35 @@ export default function App() {
       overview={{
         ...seedMembershipOverview,
         availablePoints: points,
-        
       }}
+      initialFocus="top"
       onBack={goBack}
       onNavigate={navigate}
+    />
+  );
+
+case 'membership-tier':
+  return (
+    <MembershipOverviewScreen
+      activeTab="profile"
+      overview={{
+        ...seedMembershipOverview,
+        availablePoints: points,
+      }}
+      initialFocus="tier"
+      onBack={goBack}
+      onNavigate={navigate}
+    />
+  );
+  case 'expiring-points':
+  return (
+    <ExpiringPointsScreen
+      totalExpiringPoints={8_000}
+      expiringItems={expiringPointItems}
+      recommendedOffers={offers}
+      onBack={goBack}
+      onNavigate={navigate}
+      onSelectOffer={openOffer}
     />
   );
       case 'notifications':
@@ -376,12 +423,14 @@ export default function App() {
       default:
         return (
           <HomeScreen
-            points={points}
-            transactions={transactions}
-            unreadNotifications={unreadNotifications}
-            onNavigate={navigate}
-            onSelectTransaction={openTransaction}
-          />
+  points={points}
+  transactions={transactions}
+  offers={offers}
+  unreadNotifications={unreadNotifications}
+  onNavigate={navigate}
+  onSelectTransaction={openTransaction}
+  onSelectOffer={openOffer}
+/>
         );
     }
   };

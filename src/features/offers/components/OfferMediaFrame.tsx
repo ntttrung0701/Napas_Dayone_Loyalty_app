@@ -29,11 +29,7 @@ export function OfferMediaFrame({
     <View
       style={[
         styles.frame,
-        {
-          height,
-          borderRadius,
-          backgroundColor: fallbackColor,
-        },
+        { height, borderRadius, backgroundColor: fallbackColor },
         style,
       ]}
     >
@@ -43,9 +39,7 @@ export function OfferMediaFrame({
           <View
             style={[
               styles.overlay,
-              {
-                backgroundColor: `rgba(0,0,0,${overlayOpacity})`,
-              },
+              { backgroundColor: `rgba(0,0,0,${overlayOpacity})` },
             ]}
           />
         </>

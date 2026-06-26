@@ -7,6 +7,7 @@ import { ScreenHeader } from '../../shared/components/ScreenHeader';
 import { colors } from '../../theme/colors';
 import type { Receipt } from '../../types';
 import { formatCurrency, formatPoints } from '../../utils/format';
+import { PaymentFlowScreen } from './PaymentFlowScreen';
 
 type PaymentScreenProps = {
   points: number;
@@ -16,7 +17,15 @@ type PaymentScreenProps = {
 
 const invoiceAmount = 450_000;
 
-export function PaymentScreen({
+export function PaymentScreen(props: PaymentScreenProps) {
+  return <PaymentFlowScreen {...props} />;
+}
+
+/**
+ * @deprecated Luồng runtime hiện dùng PaymentFlowScreen.
+ * Giữ lại phần cũ tạm thời để không làm rủi ro diff lớn trong lần nâng cấp này.
+ */
+function DeprecatedLegacyPaymentScreen({
   points,
   onBack,
   onComplete,

@@ -59,7 +59,7 @@ export function OffersScreen({
   return (
     <View style={styles.root}>
       <ScreenHeader
-  title="Ưu đãi & Quà tặng"
+  title="Ưu đãi & quà tặng"
   rightContent={
     <Pressable
       onPress={() => onNavigate('notifications')}
@@ -104,7 +104,7 @@ export function OffersScreen({
   <View style={styles.walletCopy}>
     <Text style={styles.walletTitle}>Voucher của tôi</Text>
     <Text style={styles.walletSubtitle}>
-      Xem voucher còn hạn, đã dùng hoặc hết hạn
+      Sử dụng voucher của bạn để đổi những ưu đãi
     </Text>
   </View>
 
@@ -151,9 +151,10 @@ const imageSource = OfferMediaResolver.getImageSource(offer.media);
             >
               <OfferMediaFrame
   fallbackColor={offer.accent}
-  height={162}
+  height={190}
   media={offer.media}
-  overlayOpacity={0.18}
+  borderRadius={0}
+  overlayOpacity={0}
   style={styles.offerVisual}
 >
   <View style={styles.hotBadge}>
@@ -185,13 +186,9 @@ const imageSource = OfferMediaResolver.getImageSource(offer.media);
 
                 <View style={styles.offerFooter}>
                   <View>
-                    <Text style={styles.metaLabel}>Đổi bằng</Text>
+                    <Text style={styles.metaLabel}>Điểm quy đổi</Text>
                     <View style={styles.pointsRow}>
-                      <Ionicons
-                        color={affordable ? colors.success : colors.warning}
-                        name="diamond-outline"
-                        size={14}
-                      />
+                      
                       <Text style={[styles.points, !affordable && styles.pointsDisabled]}>
                         {formatPoints(offer.points)} pts
                       </Text>
@@ -242,13 +239,13 @@ notificationDot: {
   backgroundColor: colors.danger,
 },
 content: {
-  paddingHorizontal: 18,
-  paddingTop: 20,
-  paddingBottom: 28,
+  paddingHorizontal: 20,
+  paddingTop: 18,
+  paddingBottom: 20,
 },
   titleRow: {
   flexDirection: 'row',
-  alignItems: 'center',
+  alignItems: 'baseline',
   justifyContent: 'space-between',
   marginBottom: 16,
 },
@@ -272,15 +269,15 @@ pageSubtitle: {
   walletShortcut: {
   flexDirection: 'row',
   alignItems: 'center',
-  marginBottom: 14,
+  marginBottom: 20,
   borderWidth: 1,
   borderColor: colors.border,
-  borderRadius: 16,
+  borderRadius: 22,
   backgroundColor: colors.surface,
   paddingHorizontal: 18,
-  paddingVertical: 17,
+  paddingVertical: 18,
   shadowColor: colors.primaryDark,
-  shadowOffset: { width: 0, height: 4 },
+  shadowOffset: { width: 0, height: 5 },
   shadowOpacity: 0.05,
   shadowRadius: 10,
   elevation: 2,
@@ -307,15 +304,21 @@ pageSubtitle: {
 },
 
   searchBox: {
-    minHeight: 51,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 16,
-    backgroundColor: colors.surface,
-    paddingHorizontal: 14,
-  },
+  minHeight: 56,
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 14,
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 22,
+  backgroundColor: colors.surface,
+  paddingHorizontal: 16,
+  shadowColor: colors.primaryDark,
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.04,
+  shadowRadius: 8,
+  elevation: 1,
+},
   walletCopy: {
     flex: 1,
   },
@@ -332,10 +335,10 @@ pageSubtitle: {
     textAlign: 'left',
   },
   filterRow: {
-    paddingBottom: 20,
-    paddingTop: 17,
-    paddingRight: 8,
-  },
+  paddingTop: 14,
+  paddingBottom: 18,
+  paddingRight: 8,
+},
   
   offerImage: {
   ...StyleSheet.absoluteFillObject,
@@ -349,20 +352,20 @@ imageOverlay: {
 },
 
   filter: {
-    minHeight: 20,
-    justifyContent: 'center',
-    marginRight: 9,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 999,
-    backgroundColor: colors.surface,
-    paddingHorizontal: 18,
-    shadowColor: colors.primaryDark,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
-  },
+  minHeight: 38,
+  justifyContent: 'center',
+  marginRight: 10,
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 999,
+  backgroundColor: colors.surface,
+  paddingHorizontal: 18,
+  shadowColor: colors.primaryDark,
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.04,
+  shadowRadius: 4,
+  elevation: 1,
+},
   filterActive: {
     borderColor: colors.primary,
     backgroundColor: colors.primary,
@@ -377,24 +380,29 @@ imageOverlay: {
     fontWeight: '900',
   },
   offerCard: {
-    overflow: 'hidden',
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 20,
-    backgroundColor: colors.surface,
-    shadowColor: colors.primaryDark,
-    shadowOffset: { width: 0, height: 7 },
-    shadowOpacity: 0.1,
-    shadowRadius: 14,
-    elevation: 4,
-  },
+  overflow: 'hidden',
+  marginBottom: 20,
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 20,
+  backgroundColor: colors.surface,
+  shadowColor: colors.primaryDark,
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.09,
+  shadowRadius: 15,
+  elevation: 4,
+},
   offerCardPressed: {
     opacity: 0.82,
     transform: [{ scale: 0.995 }],
   },
   offerVisual: {
   overflow: 'hidden',
+  height: 190,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  borderBottomLeftRadius: 0,
+  borderBottomRightRadius: 0,
 },
   visualGlowLarge: {
     position: 'absolute',
@@ -451,8 +459,10 @@ imageOverlay: {
     letterSpacing: 0.4,
   },
   offerInfo: {
-    padding: 17,
-  },
+  paddingHorizontal: 18,
+  paddingTop: 16,
+  paddingBottom: 18,
+},
   offerTitle: {
     color: colors.primaryDark,
     fontSize: 15,
@@ -465,10 +475,10 @@ imageOverlay: {
     fontSize: 10,
   },
   divider: {
-    height: 1,
-    marginVertical: 14,
-    backgroundColor: colors.border,
-  },
+  height: 1,
+  marginVertical: 14,
+  backgroundColor: colors.border,
+},
   offerFooter: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -477,6 +487,7 @@ imageOverlay: {
   metaLabel: {
     color: colors.textMuted,
     fontSize: 9,
+    fontWeight: 700,
   },
   pointsRow: {
     flexDirection: 'row',
@@ -490,7 +501,7 @@ imageOverlay: {
     fontWeight: '900',
   },
   pointsDisabled: {
-    color: colors.warning,
+    color: colors.danger,
   },
   expiryBlock: {
     maxWidth: '48%',
