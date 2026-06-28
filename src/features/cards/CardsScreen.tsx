@@ -1,14 +1,17 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '../../shared/components/PrimaryButton';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { getScreenBottomPadding } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 
 const banks = ['BIDV', 'VietinBank', 'Techcombank', 'Agribank', 'TPBank'];
 
 export function CardsScreen({ onBack }: { onBack: () => void }) {
+  const insets = useSafeAreaInsets();
   const [bank, setBank] = useState('BIDV');
   const [cardHolder, setCardHolder] = useState('NGUYEN MINH ANH');
   const [cardNumber, setCardNumber] = useState('9704');
@@ -20,7 +23,13 @@ export function CardsScreen({ onBack }: { onBack: () => void }) {
   return (
     <View style={styles.root}>
       <ScreenHeader onBack={onBack} title="Liên kết Thẻ & Ví" />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getScreenBottomPadding(insets.bottom) },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.sectionTitle}>PHƯƠNG THỨC ĐÃ LIÊN KẾT</Text>
         <View style={styles.linkedCard}>
           <View style={styles.bankLogo}>
@@ -96,7 +105,7 @@ export function CardsScreen({ onBack }: { onBack: () => void }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 18, paddingBottom: 30 },
+  content: { padding: 18 },
   sectionTitle: {
     marginBottom: 10,
     marginTop: 8,

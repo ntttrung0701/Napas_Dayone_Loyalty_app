@@ -1,12 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import {
-  Platform,
-  SafeAreaView,
-  StatusBar as NativeStatusBar,
   StyleSheet,
+  Text,
+  TextInput,
   View,
 } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { OfferMediaResolver } from './src/features/offers/domain/OfferMediaResolver';
 import { MembershipOverviewScreen } from './src/features/membership/MembershipOverviewScreen';
 import { ExpiringPointsScreen } from './src/features/membership/ExpiringPointsScreen';
@@ -50,6 +50,23 @@ import type {
 } from './src/types';
 
 const initialRoute: AppScreen = 'splash';
+const maxReadableFontScale = 1.12;
+
+type ScalableComponent = {
+  defaultProps?: {
+    maxFontSizeMultiplier?: number;
+  };
+};
+
+function capFontScale(component: ScalableComponent) {
+  component.defaultProps = {
+    ...component.defaultProps,
+    maxFontSizeMultiplier: maxReadableFontScale,
+  };
+}
+
+capFontScale(Text as ScalableComponent);
+capFontScale(TextInput as ScalableComponent);
 
 export default function App() {
   const [navigation, setNavigation] = useState(() => NavigationStack.start(initialRoute));
@@ -352,7 +369,6 @@ export default function App() {
         case 'membership':
   return (
     <MembershipOverviewScreen
-      activeTab="profile"
       overview={{
         ...seedMembershipOverview,
         availablePoints: points,
@@ -366,7 +382,6 @@ export default function App() {
 case 'membership-tier':
   return (
     <MembershipOverviewScreen
-      activeTab="profile"
       overview={{
         ...seedMembershipOverview,
         availablePoints: points,
@@ -436,32 +451,33 @@ case 'membership-tier':
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="dark" />
+    <SafeAreaProvider>
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <StatusBar style="dark" />
 
-      <View style={styles.screenStack}>
-        {navigation.items.map((entry, index) => {
-          const active = index === navigation.items.length - 1;
+        <View style={styles.screenStack}>
+          {navigation.items.map((entry, index) => {
+            const active = index === navigation.items.length - 1;
 
-          return (
-            <View
-              key={entry.instanceKey}
-              pointerEvents={active ? 'auto' : 'none'}
-              style={[styles.screen, !active && { display: 'none' }]}
-            >
-              {renderScreen(entry.screen)}
-            </View>
-          );
-        })}
-      </View>
-    </SafeAreaView>
+            return (
+              <View
+                key={entry.instanceKey}
+                pointerEvents={active ? 'auto' : 'none'}
+                style={[styles.screen, !active && { display: 'none' }]}
+              >
+                {renderScreen(entry.screen)}
+              </View>
+            );
+          })}
+        </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? NativeStatusBar.currentHeight ?? 24 : 0,
     backgroundColor: colors.background,
   },
   screenStack: {

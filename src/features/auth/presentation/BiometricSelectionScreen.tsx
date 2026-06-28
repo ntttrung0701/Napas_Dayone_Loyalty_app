@@ -85,7 +85,7 @@ function BiometricOption({
   return (
     <Pressable accessibilityRole="button" disabled={disabled} onPress={onPress} style={[styles.option, disabled && styles.disabled]}>
       {loading ? <ActivityIndicator color="#3C5C98" /> : <Ionicons color="#3C5C98" name={icon} size={36} />}
-      <Text style={styles.optionText}>{loading ? 'Đang xác thực...' : label}</Text>
+      <Text maxFontSizeMultiplier={1.08} numberOfLines={2} style={styles.optionText}>{loading ? 'Đang xác thực...' : label}</Text>
       <Ionicons color="#667085" name="chevron-forward" size={20} />
     </Pressable>
   );
@@ -95,6 +95,6 @@ const styles = StyleSheet.create({
   notice: { marginBottom: 16, borderRadius: 10, backgroundColor: '#FFF4E5', color: '#9A6700', padding: 12, fontSize: 12, lineHeight: 18 },
   option: { minHeight: 76, flexDirection: 'row', alignItems: 'center', marginBottom: 14, borderWidth: 1, borderColor: '#98A2B3', borderRadius: 13, backgroundColor: colors.white, paddingHorizontal: 16 },
   disabled: { opacity: 0.42 },
-  optionText: { flex: 1, marginLeft: 14, color: '#294B8C', fontSize: 14, fontWeight: '700' },
+  optionText: { flex: 1, minWidth: 0, marginLeft: 14, color: '#294B8C', fontSize: 14, fontWeight: '700', lineHeight: 19 },
   security: { marginTop: 12, textAlign: 'center', color: '#667085', fontSize: 11, lineHeight: 17 },
 });

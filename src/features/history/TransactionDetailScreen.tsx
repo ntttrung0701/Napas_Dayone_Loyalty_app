@@ -1,7 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { getScreenBottomPadding } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { Transaction, TransactionStatus } from '../../types';
 import { formatPoints } from '../../utils/format';
@@ -36,6 +38,7 @@ export function TransactionDetailScreen({
   transactions: readonly Transaction[];
   onBack: () => void;
 }) {
+  const insets = useSafeAreaInsets();
   const record = new TransactionRecord(transaction);
 const pointPolicy = new TransactionPointPolicy(transaction);
 const accent = statusColor[transaction.status];
@@ -59,7 +62,13 @@ const transactionDateTime = formatTransactionDateTime(transaction.occurredAt, tr
   return (
     <View style={styles.root}>
       <ScreenHeader onBack={onBack} title="Chi tiết giao dịch" />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getScreenBottomPadding(insets.bottom) },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.summaryCard}>
           <View style={[styles.statusIcon, { backgroundColor: `${accent}18`, borderColor: `${accent}40` }]}>
             <Ionicons color={accent} name={statusIcon[transaction.status]} size={32} />
@@ -81,11 +90,9 @@ const transactionDateTime = formatTransactionDateTime(transaction.occurredAt, tr
             <DetailRow label="Số tiền giao dịch" value={`${formatPoints(transaction.amount)} VND`} />
           ) : null}
           <View style={styles.ruleRow}>
-  <View style={styles.ruleRow}>
-  <Text style={styles.ruleLabel}>{pointPolicy.ruleLabel}</Text>
-  <Text style={styles.ruleValue}>{pointPolicy.ruleDescription}</Text>
-</View>
-</View>
+            <Text maxFontSizeMultiplier={1.08} style={styles.ruleLabel}>{pointPolicy.ruleLabel}</Text>
+            <Text maxFontSizeMultiplier={1.08} style={styles.ruleValue}>{pointPolicy.ruleDescription}</Text>
+          </View>
         </View>
 
         <View style={styles.card}>
@@ -223,10 +230,10 @@ function DetailRow({
 }) {
   return (
     <View style={styles.detailRow}>
-      <Text style={styles.detailLabel}>{label}</Text>
+      <Text maxFontSizeMultiplier={1.08} numberOfLines={2} style={styles.detailLabel}>{label}</Text>
       <View style={styles.detailValueRow}>
         {icon ? <Ionicons color={colors.primary} name={icon} size={15} /> : null}
-        <Text style={[styles.detailValue, valueColor ? { color: valueColor } : null]}>
+        <Text maxFontSizeMultiplier={1.08} numberOfLines={2} style={[styles.detailValue, valueColor ? { color: valueColor } : null]}>
   {value}
 </Text>
       </View>
@@ -236,7 +243,7 @@ function DetailRow({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 18, paddingBottom: 32 },
+  content: { padding: 18 },
   summaryCard: {
     alignItems: 'center',
     marginBottom: 16,
@@ -277,16 +284,17 @@ const styles = StyleSheet.create({
   },
   cardTitle: { marginBottom: 10, color: colors.primaryDark, fontSize: 11, fontWeight: '900' },
   detailRow: {
-    minHeight: 42,
+    minHeight: 46,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    paddingVertical: 8,
   },
-  detailLabel: { color: colors.textMuted, fontSize: 11 },
-  detailValueRow: { maxWidth: '62%', flexDirection: 'row', alignItems: 'center' },
-  detailValue: { marginLeft: 6, textAlign: 'right', color: colors.text, fontSize: 11, fontWeight: '800' },
+  detailLabel: { flex: 0.9, minWidth: 0, color: colors.textMuted, fontSize: 11, lineHeight: 16 },
+  detailValueRow: { flex: 1.1, minWidth: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' },
+  detailValue: { flexShrink: 1, marginLeft: 6, textAlign: 'right', color: colors.text, fontSize: 11, fontWeight: '800', lineHeight: 16 },
   ruleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -296,8 +304,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     padding: 12,
   },
-  ruleLabel: { color: colors.textMuted, fontSize: 10 },
-  ruleValue: { maxWidth: '60%', textAlign: 'right', color: colors.text, fontSize: 10, fontWeight: '800' },
+  ruleLabel: { flex: 0.8, minWidth: 0, color: colors.textMuted, fontSize: 10, lineHeight: 15 },
+  ruleValue: { flex: 1.2, marginLeft: 10, textAlign: 'right', color: colors.text, fontSize: 10, fontWeight: '800', lineHeight: 15 },
   timelineRow: { minHeight: 74, flexDirection: 'row' },
   timelineTrack: { width: 24, alignItems: 'center' },
   timelineDot: { width: 12, height: 12, marginTop: 3, borderRadius: 6 },

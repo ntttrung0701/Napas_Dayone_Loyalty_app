@@ -21,11 +21,17 @@ export function ScreenHeader({ title, onBack, rightLabel, rightContent }: Screen
           </Pressable>
         ) : null}
       </View>
-      <Text numberOfLines={1} style={styles.title}>
+      <Text adjustsFontSizeToFit maxFontSizeMultiplier={1.1} numberOfLines={1} style={styles.title}>
         {title}
       </Text>
       <View style={[styles.side, styles.right]}>
-        {rightContent ?? (rightLabel ? <Text style={styles.rightLabel}>{rightLabel}</Text> : null)}
+        {rightContent ?? (
+          rightLabel ? (
+            <Text maxFontSizeMultiplier={1.08} numberOfLines={1} style={styles.rightLabel}>
+              {rightLabel}
+            </Text>
+          ) : null
+        )}
       </View>
     </View>
   );

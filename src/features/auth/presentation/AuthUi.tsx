@@ -9,10 +9,13 @@ import {
   Text,
   TextInput,
   type TextInputProps,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrandLogo } from '../../../shared/components/BrandLogo';
+import { getScreenBottomPadding } from '../../../shared/layout';
 import { colors } from '../../../theme/colors';
 import { AuthScreenPresentation } from './AuthScreenPresentation';
 
@@ -29,14 +32,19 @@ export function AuthShell({
   children,
   footer,
 }: AuthShellProps) {
+  const { height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const bottomPadding = getScreenBottomPadding(insets.bottom, 24);
+  const cardMinHeight = Math.min(610, Math.max(0, height - bottomPadding - 54));
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={ui.root}>
       <ScrollView
-        contentContainerStyle={ui.page}
+        contentContainerStyle={[ui.page, { paddingBottom: bottomPadding }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={ui.card}>
+        <View style={[ui.card, { minHeight: cardMinHeight }]}>
           <View style={ui.header}>
             <View style={ui.headerSide}>
               {onBack ? (
@@ -62,8 +70,16 @@ function AuthHeading({ presentation }: { presentation: AuthScreenPresentation })
 
   return (
     <View>
-      {presentation.hasTitle ? <Text style={ui.title}>{presentation.title}</Text> : null}
-      {presentation.hasSubtitle ? <Text style={ui.subtitle}>{presentation.subtitle}</Text> : null}
+      {presentation.hasTitle ? (
+        <Text adjustsFontSizeToFit maxFontSizeMultiplier={1.08} numberOfLines={2} style={ui.title}>
+          {presentation.title}
+        </Text>
+      ) : null}
+      {presentation.hasSubtitle ? (
+        <Text maxFontSizeMultiplier={1.08} style={ui.subtitle}>
+          {presentation.subtitle}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -84,7 +100,7 @@ export function AuthField({
 }: AuthFieldProps) {
   return (
     <View style={ui.fieldBlock}>
-      <Text style={ui.label}>{label}</Text>
+      <Text maxFontSizeMultiplier={1.08} numberOfLines={2} style={ui.label}>{label}</Text>
       <View style={ui.inputRow}>
         {icon ? <Ionicons color="#A4AAB4" name={icon} size={18} /> : null}
         <TextInput
@@ -126,7 +142,6 @@ const ui = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#ECECEC' },
   page: { flexGrow: 1, justifyContent: 'center', padding: 16 },
   card: {
-    minHeight: 610,
     borderRadius: 24,
     backgroundColor: '#FAFAFA',
     paddingHorizontal: 20,
@@ -136,14 +151,14 @@ const ui = StyleSheet.create({
   header: { minHeight: 42, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   headerSide: { width: 42 },
   back: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center' },
-  title: { marginTop: 7, textAlign: 'center', color: colors.black, fontSize: 20, fontWeight: '700' },
+  title: { marginTop: 7, textAlign: 'center', color: colors.black, fontSize: 19, fontWeight: '700', lineHeight: 24 },
   subtitle: { marginTop: 8, textAlign: 'center', color: '#294B8C', fontSize: 13, lineHeight: 18 },
   body: { marginTop: 22 },
   footer: { marginTop: 'auto', paddingTop: 18 },
   fieldBlock: { marginBottom: 13 },
   label: { marginBottom: 6, color: '#294B8C', fontSize: 12, fontWeight: '600' },
   inputRow: {
-    height: 48,
+    minHeight: 48,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
@@ -151,6 +166,7 @@ const ui = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: colors.white,
     paddingHorizontal: 13,
+    paddingVertical: 6,
   },
   input: {
     flex: 1,

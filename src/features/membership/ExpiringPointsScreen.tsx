@@ -1,7 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { getScreenBottomPadding } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { AppScreen, Offer } from '../../types';
 import { formatPoints } from '../../utils/format';
@@ -41,6 +43,7 @@ export function ExpiringPointsScreen({
   onNavigate,
   onSelectOffer,
 }: ExpiringPointsScreenProps) {
+  const insets = useSafeAreaInsets();
   const nearestExpiryText = ExpiringPointsPresenter.getNearestExpiry(expiringItems);
   const visibleOffers = ExpiringPointsPresenter.getRecommendedOffers(recommendedOffers);
 
@@ -48,7 +51,13 @@ export function ExpiringPointsScreen({
     <View style={styles.root}>
       <ScreenHeader onBack={onBack} title="Điểm sắp hết hạn" />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getScreenBottomPadding(insets.bottom) },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.alertCard}>
           <View pointerEvents="none" style={styles.alertDeco} />
 
@@ -155,7 +164,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
-    paddingBottom: 42,
   },
   pressed: {
     opacity: 0.72,

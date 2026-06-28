@@ -1,9 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '../../shared/components/PrimaryButton';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { getScreenBottomPadding } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import { formatPoints } from '../../utils/format';
 
@@ -16,6 +18,7 @@ type TransferScreenProps = {
 const amounts = [5_000, 10_000, 20_000, 50_000];
 
 export function TransferScreen({ points, onBack, onComplete }: TransferScreenProps) {
+  const insets = useSafeAreaInsets();
   const [recipient, setRecipient] = useState('Lê Duy Bách');
   const [amount, setAmount] = useState(Math.min(5_000, points));
   const [message, setMessage] = useState('Chúc bạn một ngày thật vui!');
@@ -35,7 +38,13 @@ export function TransferScreen({ points, onBack, onComplete }: TransferScreenPro
   return (
     <View style={styles.root}>
       <ScreenHeader onBack={onBack} title="Chuyển / tặng điểm" />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getScreenBottomPadding(insets.bottom) },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>SỐ DƯ ĐIỂM NAPAS DAYONE</Text>
           <Text style={styles.balance}>{formatPoints(points)} pts</Text>
@@ -109,7 +118,7 @@ export function TransferScreen({ points, onBack, onComplete }: TransferScreenPro
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 18, paddingBottom: 30 },
+  content: { padding: 18 },
   balanceCard: { borderRadius: 20, backgroundColor: colors.primaryDark, padding: 20 },
   balanceLabel: { color: '#BBD3E5', fontSize: 9, fontWeight: '900', letterSpacing: 0.8 },
   balance: { marginTop: 7, color: colors.white, fontSize: 30, fontWeight: '900' },

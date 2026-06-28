@@ -7,11 +7,14 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BottomNav } from '../../shared/components/BottomNav';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { clamp, getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { AppScreen, MainTab } from '../../types';
 import { formatPoints } from '../../utils/format';
@@ -40,6 +43,12 @@ export function ProfileScreen({
   onLogout,
   onNavigate,
 }: ProfileScreenProps) {
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const goldCardHeight = clamp(width * 0.5, 190, 220);
+  const goldCardPadding = width < 380 ? 18 : 24;
+  const goldMemberBadgeWidth = clamp(width * 0.34, 106, 142);
+
   const openSetting = (setting: (typeof settings)[number]) => {
     if (setting.route) {
       onNavigate(setting.route);
@@ -51,7 +60,13 @@ export function ProfileScreen({
   return (
     <View style={styles.root}>
       <ScreenHeader title="Tài khoản" />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getBottomNavOffset(insets.bottom) + 22 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
 
         <Pressable
   onPress={() => onNavigate('membership')}
@@ -60,24 +75,24 @@ export function ProfileScreen({
   <ImageBackground
     source={goldCardBackground}
     resizeMode="stretch"
-    style={styles.goldCard}
+    style={[styles.goldCard, { minHeight: goldCardHeight, padding: goldCardPadding }]}
     imageStyle={styles.goldCardImage}
   >
     <View style={styles.goldTopRow}>
-      <View>
-        <Text style={styles.goldEyebrow}>HẠNG HIỆN TẠI</Text>
-        <Text style={styles.goldTitle}>Hạng Vàng</Text>
+      <View style={styles.goldTitleBlock}>
+        <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.goldEyebrow}>HẠNG HIỆN TẠI</Text>
+        <Text adjustsFontSizeToFit maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.goldTitle}>Hạng Vàng</Text>
       </View>
 
-      <View style={styles.goldMemberBadge}>
-        <Text style={styles.goldMemberText}>GOLD MEMBER</Text>
+      <View style={[styles.goldMemberBadge, { maxWidth: goldMemberBadgeWidth }]}>
+        <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.goldMemberText}>GOLD MEMBER</Text>
       </View>
     </View>
 
     <View style={styles.goldBottomRow}>
-      <View>
-        <Text style={styles.goldName}>Nguyễn Văn Anh</Text>
-        <Text style={styles.goldPoints}>{formatPoints(points)} điểm khả dụng</Text>
+      <View style={styles.goldBottomCopy}>
+        <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.goldName}>Nguyễn Văn Anh</Text>
+        <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.goldPoints}>{formatPoints(points)} điểm khả dụng</Text>
       </View>
 
       <Ionicons color="#FFF7D6" name="chevron-forward" size={22} />
@@ -125,7 +140,6 @@ const styles = StyleSheet.create({
   content: {
   paddingHorizontal: 20,
   paddingTop: 20,
-  paddingBottom: 108,
 },
   pressed: { opacity: 0.68 },
   goldCard: {
@@ -145,6 +159,11 @@ goldCardImage: {
 },
  
   goldTopRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
+  goldTitleBlock: {
+    flex: 1,
+    minWidth: 0,
+    paddingRight: 12,
+  },
   
   goldEyebrow: {
   color: '#FFF7D6',
@@ -156,7 +175,7 @@ goldCardImage: {
   goldTitle: {
   marginTop: 8,
   color: colors.white,
-  fontSize: 32,
+  fontSize: 28,
   fontWeight: '600',
 },
 
@@ -171,6 +190,11 @@ goldCardImage: {
     backgroundColor: 'rgba(255,255,255,0.16)',
   },
   goldBottomRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
+  goldBottomCopy: {
+    flex: 1,
+    minWidth: 0,
+    paddingRight: 12,
+  },
   goldName: {
   color: colors.white,
   fontSize: 16,
@@ -187,8 +211,9 @@ goldCardImage: {
 goldCardPressable: {
   borderRadius: 30,
   marginBottom: 24,
-},
+  },
   goldMemberBadge: {
+  maxWidth: 150,
   borderWidth: 1,
   borderColor: 'rgba(255,255,255,0.42)',
   borderRadius: 10,

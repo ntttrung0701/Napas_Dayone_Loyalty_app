@@ -1,10 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { OfferMediaResolver } from '../offers/domain/OfferMediaResolver';
 import type { ComponentProps } from 'react';
-import { Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BrandLogo } from '../../shared/components/BrandLogo';
 import { BottomNav } from '../../shared/components/BottomNav';
 import { TransactionRow } from '../../shared/components/TransactionRow';
+import { clamp, getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { AppScreen, Offer, Transaction } from '../../types';
 import { formatPoints } from '../../utils/format';
@@ -46,11 +48,26 @@ export function HomeScreen({
   onSelectTransaction,
   onSelectOffer,
 }: HomeScreenProps) {
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const suggestedOffers = offers.slice(0, 6);
+  const horizontalPadding = width < 380 ? 14 : 20;
+  const quickGap = width < 380 ? 8 : 10;
+  const quickButtonSize = clamp((width - horizontalPadding * 2 - quickGap * 3) / 4, 56, 72);
+  const quickIconSize = clamp(quickButtonSize * 0.42, 22, 30);
+  const pointCardHeight = clamp(width * 0.58, 200, 232);
+  const voucherCardWidth = clamp(width * 0.39, 132, 150);
+
   return (
     <View style={styles.root}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.topBar}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getBottomNavOffset(insets.bottom) + 18 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.topBar, { paddingHorizontal: horizontalPadding }]}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>NA</Text>
           </View>
@@ -77,11 +94,11 @@ export function HomeScreen({
 
         <Pressable
   onPress={() => onNavigate('profile')}
-  style={({ pressed }) => [styles.greetingRow, pressed && styles.pressed]}
+  style={({ pressed }) => [styles.greetingRow, { paddingHorizontal: horizontalPadding }, pressed && styles.pressed]}
 >
   <View style={styles.greetingCopy}>
-    <Text style={styles.hello}>Xin chào,</Text>
-    <Text style={styles.name}>Nguyễn Văn Anh</Text>
+    <Text maxFontSizeMultiplier={1.12} style={styles.hello}>Xin chào,</Text>
+    <Text maxFontSizeMultiplier={1.08} numberOfLines={1} style={styles.name}>Nguyễn Văn Anh</Text>
   </View>
 
   <View style={styles.memberBadge}>
@@ -92,22 +109,22 @@ export function HomeScreen({
         
         <Pressable
   onPress={() => onNavigate('membership')}
-  style={({ pressed }) => [styles.pointsCardPressable, pressed && styles.pressed]}
+  style={({ pressed }) => [styles.pointsCardPressable, { marginHorizontal: horizontalPadding }, pressed && styles.pressed]}
 >
   <View style={styles.pointsCardShadow}>
   <ImageBackground
     source={pointCardBackground}
     resizeMode="cover"
     imageStyle={styles.pointsCardImage}
-    style={styles.pointsCard}
+    style={[styles.pointsCard, { height: pointCardHeight }]}
   >
     <View style={styles.pointsCardContent}>
       <View style={styles.pointsMain}>
         <Text style={styles.pointsLabel}>ĐIỂM KHẢ DỤNG</Text>
 
         <View style={styles.pointsRow}>
-          <Text style={styles.pointsValue}>{formatPoints(points)}</Text>
-          <Text style={styles.pointsUnit}>pts</Text>
+          <Text adjustsFontSizeToFit maxFontSizeMultiplier={1} numberOfLines={1} style={styles.pointsValue}>{formatPoints(points)}</Text>
+          <Text maxFontSizeMultiplier={1} style={styles.pointsUnit}>pts</Text>
         </View>
       </View>
 
@@ -121,8 +138,8 @@ export function HomeScreen({
             </View>
 
             <View style={styles.pointsMetaCopy}>
-              <Text style={styles.pointsMetaLabel}>Điểm chờ xác nhận:</Text>
-              <Text style={styles.pointsMetaValue}>2.400 điểm</Text>
+              <Text maxFontSizeMultiplier={1.05} numberOfLines={2} style={styles.pointsMetaLabel}>Điểm chờ xác nhận:</Text>
+              <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.pointsMetaValue}>2.400 điểm</Text>
             </View>
           </View>
 
@@ -134,8 +151,8 @@ export function HomeScreen({
             </View>
 
             <View style={styles.pointsMetaCopy}>
-              <Text style={styles.pointsMetaLabel}>Điểm sắp hết hạn:</Text>
-              <Text style={styles.pointsMetaValue}>8.000 điểm</Text>
+              <Text maxFontSizeMultiplier={1.05} numberOfLines={2} style={styles.pointsMetaLabel}>Điểm sắp hết hạn:</Text>
+              <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.pointsMetaValue}>8.000 điểm</Text>
             </View>
           </View>
         </View>
@@ -145,7 +162,7 @@ export function HomeScreen({
   </View>
 </Pressable>
 
-        <View style={styles.quickGrid}>
+        <View style={[styles.quickGrid, { gap: quickGap, paddingHorizontal: horizontalPadding }]}>
   {quickActions.map((action) => (
     <Pressable
       key={action.label}
@@ -155,21 +172,21 @@ export function HomeScreen({
         pressed && { transform: [{ scale: 0.97 }], opacity: 0.9 },
       ]}
     >
-      <View style={styles.quickButton}>
-        <Ionicons color="#3E5D9B" name={action.icon} size={30} />
+      <View style={[styles.quickButton, { width: quickButtonSize, height: quickButtonSize, borderRadius: quickButtonSize * 0.36 }]}>
+        <Ionicons color="#3E5D9B" name={action.icon} size={quickIconSize} />
       </View>
-      <Text style={styles.quickButtonLabel}>{action.label}</Text>
+      <Text maxFontSizeMultiplier={1.05} numberOfLines={2} style={styles.quickButtonLabel}>{action.label}</Text>
     </Pressable>
   ))}
 </View>
 
         <Pressable
   onPress={() => onNavigate('membership-tier')}
-  style={({ pressed }) => [styles.sectionCard, pressed && styles.pressed]}
+  style={({ pressed }) => [styles.sectionCard, { marginHorizontal: horizontalPadding }, pressed && styles.pressed]}
 >
   <View style={styles.sectionHeader}>
-    <Text style={styles.sectionTitle}>Tiến trình thăng hạng</Text>
-    <Text style={styles.goldText}>GOLD → PLATINUM</Text>
+    <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.sectionTitle}>Tiến trình thăng hạng</Text>
+    <Text maxFontSizeMultiplier={1.02} numberOfLines={1} style={styles.goldText}>GOLD → PLATINUM</Text>
   </View>
 
   <View style={styles.progressTrack}>
@@ -181,12 +198,12 @@ export function HomeScreen({
   </Text>
 </Pressable>
 
-        <View style={styles.sectionCard}>
+        <View style={[styles.sectionCard, { marginHorizontal: horizontalPadding }]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Hoạt động gần đây</Text>
+            <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.sectionTitle}>Hoạt động gần đây</Text>
             
             <Pressable onPress={() => onNavigate('history')}>
-              <Text style={styles.link}>Xem tất cả</Text>
+              <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.link}>Xem tất cả</Text>
             </Pressable>
           </View>
           {transactions.slice(0, 2).map((transaction) => (
@@ -197,11 +214,11 @@ export function HomeScreen({
             />
           ))}
         </View>
-        <View style={styles.sectionCard}>
+        <View style={[styles.sectionCard, { marginHorizontal: horizontalPadding }]}>
   <View style={styles.sectionHeader}>
-    <Text style={styles.sectionTitle}>Voucher dành cho bạn</Text>
+    <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.sectionTitle}>Voucher dành cho bạn</Text>
     <Pressable onPress={() => onNavigate('offers')}>
-      <Text style={styles.link}>Xem tất cả</Text>
+      <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.link}>Xem tất cả</Text>
     </Pressable>
   </View>
 
@@ -219,6 +236,7 @@ export function HomeScreen({
           onPress={() => onSelectOffer(offer)}
           style={({ pressed }) => [
             styles.suggestedVoucherCard,
+            { width: voucherCardWidth },
             pressed && styles.pressed,
           ]}
         >
@@ -251,7 +269,7 @@ export function HomeScreen({
                 size={15}
                 color={colors.success}
               />
-              <Text style={styles.suggestedVoucherPoints}>
+              <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.suggestedVoucherPoints}>
                 {formatPoints(offer.points)} đ
               </Text>
             </View>
@@ -464,7 +482,7 @@ pointsCardContent: {
   justifyContent: 'space-between',
   paddingHorizontal: 18,
   paddingTop: 18,
-  paddingBottom: 12,
+  paddingBottom: 18,
 },
 
 pointsHeader: {
@@ -488,7 +506,7 @@ pointsRow: {
 
 pointsValue: {
   color: colors.white,
-  fontSize: 37,
+  fontSize: 34,
   fontWeight: '500',
   textShadowColor: 'rgba(0,0,0,0.22)',
   textShadowOffset: { width: 0, height: 2 },
@@ -498,13 +516,13 @@ pointsBottom: {
   marginTop: 'auto',
 },
 pointsMetaSpacer: {
-  width: 10,
+  width: 8,
 },
 
 pointsUnit: {
   marginLeft: 8,
   color: '#F2FAFF',
-  fontSize: 24,
+  fontSize: 20,
   fontWeight: '400',
 },
 pointsDivider: {
@@ -525,11 +543,11 @@ pointsMetaItem: {
 },
 
 pointsMetaIcon: {
-  width: 38,
-  height: 38,
+  width: 32,
+  height: 32,
   alignItems: 'center',
   justifyContent: 'center',
-  borderRadius: 14,
+  borderRadius: 12,
   backgroundColor: 'rgba(255,255,255,0.16)',
 },
 
@@ -541,22 +559,22 @@ pointsMetaIconGold: {
 
 pointsMetaCopy: {
   flex: 1,
-  marginLeft: 8,
+  marginLeft: 7,
 },
 
 pointsMetaLabel: {
   color: '#D8ECFF',
-  fontSize: 12,
+  fontSize: 10,
   fontWeight: '600',
-  lineHeight: 15,
+  lineHeight: 13,
 },
 
 pointsMetaValue: {
   marginTop: 2,
   color: colors.white,
-  fontSize: 14,
+  fontSize: 12,
   fontWeight: '800',
-  lineHeight: 17,
+  lineHeight: 15,
 },
 pointsMain: {
   justifyContent: 'flex-start',
@@ -564,13 +582,13 @@ pointsMain: {
 
 quickGrid: {
   flexDirection: 'row',
-  justifyContent: 'space-between',
+  justifyContent: 'center',
   paddingHorizontal: 20,
   paddingTop: 0,
   paddingBottom: 20,
 },
 quickAction: {
-  width: '23%',
+  flex: 1,
   alignItems: 'center',
 },
 
@@ -591,12 +609,13 @@ quickButton: {
 },
 
 quickButtonLabel: {
-  marginTop: 10,
+  minHeight: 32,
+  marginTop: 8,
   textAlign: 'center',
   color: '#3E5D9B',
-  fontSize: 11,
+  fontSize: 10,
   fontWeight: '700',
-  lineHeight: 15,
+  lineHeight: 14,
   textShadowColor: 'rgba(62, 93, 155, 0.18)',
   textShadowOffset: { width: 0, height: 3 },
   textShadowRadius: 6,
@@ -619,11 +638,13 @@ quickButtonLabel: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 10,
     marginBottom: 12,
   },
   sectionTitle: {
+    flex: 1,
     color: colors.text,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '900',
   },
   voucherRow: {
@@ -693,6 +714,8 @@ suggestedVoucherPoints: {
   fontWeight: '900',
 },
   goldText: {
+    flexShrink: 1,
+    textAlign: 'right',
     color: colors.gold,
     fontSize: 9,
     fontWeight: '900',
@@ -719,6 +742,7 @@ suggestedVoucherPoints: {
     fontWeight: '800',
   },
   link: {
+    flexShrink: 0,
     color: colors.primary,
     fontSize: 11,
     fontWeight: '800',

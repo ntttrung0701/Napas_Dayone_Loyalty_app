@@ -9,10 +9,12 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BottomNav } from '../../shared/components/BottomNav';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
 import { TransactionRow } from '../../shared/components/TransactionRow';
+import { getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type {
   AppScreen,
@@ -75,6 +77,7 @@ export function NotificationsScreen({
   onMarkRead,
   onSelectTransaction,
 }: NotificationsScreenProps) {
+  const insets = useSafeAreaInsets();
   const [activeFilter, setActiveFilter] = useState<ActivityFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const feed = useMemo(
@@ -107,7 +110,10 @@ export function NotificationsScreen({
   title="Thông báo"
 />
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getBottomNavOffset(insets.bottom) + 18 },
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -257,7 +263,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
   pressed: { opacity: 0.68 },
   markAll: { color: colors.primary, fontSize: 10, fontWeight: '800' },
-  content: { paddingHorizontal: 18, paddingTop: 20, paddingBottom: 30 },
+  content: { paddingHorizontal: 18, paddingTop: 20 },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',

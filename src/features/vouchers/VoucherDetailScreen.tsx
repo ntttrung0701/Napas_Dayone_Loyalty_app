@@ -1,8 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OfferMediaResolver } from '../offers/domain/OfferMediaResolver';
 import { PrimaryButton } from '../../shared/components/PrimaryButton';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { getBottomNavOffset, getScreenBottomPadding } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { UserVoucher } from '../../types';
 import { formatPoints } from '../../utils/format';
@@ -17,6 +19,8 @@ type VoucherDetailScreenProps = {
 };
 
 export function VoucherDetailScreen({ voucher, onBack, onUseVoucher }: VoucherDetailScreenProps) {
+  const insets = useSafeAreaInsets();
+
   if (!voucher) {
     return (
       <View style={styles.root}>
@@ -37,7 +41,13 @@ const imageSource = OfferMediaResolver.getImageSource(voucher.media);
     <View style={styles.root}>
       <ScreenHeader onBack={onBack} title="Chi tiết Voucher" />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getBottomNavOffset(insets.bottom) + 16 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <OfferMediaFrame
   fallbackColor={colors.primary}
   height={230}
@@ -46,12 +56,12 @@ const imageSource = OfferMediaResolver.getImageSource(voucher.media);
   style={styles.heroCard}
 >
   <View style={styles.heroTextLayer}>
-    <Text style={styles.eyebrow}>VOUCHER</Text>
-    <Text style={styles.title}>{voucher.title}</Text>
-    <Text style={styles.partner}>{voucher.partner}</Text>
+    <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.eyebrow}>VOUCHER</Text>
+    <Text adjustsFontSizeToFit maxFontSizeMultiplier={1.05} numberOfLines={2} style={styles.title}>{voucher.title}</Text>
+    <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.partner}>{voucher.partner}</Text>
 
     <View style={[styles.statusBadge, !canUse && styles.statusBadgeMuted]}>
-      <Text style={[styles.statusText, !canUse && styles.statusTextMuted]}>
+      <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={[styles.statusText, !canUse && styles.statusTextMuted]}>
         {statusLabel}
       </Text>
     </View>
@@ -59,7 +69,7 @@ const imageSource = OfferMediaResolver.getImageSource(voucher.media);
 </OfferMediaFrame>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>THÔNG TIN VOUCHER</Text>
+          <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.cardTitle}>THÔNG TIN VOUCHER</Text>
           <InfoRow label="Mã voucher" value={voucher.code} />
           <InfoRow label="Điểm đã dùng" value={`${formatPoints(voucher.pointsUsed)} pts`} />
           <InfoRow label="Hạn sử dụng" value={voucher.expiresLabel} />
@@ -67,14 +77,14 @@ const imageSource = OfferMediaResolver.getImageSource(voucher.media);
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>MÔ TẢ</Text>
-          <Text style={styles.body}>{voucher.description}</Text>
+          <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.cardTitle}>MÔ TẢ</Text>
+          <Text maxFontSizeMultiplier={1.08} style={styles.body}>{voucher.description}</Text>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>ĐIỀU KIỆN ÁP DỤNG</Text>
+          <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.cardTitle}>ĐIỀU KIỆN ÁP DỤNG</Text>
           {voucher.terms.map((term) => (
-            <Text key={term} style={styles.bullet}>
+            <Text key={term} maxFontSizeMultiplier={1.08} style={styles.bullet}>
               • {term}
             </Text>
           ))}
@@ -86,13 +96,13 @@ const imageSource = OfferMediaResolver.getImageSource(voucher.media);
             name={canUse ? 'checkmark-circle-outline' : 'alert-circle-outline'}
             size={18}
           />
-          <Text style={[styles.noticeText, !canUse && styles.noticeTextWarning]}>
+          <Text maxFontSizeMultiplier={1.08} style={[styles.noticeText, !canUse && styles.noticeTextWarning]}>
             {VoucherFactory.getStatusDescription(voucher)}
           </Text>
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: getScreenBottomPadding(insets.bottom, 8) }]}>
         <PrimaryButton
           disabled={!canUse}
           label={canUse ? 'Sử dụng voucher' : 'Voucher không khả dụng'}
@@ -106,8 +116,8 @@ const imageSource = OfferMediaResolver.getImageSource(voucher.media);
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
+      <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.infoLabel}>{label}</Text>
+      <Text maxFontSizeMultiplier={1.05} numberOfLines={2} style={styles.infoValue}>{value}</Text>
     </View>
   );
 }
@@ -119,7 +129,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingBottom: 96,
   },
   heroCard: {
   borderRadius: 24,

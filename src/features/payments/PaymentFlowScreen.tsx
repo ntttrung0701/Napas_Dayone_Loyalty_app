@@ -12,9 +12,11 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '../../shared/components/PrimaryButton';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { getScreenBottomPadding } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { Receipt } from '../../types';
 import { formatCurrency, formatPoints } from '../../utils/format';
@@ -256,6 +258,7 @@ class LoyaltyPaymentReceiptFactory {
 }
 
 export function PaymentFlowScreen({ points, onBack, onComplete }: PaymentFlowScreenProps) {
+  const insets = useSafeAreaInsets();
   const catalog = useMemo(() => new PaymentInvoiceCatalog(mockInvoices), []);
   const otpVerifier = useMemo(() => new PaymentOtpVerifier(), []);
 
@@ -362,7 +365,10 @@ export function PaymentFlowScreen({ points, onBack, onComplete }: PaymentFlowScr
       />
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getScreenBottomPadding(insets.bottom) },
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -421,6 +427,7 @@ export function PaymentFlowScreen({ points, onBack, onComplete }: PaymentFlowScr
       </ScrollView>
 
       <OtpSheet
+        bottomInset={insets.bottom}
         error={otpError}
         otp={otp}
         processing={processing}
@@ -737,6 +744,7 @@ function PaymentConfirmStep({
 }
 
 function OtpSheet({
+  bottomInset,
   error,
   otp,
   processing,
@@ -745,6 +753,7 @@ function OtpSheet({
   onClose,
   onConfirm,
 }: {
+  bottomInset: number;
   error: string | null;
   otp: string;
   processing: boolean;
@@ -760,7 +769,7 @@ function OtpSheet({
         style={styles.modalRoot}
       >
         <Pressable disabled={processing} onPress={onClose} style={styles.modalBackdrop} />
-        <View style={styles.otpSheet}>
+        <View style={[styles.otpSheet, { paddingBottom: getScreenBottomPadding(bottomInset, 8) }]}>
           <View style={styles.sheetHandle} />
           <View style={styles.otpHeader}>
             <View style={styles.otpIcon}>
@@ -1023,7 +1032,7 @@ function SummaryRow({
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
   pressed: { opacity: 0.72 },
-  content: { paddingHorizontal: 18, paddingTop: 18, paddingBottom: 32 },
+  content: { paddingHorizontal: 18, paddingTop: 18 },
   progressCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -27,7 +27,12 @@ export function PrimaryButton({
         pressed && !disabled && styles.pressed,
       ]}
     >
-      <Text style={[styles.label, variant === 'secondary' && styles.secondaryLabel]}>
+      <Text
+        adjustsFontSizeToFit
+        maxFontSizeMultiplier={1.08}
+        numberOfLines={1}
+        style={[styles.label, variant === 'secondary' && styles.secondaryLabel]}
+      >
         {label}
       </Text>
     </Pressable>

@@ -10,9 +10,11 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OfferMediaResolver } from './domain/OfferMediaResolver';
 import { offers } from '../../mock/data';
 import { BottomNav } from '../../shared/components/BottomNav';
+import { getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { AppScreen, MainTab, Offer } from '../../types';
 import { formatPoints } from '../../utils/format';
@@ -48,6 +50,7 @@ export function OffersScreen({
   onNavigate,
   onSelectOffer,
 }: OffersScreenProps) {
+  const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState<OfferCategory>('Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -70,7 +73,7 @@ export function OffersScreen({
     </Pressable>
   }
 />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: getBottomNavOffset(insets.bottom) + 18 }]} showsVerticalScrollIndicator={false}>
         <View style={styles.titleRow}>
   <View style={styles.titleCopy}>
   </View>
@@ -179,25 +182,25 @@ const imageSource = OfferMediaResolver.getImageSource(offer.media);
 </OfferMediaFrame>
 
               <View style={styles.offerInfo}>
-                <Text style={styles.offerTitle}>{offer.title}</Text>
-                <Text style={styles.partner}>{offer.partner}</Text>
+                <Text maxFontSizeMultiplier={1.08} numberOfLines={2} style={styles.offerTitle}>{offer.title}</Text>
+                <Text maxFontSizeMultiplier={1.08} numberOfLines={1} style={styles.partner}>{offer.partner}</Text>
 
                 <View style={styles.divider} />
 
                 <View style={styles.offerFooter}>
                   <View>
-                    <Text style={styles.metaLabel}>Điểm quy đổi</Text>
+                    <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.metaLabel}>Điểm quy đổi</Text>
                     <View style={styles.pointsRow}>
                       
-                      <Text style={[styles.points, !affordable && styles.pointsDisabled]}>
+                      <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={[styles.points, !affordable && styles.pointsDisabled]}>
                         {formatPoints(offer.points)} pts
                       </Text>
                     </View>
                   </View>
 
                   <View style={styles.expiryBlock}>
-                    <Text style={styles.metaLabel}>Hạn sử dụng</Text>
-                    <Text style={styles.expiry}>{offer.expiresAt}</Text>
+                    <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.metaLabel}>Hạn sử dụng</Text>
+                    <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.expiry}>{offer.expiresAt}</Text>
                   </View>
                 </View>
               </View>

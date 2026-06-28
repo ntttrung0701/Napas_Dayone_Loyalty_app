@@ -1,10 +1,14 @@
 import { useEffect } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrandLogo, NAPAS_LOGO } from '../../shared/components/BrandLogo';
+import { getScreenBottomPadding } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 
 export function SplashScreen({ onFinished }: { onFinished: () => void }) {
+  const insets = useSafeAreaInsets();
+
   useEffect(() => {
   let isMounted = true;
 
@@ -29,7 +33,7 @@ export function SplashScreen({ onFinished }: { onFinished: () => void }) {
 }, [onFinished]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: getScreenBottomPadding(insets.bottom, 32) }]}>
       <View style={styles.orbTop} />
       <View style={styles.content}>
         <BrandLogo width={220} />

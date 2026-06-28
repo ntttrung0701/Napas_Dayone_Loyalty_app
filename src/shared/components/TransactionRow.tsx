@@ -43,19 +43,28 @@ export function TransactionRow({
         />
       </View>
       <View style={styles.info}>
-        <Text numberOfLines={1} style={styles.title}>
+        <Text maxFontSizeMultiplier={1.08} numberOfLines={1} style={styles.title}>
           {transaction.title}
         </Text>
-        <Text style={styles.subtitle}>{transaction.subtitle}</Text>
-        <Text style={styles.date}>{transaction.date}</Text>
+        <Text maxFontSizeMultiplier={1.08} numberOfLines={2} style={styles.subtitle}>{transaction.subtitle}</Text>
+        <Text maxFontSizeMultiplier={1.08} numberOfLines={2} style={styles.date}>{transaction.date}</Text>
       </View>
       <View style={styles.trailing}>
-        <Text style={[styles.points, positive ? styles.positive : styles.negative]}>
+        <Text
+          adjustsFontSizeToFit
+          maxFontSizeMultiplier={1.05}
+          numberOfLines={1}
+          style={[styles.points, positive ? styles.positive : styles.negative]}
+        >
           {positive ? '+' : ''}
           {formatPoints(transaction.points)}
         </Text>
         <View style={[styles.badge, styles[transaction.status]]}>
-          <Text style={[styles.badgeText, styles[`${transaction.status}Text`]]}>
+          <Text
+            maxFontSizeMultiplier={1.05}
+            numberOfLines={1}
+            style={[styles.badgeText, styles[`${transaction.status}Text`]]}
+          >
             {record.statusLabel}
           </Text>
         </View>
@@ -94,6 +103,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 13,
     fontWeight: '700',
+    lineHeight: 17,
   },
   subtitle: {
     marginTop: 2,
@@ -115,7 +125,7 @@ const styles = StyleSheet.create({
   negative: {
     color: colors.text,
   },
-  trailing: { minWidth: 74, alignItems: 'flex-end' },
+  trailing: { width: 82, alignItems: 'flex-end' },
   badge: { marginTop: 5, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3 },
   badgeText: { fontSize: 8, fontWeight: '800' },
   success: { backgroundColor: colors.successSoft },

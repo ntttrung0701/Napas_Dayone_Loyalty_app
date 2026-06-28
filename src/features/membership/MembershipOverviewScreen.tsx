@@ -1,16 +1,16 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BottomNav } from '../../shared/components/BottomNav';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { getScreenBottomPadding } from '../../shared/layout';
 import { colors } from '../../theme/colors';
-import type { AppScreen, MainTab, MembershipOverview } from '../../types';
+import type { AppScreen, MembershipOverview } from '../../types';
 import { formatCurrency, formatPoints } from '../../utils/format';
 import { MembershipService } from './domain/MembershipService';
 
 type MembershipOverviewScreenProps = {
-  activeTab: MainTab;
   overview: MembershipOverview;
   initialFocus?: 'top' | 'tier';
   onBack: () => void;
@@ -18,12 +18,12 @@ type MembershipOverviewScreenProps = {
 };
 
 export function MembershipOverviewScreen({
-  activeTab,
   overview,
   initialFocus = 'top',
   onBack,
   onNavigate,
 }: MembershipOverviewScreenProps) {
+  const insets = useSafeAreaInsets();
   const scrollViewRef = useRef<ScrollView>(null);
   const [tierCardY, setTierCardY] = useState<number | null>(null);
 
@@ -49,7 +49,10 @@ export function MembershipOverviewScreen({
 
       <ScrollView
   ref={scrollViewRef}
-  contentContainerStyle={styles.content}
+  contentContainerStyle={[
+    styles.content,
+    { paddingBottom: getScreenBottomPadding(insets.bottom, 26) },
+  ]}
   showsVerticalScrollIndicator={false}
 >
         <View style={styles.titleBlock}>
@@ -201,7 +204,6 @@ export function MembershipOverviewScreen({
 </Pressable>
       </ScrollView>
 
-      <BottomNav active={activeTab} onNavigate={onNavigate} />
     </View>
   );
 }
@@ -240,7 +242,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingBottom: 108,
   },
   pressed: {
     opacity: 0.74,

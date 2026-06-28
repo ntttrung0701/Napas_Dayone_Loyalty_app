@@ -1,11 +1,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { OfferMediaResolver } from '../offers/domain/OfferMediaResolver';
 import { BottomNav } from '../../shared/components/BottomNav';
 import { PrimaryButton } from '../../shared/components/PrimaryButton';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { AppScreen, MainTab, UserVoucher, UserVoucherStatus } from '../../types';
 import { formatPoints } from '../../utils/format';
@@ -35,6 +37,7 @@ export function VoucherWalletScreen({
   onNavigate,
   onSelectVoucher,
 }: VoucherWalletScreenProps) {
+  const insets = useSafeAreaInsets();
   const [selectedFilter, setSelectedFilter] = useState<VoucherFilter>('all');
 
   const filteredVouchers = useMemo(
@@ -54,7 +57,13 @@ export function VoucherWalletScreen({
     <View style={styles.root}>
       <ScreenHeader onBack={onBack} title="Kho voucher của tôi" />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getBottomNavOffset(insets.bottom) + 18 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.summaryCard}>
           <View>
             <Text style={styles.summaryLabel}>VOUCHER KHẢ DỤNG</Text>
@@ -187,7 +196,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingBottom: 96,
   },
   pressed: {
     opacity: 0.72,

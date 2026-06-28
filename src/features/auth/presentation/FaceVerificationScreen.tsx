@@ -6,9 +6,12 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { clamp, getScreenBottomPadding } from '../../../shared/layout';
 import { colors } from '../../../theme/colors';
 import type { FaceCapture } from '../domain/AuthModels';
 import type { FaceAlignmentResult } from '../domain/FaceRecognition';
@@ -26,6 +29,8 @@ export function FaceVerificationScreen({
   onBack,
   onVerified,
 }: FaceVerificationScreenProps) {
+  const { height, width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const cameraRef = useRef<CameraView>(null);
   const scanningRef = useRef(false);
   const completedRef = useRef(false);
@@ -36,6 +41,11 @@ export function FaceVerificationScreen({
   const [verifying, setVerifying] = useState(false);
   const [guidance, setGuidance] = useState(initialGuidance);
   const [error, setError] = useState<string | null>(null);
+  const compact = height < 760;
+  const cameraWidth = clamp(width * 0.62, compact ? 198 : 218, compact ? 220 : 238);
+  const cameraHeight = clamp(height * 0.38, compact ? 252 : 288, compact ? 288 : 318);
+  const cameraRadius = cameraWidth / 2;
+  const bottomPadding = getScreenBottomPadding(insets.bottom, 12);
 
   const completeVerification = useCallback(
     async (picture: CameraCapturedPicture) => {
@@ -119,7 +129,7 @@ export function FaceVerificationScreen({
 
   if (!permission) {
     return (
-      <View style={styles.permissionPage}>
+      <View style={[styles.permissionPage, { paddingBottom: getScreenBottomPadding(insets.bottom, 28) }]}>
         <ActivityIndicator color={colors.primary} size="large" />
         <Text style={styles.permissionDescription}>Đang kiểm tra quyền camera...</Text>
       </View>
@@ -128,7 +138,7 @@ export function FaceVerificationScreen({
 
   if (!permission.granted) {
     return (
-      <View style={styles.permissionPage}>
+      <View style={[styles.permissionPage, { paddingBottom: getScreenBottomPadding(insets.bottom, 28) }]}>
         <View style={styles.permissionIcon}>
           <Ionicons color={colors.primary} name="camera-outline" size={34} />
         </View>
@@ -179,6 +189,7 @@ export function FaceVerificationScreen({
         <View
           style={[
             styles.cameraWindow,
+            { borderRadius: cameraRadius, height: cameraHeight, width: cameraWidth },
             aligned && styles.cameraWindowAligned,
           ]}
         >
@@ -217,7 +228,7 @@ export function FaceVerificationScreen({
         ) : null}
       </View>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: bottomPadding }]}>
         {error ? (
           <View style={styles.errorBox}>
             <Ionicons color="#FFB4AB" name="alert-circle-outline" size={17} />

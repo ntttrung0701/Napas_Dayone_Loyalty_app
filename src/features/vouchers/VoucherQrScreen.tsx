@@ -1,8 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { clamp, getScreenBottomPadding } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { UserVoucher } from '../../types';
 import { VoucherFactory } from './domain/VoucherFactory';
@@ -14,10 +16,16 @@ type VoucherQrScreenProps = {
 };
 
 export function VoucherQrScreen({ voucher, onBack, onMarkUsed }: VoucherQrScreenProps) {
+  const { height, width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const qrValue = useMemo(
     () => (voucher ? JSON.stringify(VoucherFactory.createQrPayload(voucher)) : ''),
     [voucher],
   );
+  const compact = height < 820;
+  const qrCodeSize = clamp(width * 0.4, compact ? 132 : 150, compact ? 146 : 168);
+  const qrInnerSize = qrCodeSize + 16;
+  const qrFrameSize = qrInnerSize + 44;
 
   if (!voucher) {
     return (
@@ -39,19 +47,31 @@ export function VoucherQrScreen({ voucher, onBack, onMarkUsed }: VoucherQrScreen
     <View style={styles.root}>
       <ScreenHeader onBack={onBack} title="Mã QR voucher" />
 
-      <View style={styles.content}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getScreenBottomPadding(insets.bottom) },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.card}>
           <Text style={styles.eyebrow}>SỬ DỤNG VOUCHER</Text>
           <Text style={styles.title}>{voucher.title}</Text>
           <Text style={styles.partner}>{voucher.partner}</Text>
 
-          <View style={[styles.qrFrame, !canUse && styles.qrFrameDisabled]}>
-            <View style={styles.qrInner}>
+          <View
+            style={[
+              styles.qrFrame,
+              { height: qrFrameSize, width: qrFrameSize },
+              !canUse && styles.qrFrameDisabled,
+            ]}
+          >
+            <View style={[styles.qrInner, { height: qrInnerSize, width: qrInnerSize }]}>
               <View style={!canUse && styles.qrDisabled}>
                 <QRCode
                   backgroundColor={colors.white}
                   color={colors.primaryDark}
-                  size={176}
+                  size={qrCodeSize}
                   value={qrValue}
                 />
               </View>
@@ -86,7 +106,7 @@ export function VoucherQrScreen({ voucher, onBack, onMarkUsed }: VoucherQrScreen
             </Pressable>
           ) : null}
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -97,7 +117,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     padding: 20,
   },
   card: {

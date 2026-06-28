@@ -8,10 +8,12 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BottomNav } from '../../shared/components/BottomNav';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
 import { TransactionRow } from '../../shared/components/TransactionRow';
+import { getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { AppScreen, MainTab, Transaction } from '../../types';
 import { TransactionLedger, type HistoryFilter } from './domain/TransactionLedger';
@@ -42,6 +44,7 @@ export function HistoryScreen({
   onNavigate,
   onSelectTransaction,
 }: HistoryScreenProps) {
+  const insets = useSafeAreaInsets();
   const [selectedFilter, setSelectedFilter] = useState<HistoryFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const ledger = useMemo(() => new TransactionLedger(transactions), [transactions]);
@@ -60,7 +63,10 @@ export function HistoryScreen({
       <ScreenHeader onBack={onBack} title="Lịch sử điểm" />
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getBottomNavOffset(insets.bottom) + 18 },
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -169,7 +175,6 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 18,
     paddingTop: 20,
-    paddingBottom: 30,
   },
   pageTitle: {
     marginBottom: 12,

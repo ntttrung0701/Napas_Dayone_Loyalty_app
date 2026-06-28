@@ -1,7 +1,9 @@
 import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OfferMediaResolver } from './domain/OfferMediaResolver';
 import { PrimaryButton } from '../../shared/components/PrimaryButton';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { getBottomNavOffset, getScreenBottomPadding } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { Offer } from '../../types';
 import { formatPoints } from '../../utils/format';
@@ -15,6 +17,7 @@ type OfferDetailScreenProps = {
 };
 
 export function OfferDetailScreen({ offer, points, onBack, onRedeem }: OfferDetailScreenProps) {
+  const insets = useSafeAreaInsets();
   const affordable = points >= offer.points;
   const imageSource = OfferMediaResolver.getImageSource(offer.media);
 
@@ -32,7 +35,13 @@ export function OfferDetailScreen({ offer, points, onBack, onRedeem }: OfferDeta
   return (
     <View style={styles.root}>
       <ScreenHeader onBack={onBack} title="Chi tiết ưu đãi" />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getBottomNavOffset(insets.bottom) + 16 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={[styles.hero, !imageSource && { backgroundColor: offer.accent }]}>
   {imageSource ? (
     <>
@@ -88,7 +97,7 @@ export function OfferDetailScreen({ offer, points, onBack, onRedeem }: OfferDeta
           </Text>
         </View>
       </ScrollView>
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: getScreenBottomPadding(insets.bottom, 8) }]}>
         <PrimaryButton
           disabled={!affordable}
           label={affordable ? `Đổi ${formatPoints(offer.points)} điểm` : 'Chưa đủ điểm'}

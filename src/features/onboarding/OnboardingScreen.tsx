@@ -1,13 +1,17 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrandLogo } from '../../shared/components/BrandLogo';
 import { PrimaryButton } from '../../shared/components/PrimaryButton';
+import { getScreenBottomPadding } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 
 export function OnboardingScreen({ onContinue }: { onContinue: () => void }) {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { paddingBottom: getScreenBottomPadding(insets.bottom, 24) }]}>
       <View style={styles.topRow}>
         <BrandLogo width={100} />
         <Pressable onPress={onContinue}>

@@ -1,8 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useMemo } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
 import { PrimaryButton } from '../../shared/components/PrimaryButton';
+import { getScreenBottomPadding } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { Receipt, UserVoucher } from '../../types';
 import { formatCurrency, formatPoints } from '../../utils/format';
@@ -44,6 +46,14 @@ export function ReceiptScreen({
   onHome,
   onViewVoucherWallet,
 }: ReceiptScreenProps) {
+  const insets = useSafeAreaInsets();
+  const isPayment = receipt?.kind === 'payment';
+  const voucher = receipt?.kind === 'redemption' ? receipt.voucher : undefined;
+  const voucherQrValue = useMemo(
+    () => (voucher ? JSON.stringify(createVoucherQrPayload(voucher)) : ''),
+    [voucher],
+  );
+
   if (!receipt) {
     return (
       <View style={styles.empty}>
@@ -53,16 +63,16 @@ export function ReceiptScreen({
     );
   }
 
-  const isPayment = receipt.kind === 'payment';
-  const voucher = receipt.kind === 'redemption' ? receipt.voucher : undefined;
-const voucherQrValue = useMemo(
-  () => (voucher ? JSON.stringify(createVoucherQrPayload(voucher)) : ''),
-  [voucher],
-);
 const voucherUnavailable = voucher ? voucher.status !== 'active' || isVoucherExpired(voucher) : false;
 
   return (
-    <ScrollView contentContainerStyle={styles.root} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      contentContainerStyle={[
+        styles.root,
+        { paddingBottom: getScreenBottomPadding(insets.bottom, 24) },
+      ]}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.successIcon}>
         <Ionicons color={colors.white} name="checkmark" size={40} />
       </View>

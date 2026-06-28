@@ -1,7 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { bottomNavHeight, getSafeBottomInset } from '../layout';
 import { colors } from '../../theme/colors';
 import type { AppScreen, MainTab } from '../../types';
 
@@ -26,8 +28,11 @@ const tabs: Array<{ id: MainTab; icon: IconName; activeIcon: IconName; label: st
 ];
 
 export function BottomNav({ active, onNavigate }: BottomNavProps) {
+  const insets = useSafeAreaInsets();
+  const bottomPadding = getSafeBottomInset(insets.bottom);
+
   return (
-  <View style={styles.safeArea}>
+  <View style={[styles.safeArea, { paddingBottom: bottomPadding }]}>
     <View style={styles.container}>
       {tabs.map((tab) => {
         const selected = active === tab.id;
@@ -59,7 +64,11 @@ export function BottomNav({ active, onNavigate }: BottomNavProps) {
               />
             </View>
 
-            <Text style={[styles.label, selected && styles.selected]}>
+            <Text
+              maxFontSizeMultiplier={1.08}
+              numberOfLines={1}
+              style={[styles.label, selected && styles.selected]}
+            >
               {tab.label}
             </Text>
           </Pressable>
@@ -72,32 +81,32 @@ export function BottomNav({ active, onNavigate }: BottomNavProps) {
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: 'transparent',
-    paddingHorizontal: 16,
-    paddingBottom: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 0,
+    paddingTop: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 10,
   },
 
   container: {
-    minHeight: 66,
+    minHeight: bottomNavHeight,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: 'rgba(223,231,239,0.92)',
-    borderRadius: 28,
-    backgroundColor: 'rgba(255,255,255,0.96)',
-    paddingHorizontal: 8,
-    paddingTop: 7,
-    paddingBottom: 7,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 18,
-    elevation: 12,
+    width: '100%',
+    backgroundColor: colors.surface,
+    paddingHorizontal: 4,
+    paddingTop: 4,
+    paddingBottom: 5,
   },
 
   tab: {
-    width: 58,
+    flex: 1,
     minHeight: 52,
     alignItems: 'center',
     justifyContent: 'center',
@@ -124,9 +133,10 @@ const styles = StyleSheet.create({
   label: {
     marginTop: 3,
     color: colors.textMuted,
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '700',
-    lineHeight: 12,
+    lineHeight: 10,
+    textAlign: 'center',
   },
 
   selected: {

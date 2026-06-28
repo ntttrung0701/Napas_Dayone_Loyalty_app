@@ -1,9 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '../../shared/components/PrimaryButton';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { getScreenBottomPadding } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { Receipt } from '../../types';
 import { formatCurrency, formatPoints } from '../../utils/format';
@@ -30,6 +32,7 @@ function DeprecatedLegacyPaymentScreen({
   onBack,
   onComplete,
 }: PaymentScreenProps) {
+  const insets = useSafeAreaInsets();
   const maxPoints = Math.min(points, 50_000);
   const [voucherApplied, setVoucherApplied] = useState(true);
   const [selectedPoints, setSelectedPoints] = useState(maxPoints);
@@ -58,7 +61,13 @@ function DeprecatedLegacyPaymentScreen({
   return (
     <View style={styles.root}>
       <ScreenHeader onBack={onBack} title="Thanh toán hỗn hợp" />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getScreenBottomPadding(insets.bottom) },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.invoiceCard}>
           <View style={styles.invoiceHeader}>
             <Text style={styles.invoiceLabel}>GIAO DỊCH CHỜ THANH TOÁN</Text>
@@ -190,7 +199,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
-    paddingBottom: 28,
   },
   invoiceCard: {
     borderWidth: 1,

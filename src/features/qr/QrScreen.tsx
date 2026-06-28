@@ -1,10 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
 
 import { BottomNav } from '../../shared/components/BottomNav';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
+import { clamp, getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { AppScreen, MainTab } from '../../types';
 import { formatPoints } from '../../utils/format';
@@ -51,8 +53,14 @@ function formatCountdown(totalSeconds: number) {
 }
 
 export function QrScreen({ activeTab, points, onNavigate }: QrScreenProps) {
+  const { height, width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const [payload, setPayload] = useState<MemberQrPayload>(() => createMemberQrPayload(LOYALTY_ID));
   const [remainingSeconds, setRemainingSeconds] = useState(QR_VALIDITY_SECONDS);
+  const compact = height < 820;
+  const qrCodeSize = clamp(width * 0.4, compact ? 132 : 150, compact ? 146 : 168);
+  const qrInnerSize = qrCodeSize + 16;
+  const qrCardSize = qrInnerSize + 44;
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -75,18 +83,30 @@ export function QrScreen({ activeTab, points, onNavigate }: QrScreenProps) {
     <View style={styles.root}>
       <ScreenHeader title="Mã QR thành viên" />
 
-      <View style={styles.content}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getBottomNavOffset(insets.bottom) + 18 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.eyebrow}>THẺ THÀNH VIÊN LOYALTY</Text>
         <Text style={styles.name}>NGUYỄN VAN ANH</Text>
         <Text style={styles.loyaltyId}>Loyalty ID: {LOYALTY_ID}</Text>
 
-        <View style={[styles.qrCard, isExpired && styles.qrCardExpired]}>
-          <View style={styles.qrInner}>
+        <View
+          style={[
+            styles.qrCard,
+            { height: qrCardSize, width: qrCardSize },
+            isExpired && styles.qrCardExpired,
+          ]}
+        >
+          <View style={[styles.qrInner, { height: qrInnerSize, width: qrInnerSize }]}>
             <View style={isExpired && styles.qrExpired}>
               <QRCode
                 backgroundColor={colors.white}
                 color={colors.primaryDark}
-                size={176}
+                size={qrCodeSize}
                 value={qrValue}
               />
             </View>
@@ -119,7 +139,7 @@ export function QrScreen({ activeTab, points, onNavigate }: QrScreenProps) {
           <Ionicons color={colors.primary} name="refresh-outline" size={17} />
           <Text style={styles.refreshText}>TẠO MÃ MỚI</Text>
         </Pressable>
-      </View>
+      </ScrollView>
 
       <BottomNav active={activeTab} onNavigate={onNavigate} />
     </View>
@@ -132,7 +152,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     alignItems: 'center',
     padding: 20,
   },
