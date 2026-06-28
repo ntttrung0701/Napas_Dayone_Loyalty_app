@@ -68,7 +68,7 @@ export function RegistrationScreen({
         <View style={[styles.checkbox, form.acceptedTerms && styles.checked]}>
           {form.acceptedTerms ? <Ionicons color={colors.white} name="checkmark" size={14} /> : null}
         </View>
-        <Text style={styles.termsText}>Tôi đã đọc và đồng ý với điều khoản, chính sách của Napas.</Text>
+        <Text maxFontSizeMultiplier={1.08} style={styles.termsText}>Tôi đã đọc và đồng ý với điều khoản, chính sách của Napas.</Text>
       </Pressable>
       <PrimaryButton disabled={loading} label={loading ? 'Đang gửi OTP...' : 'Đăng ký'} onPress={submit} />
     </AuthShell>

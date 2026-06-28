@@ -41,11 +41,11 @@ export function FaceVerificationScreen({
   const [verifying, setVerifying] = useState(false);
   const [guidance, setGuidance] = useState(initialGuidance);
   const [error, setError] = useState<string | null>(null);
-  const compact = height < 760;
-  const cameraWidth = clamp(width * 0.62, compact ? 198 : 218, compact ? 220 : 238);
-  const cameraHeight = clamp(height * 0.38, compact ? 252 : 288, compact ? 288 : 318);
+  const compact = height < 840;
+  const cameraWidth = clamp(width * 0.58, compact ? 178 : 212, compact ? 212 : 238);
+  const cameraHeight = clamp(height * 0.32, compact ? 226 : 282, compact ? 266 : 318);
   const cameraRadius = cameraWidth / 2;
-  const bottomPadding = getScreenBottomPadding(insets.bottom, 12);
+  const bottomPadding = getScreenBottomPadding(insets.bottom, 24);
 
   const completeVerification = useCallback(
     async (picture: CameraCapturedPicture) => {
@@ -248,7 +248,7 @@ export function FaceVerificationScreen({
             ]}
           >
             <Ionicons color={colors.primaryDark} name="scan-outline" size={22} />
-            <Text style={styles.fallbackButtonText}>Xác minh bằng camera</Text>
+            <Text maxFontSizeMultiplier={1.08} numberOfLines={1} style={styles.fallbackButtonText}>Xác minh bằng camera</Text>
           </Pressable>
         ) : (
           <View style={styles.autoNotice}>
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '900',
   },
-  intro: { alignItems: 'center', paddingBottom: 15, paddingTop: 18 },
+  intro: { alignItems: 'center', paddingBottom: 10, paddingTop: 14 },
   securityBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -307,9 +307,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   introTitle: {
-    marginTop: 10,
+    marginTop: 8,
     color: colors.white,
-    fontSize: 21,
+    fontSize: 19,
     fontWeight: '900',
   },
   cameraSection: { flex: 1, alignItems: 'center', justifyContent: 'center' },
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     maxWidth: 340,
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 14,
     paddingHorizontal: 18,
   },
   guidanceText: {
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     lineHeight: 16,
   },
-  footer: { minHeight: 92, justifyContent: 'center', paddingHorizontal: 22, paddingBottom: 18 },
+  footer: { minHeight: 84, justifyContent: 'center', paddingHorizontal: 22, paddingBottom: 18 },
   autoNotice: {
     minHeight: 48,
     flexDirection: 'row',

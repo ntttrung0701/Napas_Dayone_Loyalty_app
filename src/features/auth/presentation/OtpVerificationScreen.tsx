@@ -121,7 +121,7 @@ export function OtpVerificationScreen({
   return (
   <AuthShell onBack={onBack} presentation={authScreenPresentations.otp}>
     <View style={styles.otpContent}>
-      <Text style={styles.destinationLine}>
+      <Text maxFontSizeMultiplier={1.08} style={styles.destinationLine}>
   Mã đã gửi đến <Text style={styles.destinationValue}>{challenge.destination}</Text>
 </Text>
 
@@ -150,13 +150,13 @@ export function OtpVerificationScreen({
       <View style={styles.timerBlock}>
         {isExpired ? (
           <>
-            <Text style={styles.expiredText}>{OtpScreenText.expired()}</Text>
+            <Text maxFontSizeMultiplier={1.08} style={styles.expiredText}>{OtpScreenText.expired()}</Text>
             <Pressable disabled={loading} onPress={resend}>
-              <Text style={styles.resendText}>Gửi lại mã</Text>
+              <Text maxFontSizeMultiplier={1.08} style={styles.resendText}>Gửi lại mã</Text>
             </Pressable>
           </>
         ) : (
-          <Text style={styles.timerText}>{OtpScreenText.resendCountdown(seconds)}</Text>
+          <Text maxFontSizeMultiplier={1.08} style={styles.timerText}>{OtpScreenText.resendCountdown(seconds)}</Text>
         )}
       </View>
 
@@ -171,9 +171,9 @@ export function OtpVerificationScreen({
       </View>
 
       <View style={styles.contactRow}>
-        <Text style={styles.contactHint}>{OtpScreenText.contactPrefix}</Text>
+        <Text maxFontSizeMultiplier={1.08} style={styles.contactHint}>{OtpScreenText.contactPrefix}</Text>
         <Pressable>
-          <Text style={styles.contactLink}>{OtpScreenText.contact}</Text>
+          <Text maxFontSizeMultiplier={1.08} style={styles.contactLink}>{OtpScreenText.contact}</Text>
         </Pressable>
       </View>
     </View>
@@ -226,6 +226,7 @@ destinationValue: {
   },
   digitRow: {
   flexDirection: 'row',
+  flexWrap: 'wrap',
   justifyContent: 'center',
   alignItems: 'center',
   gap: 8,
@@ -286,6 +287,7 @@ destinationValue: {
 },
   contactRow: {
   flexDirection: 'row',
+  flexWrap: 'wrap',
   justifyContent: 'center',
   alignItems: 'center',
   gap: 7,

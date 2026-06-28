@@ -34,13 +34,21 @@ export function AuthShell({
 }: AuthShellProps) {
   const { height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const bottomPadding = getScreenBottomPadding(insets.bottom, 24);
-  const cardMinHeight = Math.min(610, Math.max(0, height - bottomPadding - 54));
+  const pagePadding = height < 760 ? 12 : 16;
+  const bottomPadding = getScreenBottomPadding(insets.bottom, 36);
+  const cardMinHeight = Math.min(560, Math.max(0, height - bottomPadding - pagePadding * 2));
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={ui.root}>
       <ScrollView
-        contentContainerStyle={[ui.page, { paddingBottom: bottomPadding }]}
+        contentContainerStyle={[
+          ui.page,
+          {
+            paddingBottom: bottomPadding,
+            paddingHorizontal: pagePadding,
+            paddingTop: pagePadding,
+          },
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -124,7 +132,7 @@ export function FormError({ message }: { message?: string | null }) {
   return message ? (
     <View accessibilityRole="alert" style={ui.errorBox}>
       <Ionicons color="#B42318" name="alert-circle-outline" size={16} />
-      <Text style={ui.errorText}>{message}</Text>
+      <Text maxFontSizeMultiplier={1.08} style={ui.errorText}>{message}</Text>
     </View>
   ) : null;
 }
@@ -133,14 +141,14 @@ export function DemoOtpNotice() {
   return (
     <View style={ui.demoBox}>
       <Ionicons color="#294B8C" name="information-circle-outline" size={17} />
-      <Text style={ui.demoText}>Đây là luồng demo cục bộ. Mã OTP mặc định: 123749.</Text>
+      <Text maxFontSizeMultiplier={1.08} style={ui.demoText}>Đây là luồng demo cục bộ. Mã OTP mặc định: 123749.</Text>
     </View>
   );
 }
 
 const ui = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#ECECEC' },
-  page: { flexGrow: 1, justifyContent: 'center', padding: 16 },
+  page: { flexGrow: 1, justifyContent: 'center' },
   card: {
     borderRadius: 24,
     backgroundColor: '#FAFAFA',
@@ -154,7 +162,7 @@ const ui = StyleSheet.create({
   title: { marginTop: 7, textAlign: 'center', color: colors.black, fontSize: 19, fontWeight: '700', lineHeight: 24 },
   subtitle: { marginTop: 8, textAlign: 'center', color: '#294B8C', fontSize: 13, lineHeight: 18 },
   body: { marginTop: 22 },
-  footer: { marginTop: 'auto', paddingTop: 18 },
+  footer: { marginTop: 18 },
   fieldBlock: { marginBottom: 13 },
   label: { marginBottom: 6, color: '#294B8C', fontSize: 12, fontWeight: '600' },
   inputRow: {

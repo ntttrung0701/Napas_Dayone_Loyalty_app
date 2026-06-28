@@ -44,7 +44,7 @@ export function BiometricSelectionScreen({
       {!capabilities && !error ? <ActivityIndicator color="#3C5C98" size="large" /> : null}
       <FormError message={error} />
       {capabilities && !fingerprintReady ? (
-        <Text style={styles.notice}>
+        <Text maxFontSizeMultiplier={1.08} style={styles.notice}>
           Thiết bị chưa đăng ký vân tay hệ thống. Bạn vẫn có thể mở camera trước để xác minh khuôn mặt.
         </Text>
       ) : null}
@@ -62,7 +62,7 @@ export function BiometricSelectionScreen({
         loading={loadingKind === 'fingerprint'}
         onPress={() => authenticate('fingerprint')}
       />
-      <Text style={styles.security}>
+      <Text maxFontSizeMultiplier={1.08} style={styles.security}>
         Chức năng chỉ dùng sau khi bạn đăng nhập bằng mật khẩu và bật Ghi nhớ tài khoản. Ảnh camera không được lưu; lớp xác minh demo có thể được thay bằng Face Matching/Liveness API khi triển khai thật.
       </Text>
     </AuthShell>

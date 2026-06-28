@@ -103,7 +103,7 @@ export function NapasLoginScreen({
           </View>
           <Text maxFontSizeMultiplier={1.08} numberOfLines={1} style={styles.rememberText}>Ghi nhớ tài khoản</Text>
         </Pressable>
-        <Pressable accessibilityRole="link" onPress={onForgotPassword}>
+        <Pressable accessibilityRole="link" onPress={onForgotPassword} style={styles.forgotLinkHitbox}>
           <Text maxFontSizeMultiplier={1.08} numberOfLines={1} style={styles.link}>Quên mật khẩu?</Text>
         </Pressable>
       </View>
@@ -130,18 +130,19 @@ export function NapasLoginScreen({
 const styles = StyleSheet.create({
   successMessage: { marginBottom: 12, borderRadius: 9, backgroundColor: '#E7F6EC', color: '#18794E', padding: 10, fontSize: 11 },
   demoAccount: { marginBottom: 12, textAlign: 'center', color: '#667085', fontSize: 11 },
-  helperRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 18 },
+  helperRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 },
   remember: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center' },
   checkbox: { width: 18, height: 18, alignItems: 'center', justifyContent: 'center', marginRight: 7, borderWidth: 1, borderColor: '#555B64', borderRadius: 4, backgroundColor: '#E9E9E9' },
   checkboxChecked: { borderColor: '#3C5C98', backgroundColor: '#3C5C98' },
-  rememberText: { flexShrink: 1, color: colors.black, fontSize: 12 },
-  link: { flexShrink: 0, color: '#1D5EFF', fontSize: 12, fontWeight: '600' },
+  rememberText: { flexShrink: 1, color: colors.black, fontSize: 11 },
+  forgotLinkHitbox: { flexShrink: 0, marginLeft: 10 },
+  link: { flexShrink: 0, color: '#1D5EFF', fontSize: 11, fontWeight: '600' },
   dividerRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 15 },
   divider: { flex: 1, height: 1, backgroundColor: '#D5D5D5' },
   or: { marginHorizontal: 18, color: colors.black, fontSize: 12 },
-  biometricButton: { minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', borderWidth: 1, borderColor: '#82868D', borderRadius: 11, backgroundColor: colors.white, paddingHorizontal: 16, paddingVertical: 9 },
-  biometricText: { flex: 1, marginLeft: 12, color: colors.black, fontSize: 12, lineHeight: 17 },
-  signupRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 20 },
+  biometricButton: { minHeight: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', borderWidth: 1, borderColor: '#82868D', borderRadius: 11, backgroundColor: colors.white, paddingHorizontal: 14, paddingVertical: 10 },
+  biometricText: { flex: 1, minWidth: 0, marginLeft: 10, color: colors.black, fontSize: 11, lineHeight: 16 },
+  signupRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 18 },
   signupText: { color: colors.black, fontSize: 12 },
   signupLink: { color: '#1D5EFF', fontSize: 12, textDecorationLine: 'underline' },
   demoNotice: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
