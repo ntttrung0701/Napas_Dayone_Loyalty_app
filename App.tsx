@@ -11,7 +11,7 @@ import { OfferMediaResolver } from './src/features/offers/domain/OfferMediaResol
 import { MembershipOverviewScreen } from './src/features/membership/MembershipOverviewScreen';
 import { ExpiringPointsScreen } from './src/features/membership/ExpiringPointsScreen';
 
-import { AuthFlow } from './src/features/auth/AuthFlow';
+import { AuthFlow } from './src/features/auth/presentation/AuthFlow';
 import { CardsScreen } from './src/features/cards/CardsScreen';
 import { HistoryScreen } from './src/features/history/HistoryScreen';
 import { TransactionFactory } from './src/features/history/domain/TransactionFactory';

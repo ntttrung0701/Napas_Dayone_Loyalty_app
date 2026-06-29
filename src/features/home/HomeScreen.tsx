@@ -78,7 +78,7 @@ export function HomeScreen({
           <Pressable
             accessibilityLabel={`${unreadNotifications} thông báo chưa đọc`}
             accessibilityRole="button"
-            onPress={() => onNavigate('notifications')}
+            onPress={() => onNavigate('membership')}
             style={({ pressed }) => [styles.notification, pressed && styles.pressed]}
           >
             <Ionicons color={colors.primaryDark} name="notifications-outline" size={20} />

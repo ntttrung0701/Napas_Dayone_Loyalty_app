@@ -210,7 +210,7 @@ export function NotificationsScreen({
         )}
       </ScrollView>
 
-      <BottomNav active="notifications" onNavigate={onNavigate} />
+      <BottomNav active="membership" onNavigate={onNavigate} />
     </View>
   );
 }

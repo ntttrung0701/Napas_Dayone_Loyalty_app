@@ -65,7 +65,7 @@ export function OffersScreen({
   title="Ưu đãi & quà tặng"
   rightContent={
     <Pressable
-      onPress={() => onNavigate('notifications')}
+      onPress={() => onNavigate('membership')}
       style={({ pressed }) => [styles.headerIconButton, pressed && styles.pressed]}
     >
       <Ionicons color={colors.text} name="notifications-outline" size={22} />

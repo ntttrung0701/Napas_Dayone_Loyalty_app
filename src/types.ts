@@ -1,10 +1,11 @@
-export type MainTab = 'home' | 'offers' | 'qr' | 'notifications' | 'profile';
+export type MainTab = 'home' | 'offers' | 'qr' | 'membership' | 'profile';
 
 export type AppScreen =
   | 'splash'
   | 'onboarding'
   | 'login'
   | MainTab
+  | 'notifications'
   | 'offer-detail'
   | 'payment'
   | 'transfer'
@@ -15,7 +16,6 @@ export type AppScreen =
   | 'voucher-wallet'
   | 'voucher-detail'
   | 'voucher-qr'
-  | 'membership'
   | 'membership-tier'
   | 'expiring-points';
 

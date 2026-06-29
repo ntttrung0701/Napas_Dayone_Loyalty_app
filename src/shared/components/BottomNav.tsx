@@ -18,12 +18,8 @@ const tabs: Array<{ id: MainTab; icon: IconName; activeIcon: IconName; label: st
   { id: 'home', icon: 'home-outline', activeIcon: 'home', label: 'Trang chủ' },
   { id: 'offers', icon: 'gift-outline', activeIcon: 'gift', label: 'Ưu đãi' },
   { id: 'qr', icon: 'qr-code-outline', activeIcon: 'qr-code', label: 'Mã QR' },
-  {
-    id: 'notifications',
-    icon: 'notifications-outline',
-    activeIcon: 'notifications',
-    label: 'Thông báo',
-  },
+  { id: 'membership', icon: 'analytics-outline',activeIcon: 'analytics',label: 'Điểm',
+},
   { id: 'profile', icon: 'person-outline', activeIcon: 'person', label: 'Tài khoản' },
 ];
 
