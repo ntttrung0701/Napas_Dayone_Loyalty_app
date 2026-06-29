@@ -27,65 +27,63 @@ export function BottomNav({ active, onNavigate }: BottomNavProps) {
   const bottomPadding = getSafeBottomInset(insets.bottom);
 
   return (
-  <View style={[styles.safeArea, { paddingBottom: bottomPadding }]}>
-    <View style={styles.container}>
-      {tabs.map((tab) => {
-        const selected = active === tab.id;
+    <View style={[styles.safeArea, { paddingBottom: bottomPadding }]}>
+      <View style={styles.container}>
+        {tabs.map((tab) => {
+          const selected = active === tab.id;
 
-        return (
-          <Pressable
-            key={tab.id}
-            onPress={() => {
-              if (tab.id === 'offers') {
-                onNavigate(tab.id);
-                return;
-              }
+          return (
+            <Pressable
+              key={tab.id}
+              hitSlop={8}
+              onPress={() => {
+                if (tab.id === 'offers') {
+                  onNavigate(tab.id);
+                  return;
+                }
 
-              if (!selected) {
-                onNavigate(tab.id);
-              }
-            }}
-            style={({ pressed }) => [
-              styles.tab,
-              pressed && styles.tabPressed,
-            ]}
-            hitSlop={8}
-          >
-            <View style={[styles.iconWrap, selected && styles.iconWrapSelected]}>
-              <Ionicons
-                color={selected ? colors.primary : colors.textMuted}
-                name={selected ? tab.activeIcon : tab.icon}
-                size={22}
-              />
-            </View>
-
-            <Text
-              maxFontSizeMultiplier={1.08}
-              numberOfLines={1}
-              style={[styles.label, selected && styles.selected]}
+                if (!selected) {
+                  onNavigate(tab.id);
+                }
+              }}
+              style={({ pressed }) => [
+                styles.tab,
+                selected && styles.tabSelected,
+                pressed && styles.tabPressed,
+              ]}
             >
-              {tab.label}
-            </Text>
-          </Pressable>
-        );
-      })}
+              <View style={styles.iconWrap}>
+                <Ionicons
+                  color={colors.white}
+                  name={selected ? tab.activeIcon : tab.icon}
+                  size={selected ? 27 : 25}
+                />
+              </View>
+
+              <Text
+                maxFontSizeMultiplier={1.08}
+                numberOfLines={1}
+                style={[styles.label, selected && styles.selectedLabel]}
+              >
+                {tab.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
-  </View>
-);
+  );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.surface,
-    paddingHorizontal: 0,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'transparent',
+    paddingHorizontal: 14,
     paddingTop: 6,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 10,
   },
 
   container: {
@@ -94,48 +92,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    backgroundColor: colors.surface,
-    paddingHorizontal: 4,
-    paddingTop: 4,
-    paddingBottom: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+    borderRadius: 30,
+    backgroundColor: '#075da8c1',
+    paddingHorizontal: 7,
+    paddingTop: 7,
+    paddingBottom: 7,
+    shadowColor: '#2C2C2C',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.96,
+    shadowRadius: 18,
+    elevation: 14,
   },
 
   tab: {
     flex: 1,
-    minHeight: 52,
+    minHeight: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 20,
+    borderRadius: 22,
+    paddingHorizontal: 2,
+    paddingTop: 5,
+    paddingBottom: 5,
+  },
+
+  tabSelected: {
+    backgroundColor: 'rgba(255,255,255,0.22)',
   },
 
   tabPressed: {
-    opacity: 0.72,
+    opacity: 0.78,
     transform: [{ scale: 0.96 }],
   },
 
   iconWrap: {
     width: 34,
-    height: 28,
+    height: 29,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 14,
-  },
-
-  iconWrapSelected: {
-    backgroundColor: colors.primarySoft,
   },
 
   label: {
     marginTop: 3,
-    color: colors.textMuted,
+    color: 'rgba(255,255,255,0.76)',
     fontSize: 8,
-    fontWeight: '700',
+    fontWeight: '800',
     lineHeight: 10,
     textAlign: 'center',
   },
 
-  selected: {
-    color: colors.primary,
+  selectedLabel: {
+    color: colors.white,
     fontWeight: '900',
   },
 });

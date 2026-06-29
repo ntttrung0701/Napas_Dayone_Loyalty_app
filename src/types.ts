@@ -17,8 +17,9 @@ export type AppScreen =
   | 'voucher-detail'
   | 'voucher-qr'
   | 'membership-tier'
-  | 'expiring-points';
-
+  | 'expiring-points'
+  | 'pending-points';
+  
 export type NotificationCategory = 'transaction' | 'offer' | 'system';
 
 export type LoyaltyNotification = {
