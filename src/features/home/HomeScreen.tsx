@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { OfferMediaResolver } from '../offers/domain/OfferMediaResolver';
-import type { ComponentProps } from 'react';
+import { useState, type ComponentProps } from 'react';
 import { Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BrandLogo } from '../../shared/components/BrandLogo';
 import { BottomNav } from '../../shared/components/BottomNav';
+import { HeaderIconButton } from '../../shared/components/HeaderIconButton';
 import { TransactionRow } from '../../shared/components/TransactionRow';
 import { clamp, getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
@@ -57,6 +58,7 @@ export function HomeScreen({
   const quickIconSize = clamp(quickButtonSize * 0.42, 22, 30);
   const pointCardHeight = clamp(width * 0.58, 200, 232);
   const voucherCardWidth = clamp(width * 0.39, 132, 150);
+  const [isSearchHintVisible, setSearchHintVisible] = useState(false);
 
   return (
     <View style={styles.root}>
@@ -68,29 +70,41 @@ export function HomeScreen({
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.topBar, { paddingHorizontal: horizontalPadding }]}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>NA</Text>
-          </View>
-          <View style={styles.brand}>
+          <View style={styles.headerBrandSlot}>
             <BrandLogo width={92} />
-            
           </View>
-          <Pressable
-            accessibilityLabel={`${unreadNotifications} thông báo chưa đọc`}
-            accessibilityRole="button"
-            onPress={() => onNavigate('membership')}
-            style={({ pressed }) => [styles.notification, pressed && styles.pressed]}
-          >
-            <Ionicons color={colors.primaryDark} name="notifications-outline" size={20} />
-            {unreadNotifications ? (
-              <View style={styles.notificationBadge}>
-                <Text style={styles.notificationBadgeText}>
-                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
-                </Text>
-              </View>
-            ) : null}
-          </Pressable>
+
+          <View style={styles.headerActions}>
+            <HeaderIconButton
+              accessibilityLabel="Tìm kiếm tính năng"
+              icon="search-outline"
+              onPress={() => setSearchHintVisible(true)}
+            />
+            <HeaderIconButton
+              accessibilityLabel={`${unreadNotifications} thông báo chưa đọc`}
+              badgeCount={unreadNotifications}
+              icon="notifications-outline"
+              onPress={() => onNavigate('notifications')}
+            />
+          </View>
         </View>
+
+        {isSearchHintVisible ? (
+          <View style={[styles.searchHint, { marginHorizontal: horizontalPadding }]}>
+            <Ionicons color={colors.primary} name="search-outline" size={18} />
+            <Text style={styles.searchHintText}>
+              Tìm kiếm tính năng sẽ được kích hoạt trong bản demo tiếp theo.
+            </Text>
+            <Pressable
+              accessibilityLabel="Đóng thông báo tìm kiếm"
+              accessibilityRole="button"
+              onPress={() => setSearchHintVisible(false)}
+              style={styles.searchHintClose}
+            >
+              <Ionicons color={colors.textMuted} name="close" size={16} />
+            </Pressable>
+          </View>
+        ) : null}
 
         <Pressable
   onPress={() => onNavigate('profile')}
@@ -340,59 +354,56 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   topBar: {
-    minHeight: 58,
+    minHeight: 62,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     backgroundColor: colors.surface,
     paddingHorizontal: 20,
   },
-  avatar: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 18,
-    backgroundColor: colors.primarySoft,
-  },
-  avatarText: {
-    color: colors.primary,
-    fontSize: 11,
-    fontWeight: '900',
-  },
-  brand: {
+  headerBrandSlot: {
     flex: 1,
-    alignItems: 'center',
-  },
-  notification: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
-    borderRadius: 18,
+    paddingLeft: 2,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    columnGap: 10,
+  },
+  searchHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
     borderWidth: 1,
     borderColor: colors.border,
+    borderRadius: 16,
     backgroundColor: colors.surface,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 2,
   },
-  notificationBadge: {
-    position: 'absolute',
-    top: -3,
-    right: -4,
-    minWidth: 18,
-    height: 18,
+  searchHintText: {
+    flex: 1,
+    marginLeft: 8,
+    color: colors.textMuted,
+    fontSize: 11,
+    fontWeight: '700',
+    lineHeight: 16,
+  },
+  searchHintClose: {
+    width: 26,
+    height: 26,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: colors.surface,
-    borderRadius: 9,
-    backgroundColor: colors.danger,
-    paddingHorizontal: 3,
-  },
-  notificationBadgeText: {
-    color: colors.white,
-    fontSize: 8,
-    fontWeight: '900',
+    marginLeft: 8,
   },
   greetingCopy: {
   flex: 1,

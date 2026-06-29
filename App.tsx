@@ -375,7 +375,7 @@ export default function App() {
         availablePoints: points,
       }}
       initialFocus="top"
-      onBack={goBack}
+      unreadNotifications={unreadNotifications}
       onNavigate={navigate}
     />
   );
@@ -389,7 +389,7 @@ case 'membership-tier':
         availablePoints: points,
       }}
       initialFocus="tier"
-      onBack={goBack}
+      unreadNotifications={unreadNotifications}
       onNavigate={navigate}
     />
   );
@@ -410,6 +410,7 @@ case 'membership-tier':
           <NotificationsScreen
             notifications={notifications}
             transactions={transactions}
+            onBack={goBack}
             onMarkAllRead={markAllNotificationsRead}
             onMarkRead={markNotificationRead}
             onNavigate={navigate}
@@ -422,6 +423,7 @@ case 'membership-tier':
           <ProfileScreen
             activeTab="profile"
             points={points}
+            unreadNotifications={unreadNotifications}
             onLogout={() => setNavigation((current) => current.reset('login'))}
             onNavigate={navigate}
           />

@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BottomNav } from '../../shared/components/BottomNav';
+import { HeaderIconButton } from '../../shared/components/HeaderIconButton';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
 import { clamp, getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
@@ -22,6 +23,7 @@ import { formatPoints } from '../../utils/format';
 type ProfileScreenProps = {
   activeTab: MainTab;
   points: number;
+  unreadNotifications: number;
   onLogout: () => void;
   onNavigate: (screen: AppScreen) => void;
 };
@@ -40,6 +42,7 @@ const settings: Array<{ label: string; value: string; icon: IconName; route?: Ap
 export function ProfileScreen({
   activeTab,
   points,
+  unreadNotifications,
   onLogout,
   onNavigate,
 }: ProfileScreenProps) {
@@ -59,7 +62,17 @@ export function ProfileScreen({
 
   return (
     <View style={styles.root}>
-      <ScreenHeader title="Tài khoản" />
+      <ScreenHeader
+        rightContent={
+          <HeaderIconButton
+            accessibilityLabel={`${unreadNotifications} thông báo chưa đọc`}
+            badgeCount={unreadNotifications}
+            icon="notifications-outline"
+            onPress={() => onNavigate('notifications')}
+          />
+        }
+        title="Tài khoản"
+      />
       <ScrollView
         contentContainerStyle={[
           styles.content,

@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OfferMediaResolver } from './domain/OfferMediaResolver';
 import { offers } from '../../mock/data';
 import { BottomNav } from '../../shared/components/BottomNav';
+import { HeaderIconButton } from '../../shared/components/HeaderIconButton';
 import { getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { AppScreen, MainTab, Offer } from '../../types';
@@ -62,18 +63,24 @@ export function OffersScreen({
   return (
     <View style={styles.root}>
       <ScreenHeader
-  title="Ưu đãi & quà tặng"
-  rightContent={
-    <Pressable
-      onPress={() => onNavigate('membership')}
-      style={({ pressed }) => [styles.headerIconButton, pressed && styles.pressed]}
-    >
-      <Ionicons color={colors.text} name="notifications-outline" size={22} />
-      {unreadNotifications ? <View style={styles.notificationDot} /> : null}
-    </Pressable>
-  }
-/>
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: getBottomNavOffset(insets.bottom) + 18 }]} showsVerticalScrollIndicator={false}>
+        rightContent={
+          <HeaderIconButton
+            accessibilityLabel={`${unreadNotifications} thông báo chưa đọc`}
+            badgeCount={unreadNotifications}
+            icon="notifications-outline"
+            onPress={() => onNavigate('notifications')}
+          />
+        }
+        title="Ưu đãi & quà tặng"
+      />
+
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getBottomNavOffset(insets.bottom) + 18 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.titleRow}>
   <View style={styles.titleCopy}>
   </View>
@@ -230,17 +237,6 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
-notificationDot: {
-  position: 'absolute',
-  top: 8,
-  right: 8,
-  width: 7,
-  height: 7,
-  borderWidth: 1,
-  borderColor: colors.surface,
-  borderRadius: 4,
-  backgroundColor: colors.danger,
-},
 content: {
   paddingHorizontal: 20,
   paddingTop: 18,
@@ -255,13 +251,6 @@ content: {
 titleCopy: {
   flex: 1,
   paddingRight: 12,
-},
-headerIconButton: {
-  width: 40,
-  height: 40,
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: 20,
 },
 pageSubtitle: {
   color: colors.textMuted,

@@ -3,24 +3,28 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BottomNav } from '../../shared/components/BottomNav';
+import { HeaderIconButton } from '../../shared/components/HeaderIconButton';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
-import { getScreenBottomPadding } from '../../shared/layout';
+import { getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
-import type { AppScreen, MembershipOverview } from '../../types';
+import type { AppScreen, MainTab, MembershipOverview } from '../../types';
 import { formatCurrency, formatPoints } from '../../utils/format';
 import { MembershipService } from './domain/MembershipService';
 
 type MembershipOverviewScreenProps = {
+  activeTab: MainTab;
   overview: MembershipOverview;
   initialFocus?: 'top' | 'tier';
-  onBack: () => void;
+  unreadNotifications: number;
   onNavigate: (screen: AppScreen) => void;
 };
 
 export function MembershipOverviewScreen({
+  activeTab,
   overview,
   initialFocus = 'top',
-  onBack,
+  unreadNotifications,
   onNavigate,
 }: MembershipOverviewScreenProps) {
   const insets = useSafeAreaInsets();
@@ -45,16 +49,26 @@ export function MembershipOverviewScreen({
 
   return (
     <View style={styles.root}>
-      <ScreenHeader onBack={onBack} title="Tổng quan điểm" />
+      <ScreenHeader
+        rightContent={
+          <HeaderIconButton
+            accessibilityLabel={`${unreadNotifications} thông báo chưa đọc`}
+            badgeCount={unreadNotifications}
+            icon="notifications-outline"
+            onPress={() => onNavigate('notifications')}
+          />
+        }
+        title="Tổng quan điểm"
+      />
 
       <ScrollView
-  ref={scrollViewRef}
-  contentContainerStyle={[
-    styles.content,
-    { paddingBottom: getScreenBottomPadding(insets.bottom, 26) },
-  ]}
-  showsVerticalScrollIndicator={false}
->
+        ref={scrollViewRef}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: getBottomNavOffset(insets.bottom) + 18 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.titleBlock}>
           <Text style={styles.pageTitle}>Tổng quan điểm</Text>
           <Text style={styles.updatedText}>Cập nhật lúc {overview.lastUpdated}</Text>
@@ -204,6 +218,7 @@ export function MembershipOverviewScreen({
 </Pressable>
       </ScrollView>
 
+      <BottomNav active={activeTab} onNavigate={onNavigate} />
     </View>
   );
 }
