@@ -366,9 +366,10 @@ export default function App() {
           />
         );
 
-        case 'membership':
+      case 'membership':
   return (
     <MembershipOverviewScreen
+      activeTab="membership"
       overview={{
         ...seedMembershipOverview,
         availablePoints: points,
@@ -382,6 +383,7 @@ export default function App() {
 case 'membership-tier':
   return (
     <MembershipOverviewScreen
+      activeTab="membership"
       overview={{
         ...seedMembershipOverview,
         availablePoints: points,
@@ -391,6 +393,7 @@ case 'membership-tier':
       onNavigate={navigate}
     />
   );
+  
   case 'expiring-points':
   return (
     <ExpiringPointsScreen
