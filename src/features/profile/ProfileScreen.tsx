@@ -142,7 +142,7 @@ export function ProfileScreen({
           style={({ pressed }) => [styles.logoutButton, pressed && styles.pressed]}
         >
           <Ionicons color={colors.danger} name="log-out-outline" size={18} />
-          <Text style={styles.logoutText}>Đăng xuất tài khoản demo</Text>
+          <Text style={styles.logoutText}>Đăng xuất</Text>
         </Pressable>
       </ScrollView>
       <BottomNav active={activeTab} onNavigate={onNavigate} />
