@@ -29,7 +29,9 @@ type ProfileScreenProps = {
 };
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
-const goldCardBackground = require('../../../assets/GoldCard.png');
+const goldCardBackground = require('../../../assets/goldCard.png');
+const silverCardBackground = require('../../../assets/silverCard.png');
+
 
 const settings: Array<{ label: string; value: string; icon: IconName; route?: AppScreen }> = [
   { label: 'Liên kết Thẻ & Ví', value: '1 thẻ đã liên kết', icon: 'card-outline', route: 'cards' },
