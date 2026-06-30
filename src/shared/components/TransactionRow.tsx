@@ -2,7 +2,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { TransactionRecord } from '../../features/history/domain/TransactionLedger';
+import {
+  TransactionDatePresenter,
+  TransactionRecord,
+} from '../../features/history/domain/TransactionLedger';
 import { colors } from '../../theme/colors';
 import type { Transaction } from '../../types';
 import { formatPoints } from '../../utils/format';
@@ -74,6 +77,7 @@ export function TransactionRow({
   const record = new TransactionRecord(transaction);
 const tone = resolvePointTone(transaction);
 const pointPrefix = transaction.points > 0 ? '+' : '';
+const datePresenter = new TransactionDatePresenter(transaction.occurredAt);
   return (
     <Pressable
       accessibilityHint={onPress ? 'Mở thông tin chi tiết giao dịch' : undefined}
@@ -94,7 +98,7 @@ const pointPrefix = transaction.points > 0 ? '+' : '';
           {transaction.title}
         </Text>
         <Text maxFontSizeMultiplier={1.08} numberOfLines={2} style={styles.subtitle}>{transaction.subtitle}</Text>
-        <Text maxFontSizeMultiplier={1.08} numberOfLines={2} style={styles.date}>{transaction.date}</Text>
+        <Text maxFontSizeMultiplier={1.08} numberOfLines={2} style={styles.date}>{datePresenter.displayLabel}</Text>
       </View>
       <View style={styles.trailing}>
         <Text style={[styles.points, { color: tone.color }]}>
