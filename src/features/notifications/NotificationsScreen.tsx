@@ -11,151 +11,277 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BottomNav } from '../../shared/components/BottomNav';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
-import { TransactionRow } from '../../shared/components/TransactionRow';
-import { getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
-import type {
-  AppScreen,
-  LoyaltyNotification,
-  NotificationCategory,
-  Transaction,
-} from '../../types';
-import {
-  ActivityFeed,
-  type ActivityFilter,
-} from './domain/ActivityFeed';
-import { NotificationRecord } from './domain/NotificationCenter';
+import type { AppScreen, LoyaltyNotification, NotificationCategory } from '../../types';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
+type NotificationFilter = 'all' | 'unread' | NotificationCategory;
+
 type NotificationsScreenProps = {
   notifications: LoyaltyNotification[];
-  transactions: Transaction[];
   onBack: () => void;
   onNavigate: (screen: AppScreen) => void;
   onMarkAllRead: () => void;
   onMarkRead: (notificationId: string) => void;
-  onSelectTransaction: (transaction: Transaction) => void;
 };
 
-const filters: ReadonlyArray<{ id: ActivityFilter; label: string }> = [
+type NotificationPresentation = {
+  icon: IconName;
+  label: string;
+  color: string;
+  background: string;
+};
+
+type NotificationGroup = {
+  key: string;
+  label: string;
+  notifications: LoyaltyNotification[];
+};
+
+const filters: ReadonlyArray<{ id: NotificationFilter; label: string }> = [
   { id: 'all', label: 'Tất cả' },
-  { id: 'earned', label: 'Tích điểm' },
-  { id: 'redeemed', label: 'Đổi điểm' },
-  { id: 'pending', label: 'Đang chờ' },
+  { id: 'unread', label: 'Chưa đọc' },
+  { id: 'transaction', label: 'Giao dịch' },
   { id: 'offer', label: 'Ưu đãi' },
   { id: 'system', label: 'Hệ thống' },
 ];
 
-const categoryStyle: Record<
-  NotificationCategory,
-  { icon: IconName; color: string; background: string }
-> = {
+const notificationPresentation: Record<NotificationCategory, NotificationPresentation> = {
   transaction: {
-    icon: 'swap-horizontal-outline',
+    icon: 'card-outline',
+    label: 'Giao dịch',
     color: colors.primary,
     background: colors.primarySoft,
   },
   offer: {
     icon: 'gift-outline',
+    label: 'Ưu đãi',
     color: colors.warning,
     background: colors.warningSoft,
   },
   system: {
     icon: 'shield-checkmark-outline',
+    label: 'Hệ thống',
     color: colors.success,
     background: colors.successSoft,
   },
 };
 
+class NotificationInbox {
+  private readonly sortedNotifications: LoyaltyNotification[];
+
+  constructor(notifications: readonly LoyaltyNotification[]) {
+    this.sortedNotifications = [...notifications].sort(
+      (left, right) => Date.parse(right.occurredAt) - Date.parse(left.occurredAt),
+    );
+  }
+
+  get unreadCount() {
+    return this.sortedNotifications.filter((notification) => !notification.isRead).length;
+  }
+
+  query(filter: NotificationFilter, searchQuery: string) {
+    const normalizedQuery = NotificationInbox.normalize(searchQuery);
+
+    return this.sortedNotifications.filter((notification) => {
+      if (filter === 'unread' && notification.isRead) return false;
+      if (filter !== 'all' && filter !== 'unread' && notification.category !== filter) {
+        return false;
+      }
+
+      if (!normalizedQuery) return true;
+
+      return NotificationInbox.normalize(
+        [
+          notification.title,
+          notification.message,
+          notification.date,
+          notification.category,
+        ].join(' '),
+      ).includes(normalizedQuery);
+    });
+  }
+
+  group(notifications: readonly LoyaltyNotification[]): NotificationGroup[] {
+    const groups = new Map<string, NotificationGroup>();
+
+    notifications.forEach((notification) => {
+      const date = new Date(notification.occurredAt);
+      const key = this.resolveGroupKey(date);
+      const label = this.resolveGroupLabel(key, date);
+      const current = groups.get(key);
+
+      if (current) {
+        current.notifications.push(notification);
+        return;
+      }
+
+      groups.set(key, {
+        key,
+        label,
+        notifications: [notification],
+      });
+    });
+
+    return [...groups.values()];
+  }
+
+  private resolveGroupKey(date: Date) {
+    if (Number.isNaN(date.getTime())) return 'older';
+
+    const today = new Date();
+    const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const current = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const dayDifference = Math.round((current.getTime() - target.getTime()) / 86_400_000);
+
+    if (dayDifference === 0) return 'today';
+    if (dayDifference === 1) return 'yesterday';
+
+    return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+  }
+
+  private resolveGroupLabel(key: string, date: Date) {
+    if (key === 'today') return 'HÔM NAY';
+    if (key === 'yesterday') return 'HÔM QUA';
+    if (key === 'older' || Number.isNaN(date.getTime())) return 'TRƯỚC ĐÓ';
+
+    return new Intl.DateTimeFormat('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(date);
+  }
+
+  private static normalize(value: string) {
+    return value
+      .trim()
+      .toLocaleLowerCase('vi-VN')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd');
+  }
+}
+
+function resolveNotificationTarget(notification: LoyaltyNotification): AppScreen {
+  if (notification.category === 'transaction') return 'history';
+  if (notification.category === 'offer') return 'offers';
+
+  return 'profile';
+}
+
 export function NotificationsScreen({
   notifications,
-  transactions,
   onBack,
   onNavigate,
   onMarkAllRead,
   onMarkRead,
-  onSelectTransaction,
 }: NotificationsScreenProps) {
   const insets = useSafeAreaInsets();
-  const [activeFilter, setActiveFilter] = useState<ActivityFilter>('all');
+  const [activeFilter, setActiveFilter] = useState<NotificationFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const feed = useMemo(
-    () => new ActivityFeed(transactions, notifications),
-    [notifications, transactions],
+
+  const inbox = useMemo(() => new NotificationInbox(notifications), [notifications]);
+
+  const visibleNotifications = useMemo(
+    () => inbox.query(activeFilter, searchQuery),
+    [activeFilter, inbox, searchQuery],
   );
+
   const groups = useMemo(
-    () => feed.group(feed.query(activeFilter, searchQuery)),
-    [activeFilter, feed, searchQuery],
+    () => inbox.group(visibleNotifications),
+    [inbox, visibleNotifications],
   );
-  const unreadCount = notifications.filter(
-    (notification) => notification.category !== 'transaction' && !notification.isRead,
-  ).length;
 
   const resetFilters = () => {
     setActiveFilter('all');
     setSearchQuery('');
   };
 
+  const handleOpenNotification = (notification: LoyaltyNotification) => {
+    if (!notification.isRead) {
+      onMarkRead(notification.id);
+    }
+
+    onNavigate(resolveNotificationTarget(notification));
+  };
+
   return (
     <View style={styles.root}>
       <ScreenHeader
-  onBack={onBack}
-  rightContent={
-    unreadCount ? (
-      <Pressable onPress={onMarkAllRead} style={({ pressed }) => pressed && styles.pressed}>
-        <Text style={styles.markAll}>Đọc tất cả</Text>
-      </Pressable>
-    ) : null
-  }
-  title="Thông báo"
-/>
+        onBack={onBack}
+        rightContent={
+          inbox.unreadCount ? (
+            <Pressable
+              onPress={onMarkAllRead}
+              style={({ pressed }) => [styles.markAllButton, pressed && styles.pressed]}
+            >
+              <Text style={styles.markAllText}>Đọc tất cả</Text>
+            </Pressable>
+          ) : null
+        }
+        title="Thông báo"
+      />
+
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: getBottomNavOffset(insets.bottom) + 18 },
+          { paddingBottom: Math.max(insets.bottom, 16) + 28 },
         ]}
-        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.summaryCard}>
+          <View style={styles.summaryIcon}>
+            <Ionicons color={colors.primary} name="notifications-outline" size={24} />
+          </View>
+
+          <View style={styles.summaryTextBox}>
+            <Text style={styles.summaryTitle}>Trung tâm thông báo</Text>
+            <Text style={styles.summaryDescription}>
+              Theo dõi bảo mật, ưu đãi, voucher và trạng thái giao dịch của bạn.
+            </Text>
+          </View>
+
+          {inbox.unreadCount ? (
+            <View style={styles.unreadBadge}>
+              <Text style={styles.unreadBadgeText}>{inbox.unreadCount}</Text>
+            </View>
+          ) : null}
+        </View>
+
         <View style={styles.searchBox}>
           <Ionicons color={colors.textMuted} name="search-outline" size={20} />
+
           <TextInput
-            accessibilityLabel="Tìm kiếm giao dịch và thông báo"
-            autoCapitalize="none"
-            autoCorrect={false}
+            cursorColor={colors.primary}
             onChangeText={setSearchQuery}
-            placeholder="Nhập mã hoặc nội dung..."
+            placeholder="Tìm thông báo..."
             placeholderTextColor={colors.textMuted}
             style={styles.searchInput}
             value={searchQuery}
           />
+
           {searchQuery ? (
             <Pressable
-              accessibilityLabel="Xóa nội dung tìm kiếm"
-              accessibilityRole="button"
-              hitSlop={10}
               onPress={() => setSearchQuery('')}
+              style={({ pressed }) => [styles.clearSearchButton, pressed && styles.pressed]}
             >
-              <Ionicons color={colors.textMuted} name="close-circle" size={20} />
+              <Ionicons color={colors.textMuted} name="close-circle" size={18} />
             </Pressable>
           ) : null}
         </View>
 
         <ScrollView
-          accessibilityRole="tablist"
-          contentContainerStyle={styles.filters}
           horizontal
           showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterRow}
         >
           {filters.map((filter) => {
             const selected = activeFilter === filter.id;
+
             return (
               <Pressable
-                accessibilityRole="tab"
-                accessibilityState={{ selected }}
                 key={filter.id}
                 onPress={() => setActiveFilter(filter.id)}
                 style={({ pressed }) => [
@@ -176,34 +302,28 @@ export function NotificationsScreen({
           groups.map((group) => (
             <View key={group.key} style={styles.group}>
               <Text style={styles.groupLabel}>{group.label}</Text>
-              <View style={styles.feedCard}>
-                {group.items.map((item) =>
-                  item.type === 'transaction' ? (
-                    <TransactionRow
-                      key={item.id}
-                      onPress={onSelectTransaction}
-                      transaction={item.transaction}
-                    />
-                  ) : (
-                    <NotificationItem
-                      key={item.id}
-                      notification={item.notification}
-                      onPress={() => onMarkRead(item.notification.id)}
-                    />
-                  ),
-                )}
-              </View>
+
+              {group.notifications.map((notification) => (
+                <NotificationCard
+                  key={notification.id}
+                  notification={notification}
+                  onPress={() => handleOpenNotification(notification)}
+                />
+              ))}
             </View>
           ))
         ) : (
           <View style={styles.emptyState}>
             <View style={styles.emptyIcon}>
-              <Ionicons color={colors.primary} name="notifications-off-outline" size={28} />
+              <Ionicons color={colors.primary} name="file-tray-outline" size={30} />
             </View>
-            <Text style={styles.emptyTitle}>Không tìm thấy nội dung</Text>
-            <Text style={styles.emptyText}>Hãy thử từ khóa khác hoặc xóa bộ lọc hiện tại.</Text>
+
+            <Text style={styles.emptyTitle}>Không có thông báo phù hợp</Text>
+            <Text style={styles.emptyText}>
+              Hãy thử từ khóa khác hoặc xóa bộ lọc hiện tại.
+            </Text>
+
             <Pressable
-              accessibilityRole="button"
               onPress={resetFilters}
               style={({ pressed }) => [styles.resetButton, pressed && styles.pressed]}
             >
@@ -212,99 +332,181 @@ export function NotificationsScreen({
           </View>
         )}
       </ScrollView>
-
-      <BottomNav onNavigate={onNavigate} />
     </View>
   );
 }
 
-function NotificationItem({
+function NotificationCard({
   notification,
   onPress,
 }: {
   notification: LoyaltyNotification;
   onPress: () => void;
 }) {
-  const presentation = categoryStyle[notification.category];
-  const record = new NotificationRecord(notification);
+  const presentation = notificationPresentation[notification.category];
 
   return (
     <Pressable
-      accessibilityHint="Đánh dấu thông báo đã đọc"
-      accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [
-        styles.notificationRow,
+        styles.notificationCard,
         !notification.isRead && styles.notificationUnread,
         pressed && styles.pressed,
       ]}
     >
-      <View style={[styles.categoryIcon, { backgroundColor: presentation.background }]}>
-        <Ionicons color={presentation.color} name={presentation.icon} size={20} />
+      <View style={[styles.notificationIcon, { backgroundColor: presentation.background }]}>
+        <Ionicons color={presentation.color} name={presentation.icon} size={22} />
       </View>
-      <View style={styles.notificationInfo}>
-        <View style={styles.notificationMeta}>
+
+      <View style={styles.notificationBody}>
+        <View style={styles.notificationMetaRow}>
           <Text style={[styles.categoryLabel, { color: presentation.color }]}>
-            {record.categoryLabel}
+            {presentation.label}
           </Text>
+
           {!notification.isRead ? <View style={styles.unreadDot} /> : null}
         </View>
-        <Text numberOfLines={1} style={styles.notificationTitle}>
+
+        <Text numberOfLines={2} style={styles.notificationTitle}>
           {notification.title}
         </Text>
-        <Text numberOfLines={2} style={styles.notificationMessage}>
+
+        <Text numberOfLines={3} style={styles.notificationMessage}>
           {notification.message}
         </Text>
+
         <Text style={styles.notificationDate}>{notification.date}</Text>
       </View>
-      <Ionicons color={colors.textMuted} name="chevron-forward" size={17} />
+
+      <Ionicons color={colors.textMuted} name="chevron-forward" size={18} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  pressed: { opacity: 0.68 },
-  markAll: { color: colors.primary, fontSize: 10, fontWeight: '800' },
-  content: { paddingHorizontal: 18, paddingTop: 20 },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
+  root: {
+    flex: 1,
+    backgroundColor: colors.background,
   },
-  pageTitle: { color: colors.primaryDark, fontSize: 20, fontWeight: '900' },
-  pageSubtitle: { marginTop: 4, color: colors.textMuted, fontSize: 10 },
-  unreadBadge: {
+
+  pressed: {
+    opacity: 0.68,
+  },
+
+  markAllButton: {
+    minHeight: 34,
+    justifyContent: 'center',
     borderRadius: 999,
     backgroundColor: colors.primarySoft,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
   },
-  unreadBadgeText: { color: colors.primary, fontSize: 9, fontWeight: '900' },
-  searchBox: {
-    minHeight: 50,
+
+  markAllText: {
+    color: colors.primary,
+    fontSize: 10,
+    fontWeight: '900',
+  },
+
+  content: {
+    paddingHorizontal: 18,
+    paddingTop: 18,
+  },
+
+  summaryCard: {
+    minHeight: 92,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 16,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    padding: 16,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+
+  summaryIcon: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 18,
+    backgroundColor: colors.primarySoft,
+  },
+
+  summaryTextBox: {
+    flex: 1,
+    marginHorizontal: 12,
+  },
+
+  summaryTitle: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: '900',
+  },
+
+  summaryDescription: {
+    marginTop: 4,
+    color: colors.textMuted,
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: '600',
+  },
+
+  unreadBadge: {
+    minWidth: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    backgroundColor: colors.danger,
+    paddingHorizontal: 8,
+  },
+
+  unreadBadgeText: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+
+  searchBox: {
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 17,
     backgroundColor: colors.surface,
     paddingHorizontal: 14,
   },
+
   searchInput: {
     flex: 1,
-    minHeight: 48,
+    minHeight: 50,
     marginHorizontal: 9,
     paddingVertical: 0,
     color: colors.text,
     fontSize: 13,
-    fontWeight: '400',
-    fontStyle: 'normal',
-    letterSpacing: 0,
-    textAlign: 'left',
+    fontWeight: '600',
   },
-  filters: { paddingVertical: 16, paddingRight: 8 },
+
+  clearSearchButton: {
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  filterRow: {
+    paddingTop: 14,
+    paddingBottom: 18,
+    paddingRight: 8,
+  },
+
   filter: {
     minHeight: 38,
     justifyContent: 'center',
@@ -315,70 +517,114 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     paddingHorizontal: 17,
   },
-  filterSelected: { borderColor: colors.primary, backgroundColor: colors.primary },
-  filterText: { color: colors.textMuted, fontSize: 11, fontWeight: '700' },
-  filterTextSelected: { color: colors.white, fontWeight: '900' },
-  group: { marginBottom: 22 },
+
+  filterSelected: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primary,
+  },
+
+  filterText: {
+    color: colors.textMuted,
+    fontSize: 11,
+    fontWeight: '800',
+  },
+
+  filterTextSelected: {
+    color: colors.white,
+    fontWeight: '900',
+  },
+
+  group: {
+    marginBottom: 22,
+  },
+
   groupLabel: {
-  marginBottom: 10,
-  marginLeft: 4,
-  color: colors.textMuted,
-  fontSize: 10,
-  fontWeight: '900',
-  letterSpacing: 0.9,
-},
-  feedCard: {
-  overflow: 'visible',
-  borderWidth: 0,
-  borderColor: 'transparent',
-  borderRadius: 0,
-  backgroundColor: 'transparent',
-  paddingHorizontal: 0,
-  shadowOpacity: 0,
-  shadowRadius: 0,
-  elevation: 0,
-},
-  notificationRow: {
-  minHeight: 104,
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginBottom: 10,
-  borderWidth: 1,
-  borderColor: colors.border,
-  borderRadius: 18,
-  backgroundColor: colors.surface,
-  paddingHorizontal: 14,
-  paddingVertical: 13,
-  shadowColor: colors.primaryDark,
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.04,
-  shadowRadius: 8,
-  elevation: 1,
-},
+    marginBottom: 10,
+    marginLeft: 4,
+    color: colors.textMuted,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
+
+  notificationCard: {
+    minHeight: 112,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+
   notificationUnread: {
-  borderColor: 'rgba(0, 91, 170, 0.22)',
-  backgroundColor: '#F7FBFF',
-},
-  categoryIcon: {
-    width: 40,
-    height: 40,
+    borderColor: 'rgba(0, 91, 170, 0.24)',
+    backgroundColor: '#F7FBFF',
+  },
+
+  notificationIcon: {
+    width: 42,
+    height: 42,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 14,
+    borderRadius: 15,
   },
-  notificationInfo: { flex: 1, marginHorizontal: 12 },
-  notificationMeta: { flexDirection: 'row', alignItems: 'center' },
-  categoryLabel: { fontSize: 8, fontWeight: '900', letterSpacing: 0.4 },
+
+  notificationBody: {
+    flex: 1,
+    marginHorizontal: 12,
+  },
+
+  notificationMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  categoryLabel: {
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.4,
+  },
+
   unreadDot: {
-    width: 6,
-    height: 6,
-    marginLeft: 6,
-    borderRadius: 3,
+    width: 7,
+    height: 7,
+    marginLeft: 7,
+    borderRadius: 4,
     backgroundColor: colors.danger,
   },
-  notificationTitle: { marginTop: 3, color: colors.text, fontSize: 12, fontWeight: '800' },
-  notificationMessage: { marginTop: 3, color: colors.textMuted, fontSize: 10, lineHeight: 15 },
-  notificationDate: { marginTop: 4, color: colors.textMuted, fontSize: 9 },
+
+  notificationTitle: {
+    marginTop: 4,
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '900',
+    lineHeight: 17,
+  },
+
+  notificationMessage: {
+    marginTop: 4,
+    color: colors.textMuted,
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: '600',
+  },
+
+  notificationDate: {
+    marginTop: 6,
+    color: colors.textMuted,
+    fontSize: 10,
+    fontWeight: '600',
+  },
+
   emptyState: {
     alignItems: 'center',
     borderWidth: 1,
@@ -387,6 +633,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     padding: 34,
   },
+
   emptyIcon: {
     width: 58,
     height: 58,
@@ -395,8 +642,22 @@ const styles = StyleSheet.create({
     borderRadius: 29,
     backgroundColor: colors.primarySoft,
   },
-  emptyTitle: { marginTop: 13, color: colors.text, fontSize: 14, fontWeight: '800' },
-  emptyText: { marginTop: 5, textAlign: 'center', color: colors.textMuted, fontSize: 11 },
+
+  emptyTitle: {
+    marginTop: 13,
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '900',
+  },
+
+  emptyText: {
+    marginTop: 5,
+    textAlign: 'center',
+    color: colors.textMuted,
+    fontSize: 11,
+    lineHeight: 16,
+  },
+
   resetButton: {
     marginTop: 16,
     borderRadius: 12,
@@ -404,5 +665,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 10,
   },
-  resetButtonText: { color: colors.white, fontSize: 11, fontWeight: '800' },
+
+  resetButtonText: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: '900',
+  },
 });
