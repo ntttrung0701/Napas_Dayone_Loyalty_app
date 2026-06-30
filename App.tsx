@@ -407,17 +407,15 @@ case 'membership-tier':
     />
   );
       case 'notifications':
-        return (
-          <NotificationsScreen
-            notifications={notifications}
-            transactions={transactions}
-            onBack={goBack}
-            onMarkAllRead={markAllNotificationsRead}
-            onMarkRead={markNotificationRead}
-            onNavigate={navigate}
-            onSelectTransaction={openTransaction}
-          />
-        );
+  return (
+    <NotificationsScreen
+      notifications={notifications}
+      onBack={goBack}
+      onNavigate={navigate}
+      onMarkAllRead={markAllNotificationsRead}
+      onMarkRead={markNotificationRead}
+    />
+  );
 
       case 'profile':
         return (

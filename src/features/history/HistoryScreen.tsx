@@ -1,5 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import type { ComponentProps } from 'react';
 import { useMemo, useState } from 'react';
+
 import {
   Pressable,
   ScrollView,
@@ -17,7 +19,9 @@ import { getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { AppScreen, MainTab, Transaction } from '../../types';
 import { TransactionLedger, type HistoryFilter } from './domain/TransactionLedger';
+import { formatPoints } from '../../utils/format';
 
+type IconName = ComponentProps<typeof Ionicons>['name'];
 type HistoryScreenProps = {
   activeTab?: MainTab;
   transactions: Transaction[];
@@ -75,6 +79,29 @@ export function HistoryScreen({
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.pageTitle}>Lịch sử giao dịch</Text>
+
+        <View style={styles.summaryGrid}>
+  <PointSummaryCard
+    icon="arrow-down-circle-outline"
+    label="Đã tích điểm"
+    value={`+${formatPoints(summary.earned)}`}
+    tone="success"
+  />
+
+  <PointSummaryCard
+    icon="arrow-up-circle-outline"
+    label="Đã sử dụng"
+    value={`-${formatPoints(summary.used)}`}
+    tone="danger"
+  />
+
+  <PointSummaryCard
+    icon="time-outline"
+    label="Đang chờ"
+    value={formatPoints(summary.pending)}
+    tone="warning"
+  />
+</View>
 
         <View style={styles.searchBox}>
           <Ionicons color={colors.textMuted} name="search-outline" size={20} />
@@ -167,6 +194,45 @@ export function HistoryScreen({
     </View>
   );
 }
+function PointSummaryCard({
+  icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: IconName;
+  label: string;
+  value: string;
+  tone: 'success' | 'danger' | 'warning';
+}) {
+  const toneColor = {
+    success: colors.success,
+    danger: colors.danger,
+    warning: colors.warning,
+  }[tone];
+
+  const toneBackground = {
+    success: colors.successSoft,
+    danger: '#FEECEC',
+    warning: colors.warningSoft,
+  }[tone];
+
+  return (
+    <View style={styles.summaryCard}>
+      <View style={[styles.summaryIcon, { backgroundColor: toneBackground }]}>
+        <Ionicons color={toneColor} name={icon} size={18} />
+      </View>
+
+      <Text numberOfLines={1} style={styles.summaryLabel}>
+        {label}
+      </Text>
+
+      <Text numberOfLines={1} style={[styles.summaryValue, { color: toneColor }]}>
+        {value}
+      </Text>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   root: {
@@ -208,6 +274,48 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     textAlign: 'left',
   },
+  summaryGrid: {
+  flexDirection: 'row',
+  gap: 10,
+  marginBottom: 14,
+},
+
+summaryCard: {
+  flex: 1,
+  minHeight: 92,
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 16,
+  backgroundColor: colors.surface,
+  padding: 12,
+  shadowColor: colors.primaryDark,
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.04,
+  shadowRadius: 8,
+  elevation: 1,
+},
+
+summaryIcon: {
+  width: 32,
+  height: 32,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 12,
+},
+
+summaryLabel: {
+  marginTop: 9,
+  color: colors.textMuted,
+  fontSize: 10,
+  fontWeight: '700',
+},
+
+summaryValue: {
+  marginTop: 4,
+  fontSize: 14,
+  fontWeight: '900',
+},
+
   filters: {
     paddingVertical: 16,
     paddingRight: 6,
