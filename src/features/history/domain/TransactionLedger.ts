@@ -3,7 +3,7 @@ import type { Transaction, TransactionKind, TransactionStatus } from '../../../t
 export type HistoryFilter =
   | 'all'
   | 'earned'
-  | 'spent'
+  | 'used'
   | 'redeemed'
   | 'transferred'
   | 'expired'
@@ -54,6 +54,15 @@ export class TransactionRecord {
     return 'GIAO DỊCH THẤT BẠI';
   }
 
+  get isPointRelated(): boolean {
+  if (this.value.kind === 'expiration') return true;
+  if (this.value.kind === 'redemption') return true;
+  if (this.value.kind === 'transfer') return true;
+  if (this.value.kind === 'earn') return true;
+
+  return this.value.points !== 0;
+}
+
   matches(searchQuery: string): boolean {
     const query = TransactionRecord.normalize(searchQuery);
     if (!query) return true;
@@ -62,12 +71,15 @@ export class TransactionRecord {
     ).includes(query);
   }
 
+
   isIncludedIn(filter: HistoryFilter): boolean {
+  if (!this.isPointRelated) return false;
+
   if (filter === 'earned') {
-    return this.value.kind === 'earn' || (this.value.kind === 'transfer' && this.isCredit);
+    return this.value.points > 0;
   }
 
-  if (filter === 'spent') {
+  if (filter === 'used') {
     return this.value.points < 0;
   }
 
@@ -112,6 +124,48 @@ export class TransactionLedger {
       (left, right) => Date.parse(right.occurredAt) - Date.parse(left.occurredAt),
     );
   }
+
+  getSummary() {
+  return this.sortedTransactions.reduce(
+    (summary, transaction) => {
+      const record = new TransactionRecord(transaction);
+
+      if (!record.isPointRelated) return summary;
+
+      if (transaction.status === 'pending') {
+        summary.pending += Math.abs(transaction.points);
+        return summary;
+      }
+
+      if (transaction.status === 'failed') {
+        summary.failed += 1;
+        return summary;
+      }
+
+      if (transaction.kind === 'expiration' || transaction.status === 'expired') {
+        summary.expired += Math.abs(transaction.points);
+        return summary;
+      }
+
+      if (transaction.points > 0) {
+        summary.earned += transaction.points;
+      }
+
+      if (transaction.points < 0) {
+        summary.used += Math.abs(transaction.points);
+      }
+
+      return summary;
+    },
+    {
+      earned: 0,
+      used: 0,
+      pending: 0,
+      expired: 0,
+      failed: 0,
+    },
+  );
+}
 
   query(filter: HistoryFilter, searchQuery = ''): Transaction[] {
     return this.sortedTransactions.filter((transaction) => {

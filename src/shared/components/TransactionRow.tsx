@@ -10,7 +10,7 @@ import { formatPoints } from '../../utils/format';
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
 const kindIcons: Record<Transaction['kind'], IconName> = {
-  earn: 'phone-portrait-outline',
+  earn: 'add-circle-outline',
   redemption: 'gift-outline',
   transfer: 'swap-horizontal-outline',
   expiration: 'calendar-outline',
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     color: colors.success,
   },
   negative: {
-    color: colors.text,
+    color: colors.danger,
   },
   trailing: { width: 82, alignItems: 'flex-end' },
   badge: { marginTop: 5, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3 },

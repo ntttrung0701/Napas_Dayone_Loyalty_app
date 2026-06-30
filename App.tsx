@@ -319,11 +319,12 @@ export default function App() {
       case 'history':
         return (
           <HistoryScreen
-            transactions={transactions}
-            onBack={goBack}
-            onNavigate={navigate}
-            onSelectTransaction={openTransaction}
-          />
+  activeTab="membership"
+  transactions={transactions}
+  onBack={goBack}
+  onNavigate={navigate}
+  onSelectTransaction={openTransaction}
+/>
         );
 
       case 'receipt':

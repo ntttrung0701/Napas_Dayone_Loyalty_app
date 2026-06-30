@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#075da8b8',
     borderWidth: 1,
-    borderColor: colors.white,
+    borderColor: '#ffffffce',
     shadowColor: '#2C2C2C',
     shadowOffset: { width: 1, height: 4 },
     shadowOpacity: 0.7,

@@ -29,8 +29,8 @@ type HistoryScreenProps = {
 const historyFilters: ReadonlyArray<{ id: HistoryFilter; label: string }> = [
   { id: 'all', label: 'Tất cả' },
   { id: 'earned', label: 'Tích điểm' },
-  { id: 'spent', label: 'Tiêu điểm' },
-  { id: 'redeemed', label: 'Đổi điểm' },
+  { id: 'used', label: 'Sử dụng điểm' },
+  { id: 'redeemed', label: 'Đổi voucher' },
   { id: 'transferred', label: 'Chuyển điểm' },
   { id: 'expired', label: 'Hết hạn' },
   { id: 'pending', label: 'Đang chờ' },
@@ -48,6 +48,7 @@ export function HistoryScreen({
   const [selectedFilter, setSelectedFilter] = useState<HistoryFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const ledger = useMemo(() => new TransactionLedger(transactions), [transactions]);
+  const summary = useMemo(() => ledger.getSummary(), [ledger]);
   const groups = useMemo(
     () => ledger.group(ledger.query(selectedFilter, searchQuery)),
     [ledger, searchQuery, selectedFilter],
@@ -60,7 +61,10 @@ export function HistoryScreen({
 
   return (
     <View style={styles.root}>
-      <ScreenHeader onBack={onBack} title="Lịch sử điểm" />
+      <ScreenHeader
+  onBack={onBack}
+  title="Lịch sử điểm"
+/>
 
       <ScrollView
         contentContainerStyle={[
@@ -79,7 +83,7 @@ export function HistoryScreen({
             autoCapitalize="none"
             autoCorrect={false}
             onChangeText={setSearchQuery}
-            placeholder="Nhập mã hoặc tên giao dịch..."
+            placeholder="Tìm theo đối tác , mã giao dịch , loại điểm ,..."
             placeholderTextColor={colors.textMuted}
             style={styles.searchInput}
             value={searchQuery}
