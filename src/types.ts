@@ -8,6 +8,7 @@ export type AppScreen =
   | 'notifications'
   | 'offer-detail'
   | 'payment'
+  | 'payment-invoice-scanner'
   | 'transfer'
   | 'cards'
   | 'history'
