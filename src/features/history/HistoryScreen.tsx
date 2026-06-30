@@ -1,7 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import type { ComponentProps } from 'react';
 import { useMemo, useState } from 'react';
-
 import {
   Pressable,
   ScrollView,
@@ -12,47 +10,35 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BottomNav } from '../../shared/components/BottomNav';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
 import { TransactionRow } from '../../shared/components/TransactionRow';
-import { getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
-import type { AppScreen, MainTab, Transaction } from '../../types';
+import type { Transaction } from '../../types';
 import { TransactionLedger, type HistoryFilter } from './domain/TransactionLedger';
-import { formatPoints } from '../../utils/format';
 
-type IconName = ComponentProps<typeof Ionicons>['name'];
 type HistoryScreenProps = {
-  activeTab?: MainTab;
   transactions: Transaction[];
   onBack: () => void;
-  onNavigate: (screen: AppScreen) => void;
   onSelectTransaction: (transaction: Transaction) => void;
 };
 
 const historyFilters: ReadonlyArray<{ id: HistoryFilter; label: string }> = [
   { id: 'all', label: 'Tất cả' },
   { id: 'earned', label: 'Tích điểm' },
-  { id: 'used', label: 'Sử dụng điểm' },
-  { id: 'redeemed', label: 'Đổi voucher' },
-  { id: 'transferred', label: 'Chuyển điểm' },
-  { id: 'expired', label: 'Hết hạn' },
+  { id: 'redeemed', label: 'Đổi điểm' },
   { id: 'pending', label: 'Đang chờ' },
-  { id: 'failed', label: 'Thất bại' },
+  { id: 'expired', label: 'Hết hạn' },
 ];
 
 export function HistoryScreen({
-  activeTab,
   transactions,
   onBack,
-  onNavigate,
   onSelectTransaction,
 }: HistoryScreenProps) {
   const insets = useSafeAreaInsets();
   const [selectedFilter, setSelectedFilter] = useState<HistoryFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const ledger = useMemo(() => new TransactionLedger(transactions), [transactions]);
-  const summary = useMemo(() => ledger.getSummary(), [ledger]);
   const groups = useMemo(
     () => ledger.group(ledger.query(selectedFilter, searchQuery)),
     [ledger, searchQuery, selectedFilter],
@@ -71,36 +57,12 @@ export function HistoryScreen({
 />
 
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingBottom: getBottomNavOffset(insets.bottom) + 18 },
-        ]}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-
-        <View style={styles.summaryGrid}>
-  <PointSummaryCard
-    icon="arrow-down-circle-outline"
-    label="Đã tích điểm"
-    value={`+${formatPoints(summary.earned)}`}
-    tone="success"
-  />
-
-  <PointSummaryCard
-    icon="arrow-up-circle-outline"
-    label="Đã sử dụng"
-    value={`-${formatPoints(summary.used)}`}
-    tone="danger"
-  />
-
-  <PointSummaryCard
-    icon="time-outline"
-    label="Đang chờ"
-    value={formatPoints(summary.pending)}
-    tone="warning"
-  />
-</View>
+  contentContainerStyle={[
+    styles.content,
+    { paddingBottom: Math.max(insets.bottom, 16) + 24 },
+  ]}
+  showsVerticalScrollIndicator={false}
+>
 
         <View style={styles.searchBox}>
           <Ionicons color={colors.textMuted} name="search-outline" size={20} />
@@ -188,47 +150,6 @@ export function HistoryScreen({
           </View>
         )}
       </ScrollView>
-
-      <BottomNav active={activeTab} onNavigate={onNavigate} />
-    </View>
-  );
-}
-function PointSummaryCard({
-  icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: IconName;
-  label: string;
-  value: string;
-  tone: 'success' | 'danger' | 'warning';
-}) {
-  const toneColor = {
-    success: colors.success,
-    danger: colors.danger,
-    warning: colors.warning,
-  }[tone];
-
-  const toneBackground = {
-    success: colors.successSoft,
-    danger: '#FEECEC',
-    warning: colors.warningSoft,
-  }[tone];
-
-  return (
-    <View style={styles.summaryCard}>
-      <View style={[styles.summaryIcon, { backgroundColor: toneBackground }]}>
-        <Ionicons color={toneColor} name={icon} size={18} />
-      </View>
-
-      <Text numberOfLines={1} style={styles.summaryLabel}>
-        {label}
-      </Text>
-
-      <Text numberOfLines={1} style={[styles.summaryValue, { color: toneColor }]}>
-        {value}
-      </Text>
     </View>
   );
 }
@@ -244,12 +165,6 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 18,
     paddingTop: 20,
-  },
-  pageTitle: {
-    marginBottom: 12,
-    color: colors.primaryDark,
-    fontSize: 20,
-    fontWeight: '900',
   },
   searchBox: {
     minHeight: 50,
@@ -273,48 +188,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     textAlign: 'left',
   },
-  summaryGrid: {
-  flexDirection: 'row',
-  gap: 10,
-  marginBottom: 14,
-},
-
-summaryCard: {
-  flex: 1,
-  minHeight: 92,
-  borderWidth: 1,
-  borderColor: colors.border,
-  borderRadius: 16,
-  backgroundColor: colors.surface,
-  padding: 12,
-  shadowColor: colors.primaryDark,
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.04,
-  shadowRadius: 8,
-  elevation: 1,
-},
-
-summaryIcon: {
-  width: 32,
-  height: 32,
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: 12,
-},
-
-summaryLabel: {
-  marginTop: 9,
-  color: colors.textMuted,
-  fontSize: 10,
-  fontWeight: '700',
-},
-
-summaryValue: {
-  marginTop: 4,
-  fontSize: 14,
-  fontWeight: '900',
-},
-
+  
   filters: {
     paddingVertical: 16,
     paddingRight: 6,

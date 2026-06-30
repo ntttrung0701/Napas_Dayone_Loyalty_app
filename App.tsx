@@ -317,15 +317,13 @@ export default function App() {
         return <CardsScreen onBack={goBack} />;
 
       case 'history':
-        return (
-          <HistoryScreen
-  activeTab="membership"
-  transactions={transactions}
-  onBack={goBack}
-  onNavigate={navigate}
-  onSelectTransaction={openTransaction}
-/>
-        );
+  return (
+    <HistoryScreen
+      transactions={transactions}
+      onBack={goBack}
+      onSelectTransaction={openTransaction}
+    />
+  );
 
       case 'receipt':
   return (

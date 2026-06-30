@@ -3,12 +3,9 @@ import type { Transaction, TransactionKind, TransactionStatus } from '../../../t
 export type HistoryFilter =
   | 'all'
   | 'earned'
-  | 'used'
   | 'redeemed'
-  | 'transferred'
-  | 'expired'
   | 'pending'
-  | 'failed';
+  | 'expired';
 
 
 export type TransactionGroup = {
@@ -22,7 +19,7 @@ const kindLabels: Record<TransactionKind, string> = {
   redemption: 'Đổi điểm',
   transfer: 'Chuyển điểm',
   expiration: 'Điểm hết hạn',
-  payment: 'Thanh toán',
+  payment: 'Điểm từ thanh toán',
 };
 
 const statusLabels: Record<TransactionStatus, string> = {
@@ -76,31 +73,19 @@ export class TransactionRecord {
   if (!this.isPointRelated) return false;
 
   if (filter === 'earned') {
-    return this.value.points > 0;
-  }
-
-  if (filter === 'used') {
-    return this.value.points < 0;
+    return this.value.points > 0 && this.value.status !== 'pending';
   }
 
   if (filter === 'redeemed') {
     return this.value.kind === 'redemption';
   }
 
-  if (filter === 'transferred') {
-    return this.value.kind === 'transfer';
-  }
-
-  if (filter === 'expired') {
-    return this.value.kind === 'expiration' || this.value.status === 'expired';
-  }
-
   if (filter === 'pending') {
     return this.value.status === 'pending';
   }
 
-  if (filter === 'failed') {
-    return this.value.status === 'failed';
+  if (filter === 'expired') {
+    return this.value.kind === 'expiration' || this.value.status === 'expired';
   }
 
   return true;
