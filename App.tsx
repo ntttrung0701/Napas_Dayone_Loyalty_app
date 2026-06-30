@@ -18,6 +18,7 @@ import { TransactionFactory } from './src/features/history/domain/TransactionFac
 import { TransactionDetailScreen } from './src/features/history/TransactionDetailScreen';
 import { HomeScreen } from './src/features/home/HomeScreen';
 import { NotificationsScreen } from './src/features/notifications/NotificationsScreen';
+import { NotificationFactory } from './src/features/notifications/domain/NotificationFactory';
 import { OnboardingScreen } from './src/features/onboarding/OnboardingScreen';
 import { OfferDetailScreen } from './src/features/offers/OfferDetailScreen';
 import { OffersScreen } from './src/features/offers/OffersScreen';
@@ -67,6 +68,26 @@ function capFontScale(component: ScalableComponent) {
 
 capFontScale(Text as ScalableComponent);
 capFontScale(TextInput as ScalableComponent);
+
+function resolvePaymentNotificationTitle(receipt: Receipt) {
+  if (receipt.status === 'pending') return 'Thanh toán đang xử lý';
+  if (receipt.status === 'failed') return 'Thanh toán không thành công';
+  return 'Thanh toán Loyalty thành công';
+}
+
+function resolvePaymentNotificationMessage(receipt: Receipt) {
+  if (receipt.status === 'pending') {
+    return `${receipt.merchant} đang xử lý giao dịch qua ${receipt.paymentChannel ?? 'POS/Merchant'}.`;
+  }
+
+  if (receipt.status === 'failed') {
+    return receipt.failureReason ?? 'Giao dịch bị từ chối. Điểm/voucher không bị trừ vĩnh viễn.';
+  }
+
+  return `Giao dịch tại ${receipt.merchant} đã hoàn tất. ${
+    receipt.pointsEarned ? `Bạn được cộng ${receipt.pointsEarned.toLocaleString('vi-VN')} điểm.` : ''
+  }`;
+}
 
 export default function App() {
   const [navigation, setNavigation] = useState(() => NavigationStack.start(initialRoute));
@@ -192,16 +213,65 @@ export default function App() {
   };
 
   const completePayment = (nextReceipt: Receipt) => {
-    setPoints((current) => current - nextReceipt.pointsUsed);
+    const status = nextReceipt.status ?? 'success';
+    const pointsEarned = nextReceipt.pointsEarned ?? 0;
+
+    if (status === 'success') {
+      setPoints((current) => current - nextReceipt.pointsUsed + pointsEarned);
+    }
+
     setReceipt(nextReceipt);
 
-    setTransactions((current) => [
-      TransactionFactory.fromReceipt(nextReceipt, {
-        title: `Thanh toán ${nextReceipt.merchant}`,
-        subtitle: 'Thanh toán hỗn hợp',
-        kind: 'payment',
-        points: -nextReceipt.pointsUsed,
-        source: nextReceipt.merchant,
+    setTransactions((current) => {
+      if (status === 'failed') return current;
+
+      const nextTransactions: Transaction[] = [];
+
+      if (nextReceipt.pointsUsed > 0) {
+        nextTransactions.push(
+          TransactionFactory.fromReceipt(
+            { ...nextReceipt, id: `${nextReceipt.id}-USE` },
+            {
+              title:
+                status === 'pending'
+                  ? `Giữ điểm thanh toán ${nextReceipt.merchant}`
+                  : `Dùng điểm thanh toán ${nextReceipt.merchant}`,
+              subtitle:
+                status === 'pending'
+                  ? 'Điểm đang chờ POS/Merchant xử lý'
+                  : 'Trừ điểm Loyalty',
+              kind: 'payment',
+              points: -nextReceipt.pointsUsed,
+              source: nextReceipt.merchant,
+              status,
+            },
+          ),
+        );
+      }
+
+      if (status === 'success' && pointsEarned > 0) {
+        nextTransactions.push(
+          TransactionFactory.fromReceipt(
+            { ...nextReceipt, id: `${nextReceipt.id}-EARN` },
+            {
+              title: `Cộng điểm từ thanh toán ${nextReceipt.merchant}`,
+              subtitle: 'Điểm thưởng sau thanh toán',
+              kind: 'earn',
+              points: pointsEarned,
+              source: nextReceipt.merchant,
+              status: 'success',
+            },
+          ),
+        );
+      }
+
+      return [...nextTransactions, ...current];
+    });
+
+    setNotifications((current) => [
+      NotificationFactory.fromReceipt(nextReceipt, {
+        title: resolvePaymentNotificationTitle(nextReceipt),
+        message: resolvePaymentNotificationMessage(nextReceipt),
       }),
       ...current,
     ]);

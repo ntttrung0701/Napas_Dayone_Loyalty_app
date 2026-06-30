@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useMemo } from 'react';
+import { useMemo, type ComponentProps } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
 import { PrimaryButton } from '../../shared/components/PrimaryButton';
@@ -8,6 +8,8 @@ import { getScreenBottomPadding } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { Receipt, UserVoucher } from '../../types';
 import { formatCurrency, formatPoints } from '../../utils/format';
+
+type ReceiptIconName = ComponentProps<typeof Ionicons>['name'];
 
 type ReceiptScreenProps = {
   receipt: Receipt | null;
@@ -41,6 +43,59 @@ function getVoucherStatusLabel(voucher: UserVoucher) {
   return 'Còn hiệu lực';
 }
 
+function resolveReceiptPresentation(receipt: Receipt | null): {
+  icon: ReceiptIconName;
+  iconStyle?: object;
+  statusLabel: string;
+  title: string;
+  totalLabel: string;
+} {
+  if (!receipt) {
+    return {
+      icon: 'document-text-outline',
+      statusLabel: '',
+      title: 'Chưa có biên lai',
+      totalLabel: '',
+    };
+  }
+
+  if (receipt.kind === 'payment') {
+    if (receipt.status === 'pending') {
+      return {
+        icon: 'time-outline',
+        iconStyle: styles.pendingIcon,
+        statusLabel: 'Đang xử lý',
+        title: 'Thanh toán đang xử lý',
+        totalLabel: 'TIỀN ĐANG CHỜ XỬ LÝ',
+      };
+    }
+
+    if (receipt.status === 'failed') {
+      return {
+        icon: 'close-outline',
+        iconStyle: styles.failedIcon,
+        statusLabel: 'Thất bại',
+        title: 'Thanh toán không thành công',
+        totalLabel: 'CHƯA THANH TOÁN',
+      };
+    }
+
+    return {
+      icon: 'checkmark',
+      statusLabel: 'Thành công',
+      title: 'Thanh toán thành công',
+      totalLabel: 'ĐÃ THANH TOÁN',
+    };
+  }
+
+  return {
+    icon: 'checkmark',
+    statusLabel: 'Thành công',
+    title: receipt.kind === 'transfer' ? 'Tặng điểm thành công' : 'Đổi ưu đãi thành công',
+    totalLabel: 'ĐIỂM ĐÃ DÙNG',
+  };
+}
+
 export function ReceiptScreen({
   receipt,
   onHome,
@@ -48,6 +103,7 @@ export function ReceiptScreen({
 }: ReceiptScreenProps) {
   const insets = useSafeAreaInsets();
   const isPayment = receipt?.kind === 'payment';
+  const statusPresentation = resolveReceiptPresentation(receipt);
   const voucher = receipt?.kind === 'redemption' ? receipt.voucher : undefined;
   const voucherQrValue = useMemo(
     () => (voucher ? JSON.stringify(createVoucherQrPayload(voucher)) : ''),
@@ -73,16 +129,10 @@ const voucherUnavailable = voucher ? voucher.status !== 'active' || isVoucherExp
       ]}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.successIcon}>
-        <Ionicons color={colors.white} name="checkmark" size={40} />
+      <View style={[styles.successIcon, statusPresentation.iconStyle]}>
+        <Ionicons color={colors.white} name={statusPresentation.icon} size={40} />
       </View>
-      <Text style={styles.successTitle}>
-        {isPayment
-          ? 'Thanh toán thành công'
-          : receipt.kind === 'transfer'
-            ? 'Tặng điểm thành công'
-            : 'Đổi ưu đãi thành công'}
-      </Text>
+      <Text style={styles.successTitle}>{statusPresentation.title}</Text>
       <Text style={styles.successSubtitle}>{receipt.createdAt}</Text>
       
       {voucher ? (
@@ -133,6 +183,12 @@ const voucherUnavailable = voucher ? voucher.status !== 'active' || isVoucherExp
         <ReceiptRow label="Đơn vị" value={receipt.merchant} />
         <ReceiptRow label="Nội dung" value={receipt.title} />
         <ReceiptRow label="Mã giao dịch" value={receipt.id} />
+        {isPayment && receipt.status ? (
+          <ReceiptRow label="Trạng thái" value={statusPresentation.statusLabel} />
+        ) : null}
+        {isPayment && receipt.paymentChannel ? (
+          <ReceiptRow label="Kênh xử lý" value={receipt.paymentChannel} />
+        ) : null}
 
         {voucher ? (
   <>
@@ -148,8 +204,14 @@ const voucherUnavailable = voucher ? voucher.status !== 'active' || isVoucherExp
             <ReceiptRow label="Hóa đơn" value={formatCurrency(receipt.originalAmount)} />
             <ReceiptRow label="Voucher" value={`-${formatCurrency(receipt.voucherDiscount)}`} />
             <ReceiptRow label="Điểm đã dùng" value={`${formatPoints(receipt.pointsUsed)} pts`} />
+            {receipt.pointsEarned ? (
+              <ReceiptRow label="Điểm dự kiến/cộng" value={`+${formatPoints(receipt.pointsEarned)} pts`} />
+            ) : null}
+            {receipt.failureReason ? (
+              <ReceiptRow label="Lý do" value={receipt.failureReason} />
+            ) : null}
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>ĐÃ THANH TOÁN</Text>
+              <Text style={styles.totalLabel}>{statusPresentation.totalLabel}</Text>
               <Text style={styles.totalValue}>{formatCurrency(receipt.cashAmount)}</Text>
             </View>
           </>
@@ -218,6 +280,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.24,
     shadowRadius: 12,
     elevation: 6,
+  },
+  pendingIcon: {
+    backgroundColor: colors.warning,
+    shadowColor: colors.warning,
+  },
+  failedIcon: {
+    backgroundColor: colors.danger,
+    shadowColor: colors.danger,
   },
   successTitle: {
     marginTop: 20,

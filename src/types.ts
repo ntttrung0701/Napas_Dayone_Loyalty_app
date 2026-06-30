@@ -77,6 +77,18 @@ export type TransactionKind = 'earn' | 'redemption' | 'transfer' | 'expiration' 
 
 export type TransactionStatus = 'success' | 'pending' | 'expired' | 'failed';
 
+export type PaymentChannel = 'pos' | 'qr' | 'ecom';
+
+export type PaymentStatus = 'draft' | 'pending' | 'success' | 'failed' | 'cancelled';
+
+export type PaymentReceiptStatus = Extract<PaymentStatus, 'pending' | 'success' | 'failed'>;
+
+export type PaymentProcessingChannel = {
+  id: PaymentChannel;
+  label: string;
+  description: string;
+};
+
 export type TransactionTimelineStep = {
   id: string;
   time: string;
@@ -109,6 +121,13 @@ export type Receipt = {
   pointsUsed: number;
   cashAmount: number;
   createdAt: string;
+  status?: PaymentReceiptStatus;
+  transactionId?: string;
+  occurredAt?: string;
+  invoiceCode?: string;
+  paymentChannel?: string;
+  pointsEarned?: number;
+  failureReason?: string;
   voucher?: UserVoucher;
 };
 

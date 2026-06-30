@@ -1,4 +1,4 @@
-import type { Receipt, Transaction, TransactionKind } from '../../../types';
+import type { Receipt, Transaction, TransactionKind, TransactionStatus } from '../../../types';
 
 type ReceiptTransactionOptions = {
   title: string;
@@ -6,11 +6,13 @@ type ReceiptTransactionOptions = {
   kind: TransactionKind;
   points: number;
   source: string;
+  status?: TransactionStatus;
 };
 
 export class TransactionFactory {
   static fromReceipt(receipt: Receipt, options: ReceiptTransactionOptions): Transaction {
-    const occurredAt = new Date().toISOString();
+    const status = options.status ?? receipt.status ?? 'success';
+    const occurredAt = receipt.occurredAt ?? new Date().toISOString();
     const time = new Intl.DateTimeFormat('vi-VN', {
       hour: '2-digit',
       minute: '2-digit',
@@ -25,7 +27,7 @@ export class TransactionFactory {
       occurredAt,
       points: options.points,
       kind: options.kind,
-      status: 'success',
+      status,
       source: options.source,
       amount: receipt.originalAmount,
       pointRule: this.resolvePointRule(options.kind, options.points, options.source),
@@ -33,14 +35,14 @@ export class TransactionFactory {
         {
           id: `${receipt.id}-completed`,
           time,
-          title: 'Giao dịch hoàn tất',
-          description: 'Hệ thống Napas DayOne đã xử lý giao dịch thành công.',
+          title: this.resolveTimelineTitle(status),
+          description: this.resolveTimelineDescription(status),
         },
         {
           id: `${receipt.id}-points`,
           time,
-          title: options.points >= 0 ? 'Cộng điểm thành công' : 'Cập nhật điểm thành công',
-          description: 'Số dư và lịch sử điểm đã được cập nhật.',
+          title: this.resolvePointTimelineTitle(status, options.points),
+          description: this.resolvePointTimelineDescription(status),
         },
       ],
     };
@@ -73,4 +75,40 @@ export class TransactionFactory {
 
   return 'Cập nhật điểm theo quy tắc chương trình Loyalty.';
 }
+
+  private static resolveTimelineTitle(status: TransactionStatus): string {
+    if (status === 'pending') return 'Giao dịch đang chờ xử lý';
+    if (status === 'failed') return 'Giao dịch thất bại';
+    return 'Giao dịch hoàn tất';
+  }
+
+  private static resolveTimelineDescription(status: TransactionStatus): string {
+    if (status === 'pending') {
+      return 'POS/Merchant đang xử lý hoặc chờ đối soát kết quả thanh toán.';
+    }
+
+    if (status === 'failed') {
+      return 'Giao dịch không thành công; điểm/voucher không bị trừ vĩnh viễn.';
+    }
+
+    return 'Hệ thống Napas DayOne đã xử lý giao dịch thành công.';
+  }
+
+  private static resolvePointTimelineTitle(status: TransactionStatus, points: number): string {
+    if (status === 'pending') return 'Điểm đang chờ xử lý';
+    if (status === 'failed') return 'Điểm không bị trừ';
+    return points >= 0 ? 'Cộng điểm thành công' : 'Cập nhật điểm thành công';
+  }
+
+  private static resolvePointTimelineDescription(status: TransactionStatus): string {
+    if (status === 'pending') {
+      return 'Điểm đang ở trạng thái chờ cho tới khi POS/Merchant trả kết quả cuối cùng.';
+    }
+
+    if (status === 'failed') {
+      return 'Giao dịch thất bại nên điểm không bị trừ khỏi số dư khả dụng.';
+    }
+
+    return 'Số dư và lịch sử điểm đã được cập nhật.';
+  }
 }
