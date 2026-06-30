@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps, ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import {
+  ImageBackground,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -29,7 +30,7 @@ type PaymentFlowScreenProps = {
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 type PaymentStep = 'lookup' | 'setup' | 'confirm';
-type PaymentMethodId = 'napas-card' | 'dayone-wallet';
+type PaymentMethodId = 'partner-bank' | 'wallet-gateway';
 type InvoiceSource = 'manual' | 'qr-demo' | 'suggested';
 
 type LoyaltyPaymentInvoice = {
@@ -53,18 +54,18 @@ type LoyaltyPaymentVoucher = {
   title: string;
 };
 
-type LinkedPaymentMethod = {
+type PartnerPaymentMethod = {
   id: PaymentMethodId;
   accent: string;
   background: string;
   description: string;
   icon: IconName;
-  maskedAccount: string;
   name: string;
+  tokenAlias: string;
 };
 
 type PaymentConfiguration = {
-  method: LinkedPaymentMethod;
+  method: PartnerPaymentMethod;
   pointsRequested: number;
   voucher: LoyaltyPaymentVoucher | null;
 };
@@ -74,6 +75,7 @@ const OTP_LENGTH = 6;
 const POINT_TO_VND_RATE = 1;
 const MAX_POINTS_PER_PAYMENT = 80_000;
 const DEFAULT_INVOICE_CODE = 'HD-WM-24062026';
+const paymentHeroBackground = require('../../../assets/Card.png');
 
 const mockInvoices: LoyaltyPaymentInvoice[] = [
   {
@@ -130,24 +132,24 @@ const mockVouchers: LoyaltyPaymentVoucher[] = [
   },
 ];
 
-const linkedPaymentMethods: LinkedPaymentMethod[] = [
+const partnerPaymentMethods: PartnerPaymentMethod[] = [
   {
-    id: 'napas-card',
+    id: 'partner-bank',
     accent: colors.primary,
     background: colors.primarySoft,
-    description: 'Phương thức mặc định',
-    icon: 'card-outline',
-    maskedAccount: 'Vietcombank •••• 8839',
-    name: 'Napas Debit',
+    description: 'Gửi yêu cầu thanh toán phần tiền còn lại qua API đối tác.',
+    icon: 'business-outline',
+    name: 'Ngân hàng đối tác qua NAPAS',
+    tokenAlias: 'Payment token •••• NPS-8839',
   },
   {
-    id: 'dayone-wallet',
+    id: 'wallet-gateway',
     accent: colors.purple,
     background: '#F1EFFF',
-    description: 'Thanh toán phần tiền còn lại',
+    description: 'Điều hướng xử lý tiền qua ví/cổng thanh toán đã xác minh.',
     icon: 'wallet-outline',
-    maskedAccount: 'Ví điện tử đã liên kết',
-    name: 'Ví DayOne',
+    name: 'Ví / cổng thanh toán đối tác',
+    tokenAlias: 'Gateway token •••• WLT-1028',
   },
 ];
 
@@ -171,6 +173,22 @@ class PaymentInvoiceCatalog {
 
   get qrInvoice() {
     return this.invoices.find((invoice) => invoice.source === 'qr-demo') ?? this.suggestedInvoice;
+  }
+}
+
+class PartnerPaymentMethodDirectory {
+  constructor(private readonly methods: readonly PartnerPaymentMethod[]) {}
+
+  find(methodId: PaymentMethodId) {
+    return this.methods.find((method) => method.id === methodId) ?? this.defaultMethod;
+  }
+
+  get all() {
+    return this.methods;
+  }
+
+  get defaultMethod() {
+    return this.methods[0]!;
   }
 }
 
@@ -260,13 +278,17 @@ class LoyaltyPaymentReceiptFactory {
 export function PaymentFlowScreen({ points, onBack, onComplete }: PaymentFlowScreenProps) {
   const insets = useSafeAreaInsets();
   const catalog = useMemo(() => new PaymentInvoiceCatalog(mockInvoices), []);
+  const methodDirectory = useMemo(
+    () => new PartnerPaymentMethodDirectory(partnerPaymentMethods),
+    [],
+  );
   const otpVerifier = useMemo(() => new PaymentOtpVerifier(), []);
 
   const [step, setStep] = useState<PaymentStep>('lookup');
   const [invoiceCode, setInvoiceCode] = useState(DEFAULT_INVOICE_CODE);
   const [invoice, setInvoice] = useState<LoyaltyPaymentInvoice | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
-  const [selectedMethodId, setSelectedMethodId] = useState<PaymentMethodId>('napas-card');
+  const [selectedMethodId, setSelectedMethodId] = useState<PaymentMethodId>('partner-bank');
   const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(mockVouchers[0]?.id ?? null);
   const [selectedPoints, setSelectedPoints] = useState(Math.min(points, 50_000));
   const [otpVisible, setOtpVisible] = useState(false);
@@ -274,8 +296,7 @@ export function PaymentFlowScreen({ points, onBack, onComplete }: PaymentFlowScr
   const [otpError, setOtpError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
 
-  const selectedMethod =
-    linkedPaymentMethods.find((method) => method.id === selectedMethodId) ?? linkedPaymentMethods[0]!;
+  const selectedMethod = methodDirectory.find(selectedMethodId);
   const selectedVoucher = mockVouchers.find((voucher) => voucher.id === selectedVoucherId) ?? null;
   const config = useMemo<PaymentConfiguration>(
     () => ({
@@ -378,6 +399,7 @@ export function PaymentFlowScreen({ points, onBack, onComplete }: PaymentFlowScr
           <InvoiceLookupStep
             invoiceCode={invoiceCode}
             lookupError={lookupError}
+            points={points}
             onChangeInvoiceCode={setInvoiceCode}
             onLookup={lookupManualInvoice}
             onQrLookup={lookupQrInvoice}
@@ -393,6 +415,7 @@ export function PaymentFlowScreen({ points, onBack, onComplete }: PaymentFlowScr
             earnedPoints={earnedPoints}
             invoice={invoice}
             maxUsablePoints={maxUsablePoints}
+            paymentMethods={methodDirectory.all}
             pointOptions={pointOptions}
             points={points}
             pointsUsed={pointsUsed}
@@ -476,9 +499,100 @@ function PaymentProgress({ activeIndex }: { activeIndex: number }) {
   );
 }
 
+function PaymentHeroCard({ points }: { points: number }) {
+  return (
+    <View style={styles.paymentHeroShadow}>
+      <ImageBackground
+        imageStyle={styles.paymentHeroImage}
+        resizeMode="cover"
+        source={paymentHeroBackground}
+        style={styles.paymentHero}
+      >
+        <View style={styles.paymentHeroTop}>
+          <View>
+            <Text style={styles.paymentHeroLabel}>THANH TOÁN LOYALTY</Text>
+            <Text style={styles.paymentHeroTitle}>Tìm hóa đơn hoặc quét QR tại quầy</Text>
+          </View>
+          <View style={styles.paymentHeroBadge}>
+            <Ionicons color={colors.white} name="shield-checkmark-outline" size={15} />
+            <Text style={styles.paymentHeroBadgeText}>BẢO MẬT</Text>
+          </View>
+        </View>
+
+        <View style={styles.paymentHeroDivider} />
+
+        <View style={styles.paymentHeroMetrics}>
+          <HeroMetric
+            icon="sparkles-outline"
+            label="Điểm khả dụng"
+            value={`${formatPoints(points)} pts`}
+          />
+          <HeroMetric
+            icon="qr-code-outline"
+            label="Hóa đơn/POS"
+            value="QR hoặc mã"
+          />
+          <HeroMetric
+            icon="key-outline"
+            label="Thanh toán"
+            value="Token API"
+          />
+        </View>
+      </ImageBackground>
+    </View>
+  );
+}
+
+function HeroMetric({
+  icon,
+  label,
+  value,
+}: {
+  icon: IconName;
+  label: string;
+  value: string;
+}) {
+  return (
+    <View style={styles.heroMetric}>
+      <View style={styles.heroMetricIcon}>
+        <Ionicons color={colors.white} name={icon} size={17} />
+      </View>
+      <View style={styles.heroMetricCopy}>
+        <Text style={styles.heroMetricLabel}>{label}</Text>
+        <Text numberOfLines={1} style={styles.heroMetricValue}>
+          {value}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function PaymentSafetyNote({
+  icon,
+  text,
+  title,
+}: {
+  icon: IconName;
+  text: string;
+  title: string;
+}) {
+  return (
+    <View style={styles.safetyNote}>
+      <View style={styles.safetyIcon}>
+        <Ionicons color={colors.primary} name={icon} size={18} />
+      </View>
+      <View style={styles.safetyCopy}>
+        <Text style={styles.safetyTitle}>{title}</Text>
+        <Text style={styles.safetyText}>{text}</Text>
+      </View>
+    </View>
+  );
+}
+
 function InvoiceLookupStep({
   invoiceCode,
   lookupError,
+  points,
   onChangeInvoiceCode,
   onLookup,
   onQrLookup,
@@ -486,6 +600,7 @@ function InvoiceLookupStep({
 }: {
   invoiceCode: string;
   lookupError: string | null;
+  points: number;
   onChangeInvoiceCode: (value: string) => void;
   onLookup: () => void;
   onQrLookup: () => void;
@@ -493,24 +608,13 @@ function InvoiceLookupStep({
 }) {
   return (
     <>
-      <View style={styles.bankHero}>
-        <View style={styles.bankIcon}>
-          <Ionicons color={colors.white} name="receipt-outline" size={28} />
-        </View>
-        <View style={styles.bankHeroCopy}>
-          <Text style={styles.bankHeroLabel}>THANH TOÁN HÓA ĐƠN</Text>
-          <Text style={styles.bankHeroTitle}>Nhập mã hóa đơn hoặc quét QR tại quầy</Text>
-          <Text style={styles.bankHeroText}>
-            Demo frontend dùng hóa đơn mock, chưa kết nối POS/API thật.
-          </Text>
-        </View>
-      </View>
+      <PaymentHeroCard points={points} />
 
       <View style={styles.sectionCard}>
         <SectionTitle
           icon="search-outline"
-          subtitle="Nhập mã hóa đơn do thu ngân/POS cung cấp"
-          title="Tìm hóa đơn"
+          subtitle="Nhập mã từ POS/cổng thanh toán hoặc dùng QR demo của merchant"
+          title="Tìm hoặc nhập hóa đơn"
         />
         <View style={styles.invoiceInputBox}>
           <Ionicons color={colors.textMuted} name="document-text-outline" size={19} />
@@ -530,24 +634,50 @@ function InvoiceLookupStep({
             <Text style={styles.errorText}>{lookupError}</Text>
           </View>
         ) : null}
-        <PrimaryButton label="Tra cứu hóa đơn" onPress={onLookup} />
+        <PrimaryButton label="Tiếp tục với hóa đơn này" onPress={onLookup} />
       </View>
 
       <View style={styles.lookupActions}>
         <LookupAction
           icon="qr-code-outline"
-          label="Quét QR hóa đơn"
-          note="Mô phỏng quét QR tại quầy"
+          label="Quét QR tại quầy"
+          note="Mô phỏng nhận dữ liệu QR từ POS"
           onPress={onQrLookup}
         />
         <LookupAction
           icon="flash-outline"
           label="Dùng hóa đơn mẫu"
-          note="Tải nhanh đơn WinMart"
+          note="Demo merchant WinMart"
           onPress={onUseSuggested}
         />
       </View>
+
+      <PaymentSafetyNote
+        icon="shield-checkmark-outline"
+        text="Ứng dụng chỉ mô phỏng payment token/masked alias. Số thẻ hoặc số tài khoản thật được xác minh ở ngân hàng/ví và không nhập vào app."
+        title="Nguyên tắc dữ liệu thanh toán"
+      />
     </>
+  );
+}
+
+function ExecutionStep({
+  icon,
+  label,
+  value,
+}: {
+  icon: IconName;
+  label: string;
+  value: string;
+}) {
+  return (
+    <View style={styles.executionRow}>
+      <View style={styles.executionIcon}>
+        <Ionicons color={colors.primary} name={icon} size={17} />
+      </View>
+      <Text style={styles.executionLabel}>{label}</Text>
+      <Text style={styles.executionValue}>{value}</Text>
+    </View>
   );
 }
 
@@ -558,6 +688,7 @@ function PaymentSetupStep({
   earnedPoints,
   invoice,
   maxUsablePoints,
+  paymentMethods,
   pointOptions,
   points,
   pointsUsed,
@@ -574,6 +705,7 @@ function PaymentSetupStep({
   earnedPoints: number;
   invoice: LoyaltyPaymentInvoice;
   maxUsablePoints: number;
+  paymentMethods: readonly PartnerPaymentMethod[];
   pointOptions: number[];
   points: number;
   pointsUsed: number;
@@ -590,23 +722,29 @@ function PaymentSetupStep({
 
       <View style={styles.sectionCard}>
         <SectionTitle
-          icon="card-outline"
-          subtitle="Chọn nguồn thanh toán phần tiền còn lại"
-          title="Phương thức liên kết"
+          icon="swap-horizontal-outline"
+          subtitle="Chọn payment token đã xác minh để xử lý phần tiền còn lại"
+          title="Kênh thanh toán đối tác"
         />
-        {linkedPaymentMethods.map((method) => (
+        {paymentMethods.map((method) => (
           <SelectableRow
             key={method.id}
             accent={method.accent}
             background={method.background}
             icon={method.icon}
             selected={selectedMethodId === method.id}
-            subtitle={`${method.maskedAccount} • ${method.description}`}
+            subtitle={`${method.tokenAlias} • ${method.description}`}
             title={method.name}
             onPress={() => onSelectMethod(method.id)}
           />
         ))}
       </View>
+
+      <PaymentSafetyNote
+        icon="key-outline"
+        text="Payment token dùng để gọi API đối tác trong bản demo. App Loyalty không thu thập PAN/số tài khoản thô."
+        title="Token hóa phương thức thanh toán"
+      />
 
       <View style={styles.sectionCard}>
         <SectionTitle
@@ -711,17 +849,35 @@ function PaymentConfirmStep({
         </View>
         <Text style={styles.confirmTitle}>Xác nhận thanh toán?</Text>
         <Text style={styles.confirmText}>
-          Vui lòng kiểm tra lại hóa đơn, phương thức, voucher và điểm sử dụng trước khi nhập OTP.
+          Hệ thống sẽ xác thực OTP/MFA, giữ điểm Loyalty và gửi phần tiền còn lại qua API đối tác.
         </Text>
       </View>
 
       <InvoicePreviewCard invoice={invoice} compact />
 
       <View style={styles.sectionCard}>
-        <InfoRow label="Phương thức" value={`${config.method.name} • ${config.method.maskedAccount}`} />
+        <InfoRow label="Kênh xử lý tiền" value={`${config.method.name} • ${config.method.tokenAlias}`} />
         <InfoRow label="Mã giảm giá" value={config.voucher?.title ?? 'Không áp dụng'} />
         <InfoRow label="Điểm sử dụng" value={`${formatPoints(pointsUsed)} pts`} />
         <InfoRow label="Tiền cần trả" strong value={formatCurrency(cashAmount)} />
+      </View>
+
+      <View style={styles.executionCard}>
+        <ExecutionStep
+          icon="sparkles-outline"
+          label="Giữ / khấu trừ điểm Loyalty"
+          value={`${formatPoints(pointsUsed)} pts`}
+        />
+        <ExecutionStep
+          icon="cloud-upload-outline"
+          label="Gửi yêu cầu tiền qua API đối tác"
+          value={formatCurrency(cashAmount)}
+        />
+        <ExecutionStep
+          icon="receipt-outline"
+          label="Chốt mã giao dịch chung"
+          value="Idempotency demo"
+        />
       </View>
 
       <PaymentSummaryCard
@@ -857,6 +1013,7 @@ function InvoicePreviewCard({
 function PaymentSummaryCard({
   calculator,
   cashAmount,
+  config,
   earnedPoints,
   invoice,
   points,
@@ -873,6 +1030,7 @@ function PaymentSummaryCard({
   return (
     <View style={styles.summaryCard}>
       <Text style={styles.summaryTitle}>Tóm tắt thanh toán</Text>
+      <SummaryRow label="Kênh xử lý tiền" value={config.method.name} valueColor="#B8D4E8" />
       <SummaryRow label="Giá trị hóa đơn" value={formatCurrency(invoice.amount)} />
       <SummaryRow
         label="Voucher / mã giảm giá"
@@ -1056,31 +1214,97 @@ const styles = StyleSheet.create({
   progressNumberActive: { color: colors.white },
   progressLabel: { marginTop: 6, color: colors.textMuted, fontSize: 9, fontWeight: '800' },
   progressLabelActive: { color: colors.primary },
-  bankHero: {
-    flexDirection: 'row',
-    overflow: 'hidden',
+  paymentHeroShadow: {
     marginBottom: 16,
-    borderRadius: 24,
-    backgroundColor: colors.primaryDark,
-    padding: 18,
     shadowColor: colors.primaryDark,
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.14,
-    shadowRadius: 18,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.2,
+    shadowRadius: 22,
+    elevation: 7,
   },
-  bankIcon: {
-    width: 54,
-    height: 54,
+  paymentHero: {
+    minHeight: 214,
+    overflow: 'hidden',
+    borderRadius: 28,
+    padding: 20,
+  },
+  paymentHeroImage: {
+    borderRadius: 28,
+  },
+  paymentHeroTop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  paymentHeroLabel: {
+    color: 'rgba(255,255,255,0.82)',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1.4,
+  },
+  paymentHeroTitle: {
+    maxWidth: 210,
+    marginTop: 10,
+    color: colors.white,
+    fontSize: 23,
+    fontWeight: '900',
+    lineHeight: 30,
+  },
+  paymentHeroBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.28)',
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  paymentHeroBadgeText: {
+    marginLeft: 5,
+    color: colors.white,
+    fontSize: 9,
+    fontWeight: '900',
+  },
+  paymentHeroDivider: {
+    height: 1,
+    marginTop: 58,
+    marginBottom: 16,
+    backgroundColor: 'rgba(255,255,255,0.24)',
+  },
+  paymentHeroMetrics: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  heroMetric: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  heroMetricIcon: {
+    width: 38,
+    height: 38,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
-  bankHeroCopy: { flex: 1, marginLeft: 14 },
-  bankHeroLabel: { color: '#B8D9F4', fontSize: 9, fontWeight: '900', letterSpacing: 0.8 },
-  bankHeroTitle: { marginTop: 6, color: colors.white, fontSize: 19, fontWeight: '900', lineHeight: 25 },
-  bankHeroText: { marginTop: 8, color: '#D8ECFF', fontSize: 11, lineHeight: 16 },
+  heroMetricCopy: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  heroMetricLabel: {
+    color: 'rgba(255,255,255,0.72)',
+    fontSize: 8,
+    fontWeight: '800',
+  },
+  heroMetricValue: {
+    marginTop: 3,
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: '900',
+  },
   sectionCard: {
     marginBottom: 14,
     borderWidth: 1,
@@ -1155,6 +1379,41 @@ const styles = StyleSheet.create({
   },
   lookupActionLabel: { marginTop: 10, textAlign: 'center', color: colors.text, fontSize: 12, fontWeight: '900' },
   lookupActionNote: { marginTop: 5, textAlign: 'center', color: colors.textMuted, fontSize: 10, lineHeight: 14 },
+  safetyNote: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: 14,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(0,91,170,0.14)',
+    borderRadius: 20,
+    backgroundColor: '#F7FBFF',
+    padding: 14,
+  },
+  safetyIcon: {
+    width: 38,
+    height: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    backgroundColor: colors.primarySoft,
+  },
+  safetyCopy: {
+    flex: 1,
+    marginLeft: 11,
+  },
+  safetyTitle: {
+    color: colors.primaryDark,
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  safetyText: {
+    marginTop: 4,
+    color: colors.textMuted,
+    fontSize: 10,
+    fontWeight: '600',
+    lineHeight: 15,
+  },
   invoiceCard: {
     marginBottom: 14,
     borderWidth: 1,
@@ -1278,6 +1537,41 @@ const styles = StyleSheet.create({
   },
   confirmTitle: { marginTop: 14, color: colors.text, fontSize: 20, fontWeight: '900' },
   confirmText: { marginTop: 8, textAlign: 'center', color: colors.textMuted, fontSize: 11, lineHeight: 17 },
+  executionCard: {
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    padding: 14,
+  },
+  executionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  executionIcon: {
+    width: 34,
+    height: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 13,
+    backgroundColor: colors.primarySoft,
+  },
+  executionLabel: {
+    flex: 1,
+    marginLeft: 10,
+    color: colors.text,
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  executionValue: {
+    maxWidth: '32%',
+    textAlign: 'right',
+    color: colors.primary,
+    fontSize: 10,
+    fontWeight: '900',
+  },
   confirmActions: { marginTop: 2 },
   actionSpacer: { height: 10 },
   infoRow: {

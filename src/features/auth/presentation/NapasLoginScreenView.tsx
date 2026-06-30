@@ -64,8 +64,8 @@ export function NapasLoginScreen({
     <AuthShell
       footer={
         <View style={styles.demoNotice}>
-          <Ionicons color={colors.success} name="shield-checkmark-outline" size={15} />
-          <Text style={styles.demoNoticeText}>Môi trường demo — không dùng thông tin thật</Text>
+          <Ionicons color={colors.success} name="phone-portrait" size={15} />
+          <Text style={styles.demoNoticeText}>Phiên bản thử nghiệm 0.1</Text>
         </View>
       }
       presentation={authScreenPresentations.login}
