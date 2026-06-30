@@ -78,7 +78,6 @@ export function HistoryScreen({
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.pageTitle}>Lịch sử giao dịch</Text>
 
         <View style={styles.summaryGrid}>
   <PointSummaryCard
