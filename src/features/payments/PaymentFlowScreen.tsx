@@ -159,7 +159,7 @@ export function PaymentFlowScreen({ points, onBack, onComplete }: PaymentFlowScr
 
   return (
     <View style={styles.root}>
-      <ScreenHeader onBack={goPreviousStep} rightLabel="Demo" title="Thanh toán Loyalty" />
+      <ScreenHeader onBack={goPreviousStep} rightLabel="Demo" title="Chọn voucher/Ưu đãi" />
 
       <ScrollView
         contentContainerStyle={[

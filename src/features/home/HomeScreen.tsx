@@ -664,7 +664,7 @@ const styles = StyleSheet.create({
   quickButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#075da8b8',
+    backgroundColor: colors.bottomNav,
     borderWidth: 1,
     borderColor: '#ffffffce',
     shadowColor: '#2C2C2C',

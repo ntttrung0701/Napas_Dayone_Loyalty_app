@@ -104,7 +104,7 @@ function PaymentHeroCard({ points }: { points: number }) {
       >
         <View style={styles.paymentHeroTop}>
           <View>
-            <Text style={styles.paymentHeroLabel}>THANH TOÁN LOYALTY</Text>
+            <Text style={styles.paymentHeroLabel}>Chọn phương thức thanh toán</Text>
             <Text style={styles.paymentHeroTitle}>Hóa đơn POS/QR/Merchant</Text>
           </View>
           <View style={styles.paymentHeroBadge}>

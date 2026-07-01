@@ -16,4 +16,5 @@ export const colors = {
   purple: '#6D5DD3',
   white: '#FFFFFF',
   black: '#09111C',
+  bottomNav:'#053560c1',
 } as const;
