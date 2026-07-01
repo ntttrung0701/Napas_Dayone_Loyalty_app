@@ -43,10 +43,29 @@ export type OfferMedia = {
   iconUrl?: string;
 };
 
+export type PartnerBrandLogo = {
+  imageKey?: string;
+  imageUrl?: string;
+  label: string;
+  backgroundColor: string;
+  textColor: string;
+  borderColor: string;
+};
+
+export type PartnerBrand = {
+  id: string;
+  name: string;
+  featured?: boolean;
+  displayOrder?: number;
+  searchKeywords?: string[];
+  logo: PartnerBrandLogo;
+};
+
 export type Offer = {
   id: string;
   category: string;
   title: string;
+  partnerBrandId?: string;
   partner: string;
   description: string;
   points: number;

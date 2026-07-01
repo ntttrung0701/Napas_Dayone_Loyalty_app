@@ -1,6 +1,6 @@
 import { Image, type ImageSourcePropType } from 'react-native';
 
-import type { OfferMedia } from '../../../types';
+import type { OfferMedia, PartnerBrandLogo } from '../../../types';
 
 const localOfferImages: Record<string, ImageSourcePropType> = {
   highlands: require('../../../../assets/highland.jpg'),
@@ -42,6 +42,24 @@ export class OfferMediaResolver {
 
     if (media.iconKey) {
       const localIcon = localPartnerIcons[media.iconKey];
+
+      if (localIcon) {
+        return localIcon;
+      }
+    }
+
+    return null;
+  }
+
+  static getPartnerLogoSource(logo?: PartnerBrandLogo): ImageSourcePropType | null {
+    if (!logo) return null;
+
+    if (logo.imageUrl) {
+      return { uri: logo.imageUrl };
+    }
+
+    if (logo.imageKey) {
+      const localIcon = localPartnerIcons[logo.imageKey];
 
       if (localIcon) {
         return localIcon;

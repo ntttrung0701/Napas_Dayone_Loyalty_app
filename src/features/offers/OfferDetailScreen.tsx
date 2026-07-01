@@ -191,7 +191,7 @@ heroTextLayer: {
   },
   sectionTitle: {
     marginBottom: 10,
-    color: colors.primaryDark,
+    color: colors.primary,
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 0.8,

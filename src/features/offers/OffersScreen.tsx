@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { LinearGradient } from 'expo-linear-gradient';
 import type { ComponentProps } from 'react';
 import { useMemo, useState } from 'react';
 import {
@@ -12,14 +13,15 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OfferMediaResolver } from './domain/OfferMediaResolver';
-import { offers } from '../../mock/data';
+import { offers, partnerBrands } from '../../mock/data';
 import { BottomNav } from '../../shared/components/BottomNav';
 import { HeaderIconButton } from '../../shared/components/HeaderIconButton';
 import { getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
-import type { AppScreen, MainTab, Offer } from '../../types';
+import type { AppScreen, MainTab, Offer, PartnerBrand } from '../../types';
 import { formatPoints } from '../../utils/format';
 import { OfferCatalog } from './domain/OfferCatalog';
+import { PartnerBrandCatalog } from './domain/PartnerBrandCatalog';
 import { ScreenHeader } from '../../shared/components/ScreenHeader';
 import { OfferMediaFrame } from './components/OfferMediaFrame';
 
@@ -33,16 +35,107 @@ type OffersScreenProps = {
   onSelectOffer: (offer: Offer) => void;
 };
 
+type OfferVisualConfig = {
+  logoText: string;
+  logoBackground: string;
+  logoColor: string;
+  visualIcon: IconName;
+  visualGradient: [string, string];
+};
+
 const categories = ['Tất cả', 'Voucher', 'Hoàn tiền', 'Quà tặng'] as const;
 type OfferCategory = (typeof categories)[number];
 
-const categoryIcons: Record<Exclude<OfferCategory, 'Tất cả'>, IconName> = {
-  Voucher: 'ticket-outline',
-  'Hoàn tiền': 'cash-outline',
-  'Quà tặng': 'gift-outline',
+const defaultOfferVisual: OfferVisualConfig = {
+  logoText: 'N',
+  logoBackground: colors.white,
+  logoColor: colors.primary,
+  visualIcon: 'gift-outline',
+  visualGradient: ['#0E4B83', '#1277C8'],
+};
+
+const offerVisualConfigs: Record<string, OfferVisualConfig> = {
+  'winmart-100': {
+    logoText: 'WinMart',
+    logoBackground: colors.white,
+    logoColor: '#D71920',
+    visualIcon: 'basket-outline',
+    visualGradient: ['#F3FBF3', '#DDF3E2'],
+  },
+  'starbucks-50': {
+    logoText: '★',
+    logoBackground: colors.white,
+    logoColor: '#00704A',
+    visualIcon: 'cafe-outline',
+    visualGradient: ['#17120D', '#8B623F'],
+  },
+  'phuclong-20': {
+    logoText: 'PL',
+    logoBackground: colors.white,
+    logoColor: '#1B6B3A',
+    visualIcon: 'leaf-outline',
+    visualGradient: ['#6B472E', '#B3865B'],
+  },
+  'cgv-2d': {
+    logoText: 'CGV',
+    logoBackground: colors.white,
+    logoColor: '#E1322D',
+    visualIcon: 'film-outline',
+    visualGradient: ['#4A0D12', '#C21E2B'],
+  },
 };
 
 const offerCatalog = new OfferCatalog(offers);
+const partnerBrandCatalog = new PartnerBrandCatalog(partnerBrands);
+const featuredPartnerBrands = partnerBrandCatalog.getFeaturedBrands();
+
+type PartnerLogoBadgeProps = {
+  brand?: PartnerBrand;
+  compact?: boolean;
+  fallbackVisual?: OfferVisualConfig;
+};
+
+function PartnerLogoBadge({
+  brand,
+  compact = false,
+  fallbackVisual = defaultOfferVisual,
+}: PartnerLogoBadgeProps) {
+  const logo = brand?.logo;
+  const imageSource = OfferMediaResolver.getPartnerLogoSource(logo);
+  const label = logo?.label ?? fallbackVisual.logoText;
+
+  return (
+    <View
+      style={[
+        compact ? styles.offerLogoBadge : styles.brandLogo,
+        {
+          backgroundColor: logo?.backgroundColor ?? fallbackVisual.logoBackground,
+          borderColor: logo?.borderColor ?? 'rgba(255,255,255,0.72)',
+        },
+      ]}
+    >
+      {imageSource ? (
+        <Image
+          resizeMode="cover"
+          source={imageSource}
+          style={compact ? styles.offerLogoImage : styles.brandLogoImage}
+        />
+      ) : (
+        <Text
+          adjustsFontSizeToFit
+          maxFontSizeMultiplier={1}
+          numberOfLines={1}
+          style={[
+            compact ? styles.offerLogoText : styles.brandLogoText,
+            { color: logo?.textColor ?? fallbackVisual.logoColor },
+          ]}
+        >
+          {label}
+        </Text>
+      )}
+    </View>
+  );
+}
 
 export function OffersScreen({
   activeTab,
@@ -77,151 +170,214 @@ export function OffersScreen({
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: getBottomNavOffset(insets.bottom) + 18 },
+          { paddingBottom: getBottomNavOffset(insets.bottom) + 22 },
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.titleRow}>
-  <View style={styles.titleCopy}>
-  </View>
-</View>
+        <View style={styles.topArea}>
+          <View style={styles.searchBox}>
+            <Ionicons color={colors.textMuted} name="search-outline" size={25} />
 
-        
+            <TextInput
+              autoCapitalize="none"
+              maxFontSizeMultiplier={1.08}
+              onChangeText={setSearchQuery}
+              placeholder="Tìm ưu đãi, đối tác..."
+              placeholderTextColor={colors.textMuted}
+              style={styles.searchInput}
+              value={searchQuery}
+            />
 
-        <View style={styles.searchBox}>
-          <Ionicons color={colors.textMuted} name="search-outline" size={19} />
+            {searchQuery ? (
+              <Pressable
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={() => setSearchQuery('')}
+                style={styles.clearSearchButton}
+              >
+                <Ionicons color={colors.textMuted} name="close-circle" size={20} />
+              </Pressable>
+            ) : null}
+          </View>
 
-          <TextInput
-            autoCapitalize="none"
-            onChangeText={setSearchQuery}
-            placeholder="Tìm ưu đãi, đối tác..."
-            placeholderTextColor={colors.textMuted}
-            style={styles.searchInput}
-            value={searchQuery}
-          />
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => onNavigate('voucher-wallet')}
+            style={({ pressed }) => [
+              styles.voucherBannerTouchable,
+              pressed && styles.voucherBannerPressed,
+            ]}
+          >
+            <LinearGradient
+              colors={['#092E63', '#006FCA']}
+              end={{ x: 1, y: 0.5 }}
+              start={{ x: 0, y: 0.5 }}
+              style={styles.voucherBanner}
+            >
+              <View style={styles.voucherBannerCopy}>
+                <Text
+                  maxFontSizeMultiplier={1.08}
+                  numberOfLines={1}
+                  style={styles.voucherBannerTitle}
+                >
+                  Voucher của tôi
+                </Text>
 
-          {searchQuery ? (
-            <Pressable onPress={() => setSearchQuery('')}>
-              <Ionicons color={colors.textMuted} name="close-circle" size={18} />
-            </Pressable>
-          ) : null}
+                <Text
+                  maxFontSizeMultiplier={1.08}
+                  numberOfLines={2}
+                  style={styles.voucherBannerSubtitle}
+                >
+                  Sử dụng voucher của bạn để đổi những ưu đãi
+                </Text>
+              </View>
+
+              <Ionicons color={colors.white} name="chevron-forward" size={34} />
+            </LinearGradient>
+          </Pressable>
         </View>
 
-        <Pressable
-  onPress={() => onNavigate('voucher-wallet')}
-  style={({ pressed }) => [styles.walletShortcut, pressed && styles.pressed]}
->
-  <View style={styles.walletCopy}>
-    <Text style={styles.walletTitle}>Voucher của tôi</Text>
-    <Text style={styles.walletSubtitle}>
-      Sử dụng voucher của bạn để đổi những ưu đãi
-    </Text>
-  </View>
+        <View style={styles.bodyArea}>
+          <View style={styles.featuredBrandsSection}>
+            <Text maxFontSizeMultiplier={1.08} style={styles.sectionTitle}>
+              Thương hiệu nổi bật
+            </Text>
 
-  <Ionicons color={colors.textMuted} name="chevron-forward" size={22} />
-</Pressable>
-
-        <ScrollView
-          horizontal
-          contentContainerStyle={styles.filterRow}
-          showsHorizontalScrollIndicator={false}
-        >
-          {categories.map((category) => {
-            const active = category === selectedCategory;
-
-            return (
-              <Pressable
-                key={category}
-                onPress={() => setSelectedCategory(category)}
-                style={({ pressed }) => [
-                  styles.filter,
-                  active && styles.filterActive,
-                  pressed && styles.pressed,
-                ]}
-              >
-                <Text style={[styles.filterText, active && styles.filterTextActive]}>
-                  {category}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-
-        {filteredOffers.map((offer, index) => {
-          const affordable = points >= offer.points;
-const icon =
-  categoryIcons[offer.category as keyof typeof categoryIcons] ?? 'gift-outline';
-const imageSource = OfferMediaResolver.getImageSource(offer.media);
-
-          return (
-            <Pressable
-              key={offer.id}
-              onPress={() => onSelectOffer(offer)}
-              style={({ pressed }) => [styles.offerCard, pressed && styles.offerCardPressed]}
+            <ScrollView
+              horizontal
+              contentContainerStyle={styles.brandRow}
+              showsHorizontalScrollIndicator={false}
             >
-              <OfferMediaFrame
-  fallbackColor={offer.accent}
-  height={190}
-  media={offer.media}
-  borderRadius={0}
-  overlayOpacity={0}
-  style={styles.offerVisual}
->
-  <View style={styles.hotBadge}>
-    <Ionicons color="#FFD79A" name="sparkles" size={12} />
-    <Text style={styles.hotText}>
-      {index === 0 ? 'HOT DEAL' : offer.category.toUpperCase()}
-    </Text>
-  </View>
+              {featuredPartnerBrands.map((brand) => (
+                <Pressable
+                  key={brand.id}
+                  accessibilityRole="button"
+                  onPress={() => setSearchQuery(partnerBrandCatalog.getSearchQuery(brand))}
+                  style={({ pressed }) => [styles.brandItem, pressed && styles.pressed]}
+                >
+                  <PartnerLogoBadge brand={brand} />
 
-  {!offer.media ? (
-    <>
-      <View style={styles.visualGlowLarge} />
-      <View style={styles.visualGlowSmall} />
-
-      <View style={styles.offerIcon}>
-        <Ionicons color={colors.white} name={icon} size={34} />
-      </View>
-
-      <Text style={styles.visualPartner}>{offer.partner}</Text>
-    </>
-  ) : null}
-</OfferMediaFrame>
-
-              <View style={styles.offerInfo}>
-                <Text maxFontSizeMultiplier={1.08} numberOfLines={2} style={styles.offerTitle}>{offer.title}</Text>
-                <Text maxFontSizeMultiplier={1.08} numberOfLines={1} style={styles.partner}>{offer.partner}</Text>
-
-                <View style={styles.divider} />
-
-                <View style={styles.offerFooter}>
-                  <View>
-                    <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.metaLabel}>Điểm quy đổi</Text>
-                    <View style={styles.pointsRow}>
-                      
-                      <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={[styles.points, !affordable && styles.pointsDisabled]}>
-                        {formatPoints(offer.points)} pts
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.expiryBlock}>
-                    <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.metaLabel}>Hạn sử dụng</Text>
-                    <Text maxFontSizeMultiplier={1.05} numberOfLines={1} style={styles.expiry}>{offer.expiresAt}</Text>
-                  </View>
-                </View>
-              </View>
-            </Pressable>
-          );
-        })}
-
-        {!filteredOffers.length ? (
-          <View style={styles.emptyState}>
-            <Ionicons color={colors.textMuted} name="gift-outline" size={42} />
-            <Text style={styles.emptyTitle}>Không tìm thấy ưu đãi</Text>
-            <Text style={styles.emptyText}>Hãy thử từ khóa hoặc danh mục khác.</Text>
+                  <Text
+                    maxFontSizeMultiplier={1.05}
+                    numberOfLines={1}
+                    style={styles.brandName}
+                  >
+                    {brand.name}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
           </View>
-        ) : null}
+
+          <Text maxFontSizeMultiplier={1.08} style={styles.sectionTitle}>
+            Ưu đãi và quà tặng
+          </Text>
+
+          <ScrollView
+            horizontal
+            contentContainerStyle={styles.filterRow}
+            showsHorizontalScrollIndicator={false}
+          >
+            {categories.map((category) => {
+              const active = category === selectedCategory;
+
+              return (
+                <Pressable
+                  key={category}
+                  accessibilityRole="button"
+                  onPress={() => setSelectedCategory(category)}
+                  style={({ pressed }) => [
+                    styles.filter,
+                    active && styles.filterActive,
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <Text
+                    maxFontSizeMultiplier={1.05}
+                    numberOfLines={1}
+                    style={[styles.filterText, active && styles.filterTextActive]}
+                  >
+                    {category}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+
+          <View style={styles.offersGrid}>
+            {filteredOffers.map((offer) => {
+              const affordable = points >= offer.points;
+              const hasImage = OfferMediaResolver.hasImage(offer.media);
+              const visual = offerVisualConfigs[offer.id] ?? defaultOfferVisual;
+              const brand = partnerBrandCatalog.findForOffer(offer);
+
+              return (
+                <Pressable
+                  key={offer.id}
+                  accessibilityRole="button"
+                  onPress={() => onSelectOffer(offer)}
+                  style={({ pressed }) => [
+                    styles.offerCard,
+                    pressed && styles.offerCardPressed,
+                  ]}
+                >
+                  <OfferMediaFrame
+                    borderRadius={0}
+                    fallbackColor={offer.accent}
+                    height={116}
+                    media={offer.media}
+                    overlayOpacity={0}
+                    style={styles.offerVisual}
+                  >
+                    {!hasImage ? (
+                      <LinearGradient
+                        colors={visual.visualGradient}
+                        end={{ x: 1, y: 1 }}
+                        start={{ x: 0, y: 0 }}
+                        style={styles.mockVisual}
+                      >
+                        <View style={styles.mockVisualHalo} />
+                        <Ionicons
+                          color="rgba(255,255,255,0.88)"
+                          name={visual.visualIcon}
+                          size={44}
+                        />
+                      </LinearGradient>
+                    ) : null}
+
+                    <PartnerLogoBadge brand={brand} compact fallbackVisual={visual} />
+                  </OfferMediaFrame>
+
+                  <View style={styles.offerInfo}>
+                    <Text
+                      maxFontSizeMultiplier={1.08}
+                      numberOfLines={1}
+                      style={styles.offerTitle}
+                    >
+                      {offer.title}
+                    </Text>
+
+                    <Text
+                      maxFontSizeMultiplier={1.08}
+                      numberOfLines={1}
+                      style={[styles.points, !affordable && styles.pointsDisabled]}
+                    >
+                      {formatPoints(offer.points)} pts
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {!filteredOffers.length ? (
+            <View style={styles.emptyState}>
+              <Ionicons color={colors.textMuted} name="gift-outline" size={42} />
+              <Text style={styles.emptyTitle}>Không tìm thấy ưu đãi</Text>
+              <Text style={styles.emptyText}>Hãy thử từ khóa hoặc danh mục khác.</Text>
+            </View>
+          ) : null}
+        </View>
       </ScrollView>
 
       <BottomNav active={activeTab} onNavigate={onNavigate} />
@@ -232,282 +388,266 @@ const imageSource = OfferMediaResolver.getImageSource(offer.media);
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
   },
   pressed: {
-    opacity: 0.7,
+    opacity: 0.72,
   },
-content: {
-  paddingHorizontal: 20,
-  paddingTop: 18,
-  paddingBottom: 20,
-},
-  titleRow: {
-  flexDirection: 'row',
-  alignItems: 'baseline',
-  justifyContent: 'space-between',
-  marginBottom: 16,
-},
-titleCopy: {
-  flex: 1,
-  paddingRight: 12,
-},
-pageSubtitle: {
-  color: colors.textMuted,
-  fontSize: 13,
-  fontWeight: '700',
-  lineHeight: 19,
-},
-  walletShortcut: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginBottom: 20,
-  borderWidth: 1,
-  borderColor: colors.border,
-  borderRadius: 22,
-  backgroundColor: colors.surface,
-  paddingHorizontal: 18,
-  paddingVertical: 18,
-  shadowColor: colors.primaryDark,
-  shadowOffset: { width: 0, height: 5 },
-  shadowOpacity: 0.05,
-  shadowRadius: 10,
-  elevation: 2,
-},
-  walletIcon: {
-    width: 42,
-    height: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 14,
-    backgroundColor: colors.primarySoft,
+  content: {
+    paddingTop: 0,
   },
-  walletTitle: {
-  color: colors.text,
-  fontSize: 16,
-  fontWeight: '900',
-},
-
-  walletSubtitle: {
-  marginTop: 5,
-  color: colors.textMuted,
-  fontSize: 13,
-  lineHeight: 18,
-},
-
+  topArea: {
+    backgroundColor: colors.background,
+    paddingHorizontal: 24,
+    paddingTop: 26,
+    paddingBottom: 24,
+  },
+  bodyArea: {
+    backgroundColor: colors.surface,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
   searchBox: {
-  minHeight: 56,
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginBottom: 14,
-  borderWidth: 1,
-  borderColor: colors.border,
-  borderRadius: 22,
-  backgroundColor: colors.surface,
-  paddingHorizontal: 16,
-  shadowColor: colors.primaryDark,
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.04,
-  shadowRadius: 8,
-  elevation: 1,
-},
-  walletCopy: {
-    flex: 1,
+    minHeight: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 28,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 32,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 26,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 4,
   },
   searchInput: {
     flex: 1,
-    minHeight: 49,
-    marginHorizontal: 9,
+    minHeight: 60,
+    marginLeft: 14,
     paddingVertical: 0,
     color: colors.text,
-    fontSize: 13,
-    fontWeight: '400',
-    fontStyle: 'normal',
-    letterSpacing: 0,
-    textAlign: 'left',
+    fontSize: 18,
+    fontWeight: '500',
+  },
+  clearSearchButton: {
+    marginLeft: 8,
+  },
+  voucherBannerTouchable: {
+    borderRadius: 28,
+    shadowColor: '#0A3769',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.24,
+    shadowRadius: 20,
+    elevation: 9,
+  },
+  voucherBannerPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.985 }],
+  },
+  voucherBanner: {
+    minHeight: 124,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    overflow: 'hidden',
+    borderRadius: 28,
+    paddingHorizontal: 28,
+    paddingVertical: 25,
+  },
+  voucherBannerCopy: {
+    flex: 1,
+    paddingRight: 18,
+  },
+  voucherBannerTitle: {
+    color: colors.white,
+    fontSize: 25,
+    fontWeight: '900',
+    letterSpacing: -0.35,
+  },
+  voucherBannerSubtitle: {
+    marginTop: 10,
+    color: 'rgba(255,255,255,0.88)',
+    fontSize: 16,
+    fontWeight: '500',
+    lineHeight: 23,
+  },
+  featuredBrandsSection: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    color: colors.black,
+    fontSize: 27,
+    fontWeight: '900',
+    letterSpacing: -0.45,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingTop: 17,
+    paddingRight: 6,
+  },
+  brandItem: {
+    width: 64,
+    alignItems: 'center',
+    marginRight: 6,
+  },
+  brandLogo: {
+    width: 62,
+    height: 62,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderRadius: 30,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  brandLogoText: {
+    paddingHorizontal: 5,
+    fontSize: 17,
+    fontWeight: '900',
+    letterSpacing: -0.4,
+  },
+  brandLogoImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 31,
+  },
+  brandName: {
+    marginTop: 9,
+    color: colors.black,
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
   },
   filterRow: {
-  paddingTop: 14,
-  paddingBottom: 18,
-  paddingRight: 8,
-},
-  
-  offerImage: {
-  ...StyleSheet.absoluteFillObject,
-  width: '100%',
-  height: '100%',
-},
-
-imageOverlay: {
-  ...StyleSheet.absoluteFillObject,
-  backgroundColor: 'rgba(0,0,0,0.18)',
-},
-
+    paddingTop: 18,
+    paddingBottom: 24,
+    paddingRight: 4,
+  },
   filter: {
-  minHeight: 38,
-  justifyContent: 'center',
-  marginRight: 10,
-  borderWidth: 1,
-  borderColor: colors.border,
-  borderRadius: 999,
-  backgroundColor: colors.surface,
-  paddingHorizontal: 18,
-  shadowColor: colors.primaryDark,
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.04,
-  shadowRadius: 4,
-  elevation: 1,
-},
+    minHeight: 48,
+    justifyContent: 'center',
+    marginRight: 12,
+    borderRadius: 999,
+    backgroundColor: '#EDF2F7',
+    paddingHorizontal: 25,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
   filterActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary,
+    backgroundColor: '#0B4C84',
   },
   filterText: {
-    color: colors.textMuted,
-    fontSize: 11,
+    color: colors.text,
+    fontSize: 16,
     fontWeight: '700',
   },
   filterTextActive: {
     color: colors.white,
     fontWeight: '900',
   },
-  offerCard: {
-  overflow: 'hidden',
-  marginBottom: 20,
-  borderWidth: 1,
-  borderColor: colors.border,
-  borderRadius: 20,
-  backgroundColor: colors.surface,
-  shadowColor: colors.primaryDark,
-  shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.09,
-  shadowRadius: 15,
-  elevation: 4,
-},
-  offerCardPressed: {
-    opacity: 0.82,
-    transform: [{ scale: 0.995 }],
-  },
-  offerVisual: {
-  overflow: 'hidden',
-  height: 190,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
-  borderBottomLeftRadius: 0,
-  borderBottomRightRadius: 0,
-},
-  visualGlowLarge: {
-    position: 'absolute',
-    top: -85,
-    right: -42,
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: 'rgba(255,255,255,0.13)',
-  },
-  visualGlowSmall: {
-    position: 'absolute',
-    bottom: -70,
-    left: -35,
-    width: 165,
-    height: 165,
-    borderRadius: 83,
-    backgroundColor: 'rgba(0,0,0,0.11)',
-  },
-  hotBadge: {
-    position: 'absolute',
-    top: 14,
-    left: 14,
+  offersGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,184,77,0.42)',
-    borderRadius: 999,
-    backgroundColor: 'rgba(20,20,20,0.55)',
-    paddingHorizontal: 11,
-    paddingVertical: 7,
-  },
-  hotText: {
-    marginLeft: 5,
-    color: '#FFD79A',
-    fontSize: 8,
-    fontWeight: '900',
-  },
-  offerIcon: {
-    width: 72,
-    height: 72,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.35)',
-    borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.17)',
-  },
-  visualPartner: {
-    marginTop: 9,
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 0.4,
-  },
-  offerInfo: {
-  paddingHorizontal: 18,
-  paddingTop: 16,
-  paddingBottom: 18,
-},
-  offerTitle: {
-    color: colors.primaryDark,
-    fontSize: 15,
-    fontWeight: '900',
-    lineHeight: 21,
-  },
-  partner: {
-    marginTop: 5,
-    color: colors.textMuted,
-    fontSize: 10,
-  },
-  divider: {
-  height: 1,
-  marginVertical: 14,
-  backgroundColor: colors.border,
-},
-  offerFooter: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  metaLabel: {
-    color: colors.textMuted,
-    fontSize: 9,
-    fontWeight: 700,
+  offerCard: {
+    width: '47.8%',
+    overflow: 'hidden',
+    marginBottom: 20,
+    borderRadius: 15,
+    backgroundColor: colors.surface,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.13,
+    shadowRadius: 15,
+    elevation: 5,
   },
-  pointsRow: {
-    flexDirection: 'row',
+  offerCardPressed: {
+    opacity: 0.86,
+    transform: [{ scale: 0.985 }],
+  },
+  offerVisual: {
+    overflow: 'hidden',
+    height: 116,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+  },
+  mockVisual: {
+    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
-    marginTop: 5,
+    justifyContent: 'center',
+  },
+  mockVisualHalo: {
+    position: 'absolute',
+    right: -18,
+    bottom: -30,
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    backgroundColor: 'rgba(255,255,255,0.13)',
+  },
+  offerLogoBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderRadius: 12,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  offerLogoImage: {
+    width: '100%',
+    height: '100%',
+  },
+  offerLogoText: {
+    paddingHorizontal: 4,
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  offerInfo: {
+    minHeight: 88,
+    paddingHorizontal: 15,
+    paddingTop: 13,
+    paddingBottom: 13,
+  },
+  offerTitle: {
+    color: colors.black,
+    fontSize: 19,
+    fontWeight: '500',
+    letterSpacing: -0.35,
+    lineHeight: 24,
   },
   points: {
-    marginLeft: 5,
-    color: colors.success,
-    fontSize: 14,
-    fontWeight: '900',
+    marginTop: 8,
+    color: '#4D7E48',
+    fontSize: 21,
+    fontWeight: '500',
+    letterSpacing: -0.25,
   },
   pointsDisabled: {
     color: colors.danger,
   },
-  expiryBlock: {
-    maxWidth: '48%',
-    alignItems: 'flex-end',
-  },
-  expiry: {
-    marginTop: 5,
-    textAlign: 'right',
-    color: colors.text,
-    fontSize: 10,
-    fontWeight: '800',
-  },
   emptyState: {
     alignItems: 'center',
+    marginTop: 6,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 20,
