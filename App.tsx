@@ -25,6 +25,7 @@ import { OffersScreen } from './src/features/offers/OffersScreen';
 import { PaymentScreen } from './src/features/payments/PaymentScreen';
 import { ReceiptScreen } from './src/features/payments/ReceiptScreen';
 import { ProfileScreen } from './src/features/profile/ProfileScreen';
+import { QrScannerScreen } from './src/features/qr/QrScannerScreen';
 import { QrScreen } from './src/features/qr/QrScreen';
 import { SplashScreen } from './src/features/splash/SplashScreen';
 import { TransferScreen } from './src/features/transfer/TransferScreen';
@@ -373,6 +374,12 @@ export default function App() {
             onNavigate={navigate}
           />
         );
+
+      case 'qr-scanner':
+        return <QrScannerScreen onBack={goBack} purpose="general" />;
+
+      case 'payment-invoice-scanner':
+        return <QrScannerScreen onBack={goBack} purpose="invoice" />;
 
       case 'transfer':
         return (

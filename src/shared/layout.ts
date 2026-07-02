@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-export const bottomNavHeight = 50;
+export const bottomNavHeight = 10;
 export const bottomNavMargin = 0;
 
 export function getSafeBottomInset(bottomInset: number) {

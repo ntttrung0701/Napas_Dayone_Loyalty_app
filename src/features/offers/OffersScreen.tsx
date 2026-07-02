@@ -322,13 +322,13 @@ export function OffersScreen({
                   ]}
                 >
                   <OfferMediaFrame
-                    borderRadius={0}
-                    fallbackColor={offer.accent}
-                    height={116}
-                    media={offer.media}
-                    overlayOpacity={0}
-                    style={styles.offerVisual}
-                  >
+  borderRadius={0}
+  fallbackColor={offer.accent}
+  height={98}
+  media={offer.media}
+  overlayOpacity={0}
+  style={styles.offerVisual}
+>
                     {!hasImage ? (
                       <LinearGradient
                         colors={visual.visualGradient}
@@ -338,10 +338,10 @@ export function OffersScreen({
                       >
                         <View style={styles.mockVisualHalo} />
                         <Ionicons
-                          color="rgba(255,255,255,0.88)"
-                          name={visual.visualIcon}
-                          size={44}
-                        />
+  color="rgba(255,255,255,0.88)"
+  name={visual.visualIcon}
+  size={32}
+/>
                       </LinearGradient>
                     ) : null}
 
@@ -397,16 +397,17 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   topArea: {
-    backgroundColor: colors.background,
-    paddingHorizontal: 24,
-    paddingTop: 26,
-    paddingBottom: 24,
-  },
-  bodyArea: {
-    backgroundColor: colors.surface,
-    paddingHorizontal: 24,
-    paddingTop: 24,
-  },
+  backgroundColor: colors.background,
+  paddingHorizontal: 20,
+  paddingTop: 20,
+  paddingBottom: 20,
+},
+
+bodyArea: {
+  backgroundColor: colors.surface,
+  paddingHorizontal: 20,
+  paddingTop: 20,
+},
   searchBox: {
     minHeight: 50,
     flexDirection: 'row',
@@ -478,78 +479,80 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   sectionTitle: {
-    color: colors.black,
-    fontSize: 27,
-    fontWeight: '900',
-    letterSpacing: -0.45,
-  },
+  color: colors.text,
+  fontSize: 21,
+  fontWeight: '900',
+  letterSpacing: -0.25,
+},
   brandRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingTop: 17,
-    paddingRight: 6,
-  },
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  paddingTop: 12,
+  paddingRight: 6,
+},
+
   brandItem: {
     width: 64,
     alignItems: 'center',
     marginRight: 6,
   },
   brandLogo: {
-    width: 62,
-    height: 62,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderRadius: 30,
-    shadowColor: colors.primaryDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    elevation: 2,
-  },
+  width: 52,
+  height: 52,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderWidth: 1,
+  borderRadius: 26,
+  shadowColor: colors.primaryDark,
+  shadowOffset: { width: 0, height: 3 },
+  shadowOpacity: 0.4,
+  shadowRadius: 6,
+  elevation: 1,
+},
   brandLogoText: {
-    paddingHorizontal: 5,
-    fontSize: 17,
-    fontWeight: '900',
-    letterSpacing: -0.4,
-  },
+  paddingHorizontal: 4,
+  fontSize: 14,
+  fontWeight: '900',
+},
   brandLogoImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 31,
-  },
+  width: '100%',
+  height: '100%',
+  borderRadius: 26,
+},
   brandName: {
-    marginTop: 9,
-    color: colors.black,
-    fontSize: 14,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
+  marginTop: 7,
+  color: colors.text,
+  fontSize: 11,
+  fontWeight: '600',
+  textAlign: 'center',
+},
   filterRow: {
-    paddingTop: 18,
-    paddingBottom: 24,
-    paddingRight: 4,
-  },
-  filter: {
-    minHeight: 48,
-    justifyContent: 'center',
-    marginRight: 12,
-    borderRadius: 999,
-    backgroundColor: '#EDF2F7',
-    paddingHorizontal: 25,
-    shadowColor: colors.primaryDark,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
+  paddingTop: 14,
+  paddingBottom: 18,
+  paddingRight: 4,
+},
+
+filter: {
+  minHeight: 40,
+  justifyContent: 'center',
+  marginRight: 10,
+  borderRadius: 999,
+  backgroundColor: '#EDF2F7',
+  paddingHorizontal: 18,
+  shadowColor: colors.primaryDark,
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.04,
+  shadowRadius: 4,
+  elevation: 1,
+},
+
+filterText: {
+  color: colors.text,
+  fontSize: 12,
+  fontWeight: '800',
+},
   filterActive: {
     backgroundColor: '#0B4C84',
-  },
-  filterText: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: '700',
   },
   filterTextActive: {
     color: colors.white,
@@ -561,27 +564,29 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   offerCard: {
-    width: '47.8%',
-    overflow: 'hidden',
-    marginBottom: 20,
-    borderRadius: 15,
-    backgroundColor: colors.surface,
-    shadowColor: colors.primaryDark,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.13,
-    shadowRadius: 15,
-    elevation: 5,
-  },
+  width: '48%',
+  overflow: 'hidden',
+  marginBottom: 18,
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: 16,
+  backgroundColor: colors.surface,
+  shadowColor: colors.primaryDark,
+  shadowOffset: { width: 0, height: 5 },
+  shadowOpacity: 0.07,
+  shadowRadius: 10,
+  elevation: 3,
+},
   offerCardPressed: {
     opacity: 0.86,
     transform: [{ scale: 0.985 }],
   },
   offerVisual: {
-    overflow: 'hidden',
-    height: 116,
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
-  },
+  overflow: 'hidden',
+  height: 98,
+  borderTopLeftRadius: 16,
+  borderTopRightRadius: 16,
+},
   mockVisual: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
@@ -622,26 +627,26 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '900',
   },
-  offerInfo: {
-    minHeight: 88,
-    paddingHorizontal: 15,
-    paddingTop: 13,
-    paddingBottom: 13,
-  },
+offerInfo: {
+  minHeight: 72,
+  paddingHorizontal: 12,
+  paddingTop: 10,
+  paddingBottom: 12,
+},
   offerTitle: {
-    color: colors.black,
-    fontSize: 19,
-    fontWeight: '500',
-    letterSpacing: -0.35,
-    lineHeight: 24,
-  },
+  color: colors.text,
+  fontSize: 14,
+  fontWeight: '900',
+  letterSpacing: -0.15,
+  lineHeight: 18,
+},
   points: {
-    marginTop: 8,
-    color: '#4D7E48',
-    fontSize: 21,
-    fontWeight: '500',
-    letterSpacing: -0.25,
-  },
+  marginTop: 7,
+  color: colors.success,
+  fontSize: 15,
+  fontWeight: '900',
+  letterSpacing: -0.1,
+},
   pointsDisabled: {
     color: colors.danger,
   },

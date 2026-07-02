@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,6 +11,7 @@ import { clamp, getBottomNavOffset } from '../../shared/layout';
 import { colors } from '../../theme/colors';
 import type { AppScreen, MainTab } from '../../types';
 import { formatPoints } from '../../utils/format';
+import { MemberQrSession, type MemberQrPayload } from './domain/MemberQrSession';
 
 type QrScreenProps = {
   activeTab: MainTab;
@@ -17,50 +19,19 @@ type QrScreenProps = {
   onNavigate: (screen: AppScreen) => void;
 };
 
-type MemberQrPayload = {
-  type: 'LOYALTY_MEMBER';
-  loyaltyId: string;
-  nonce: string;
-  issuedAt: string;
-  expiresAt: string;
-};
-
-const QR_VALIDITY_SECONDS = 120;
 const LOYALTY_ID = 'NPS-5829';
-
-function createNonce() {
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
-}
-
-function createMemberQrPayload(loyaltyId: string): MemberQrPayload {
-  const issuedAt = new Date();
-  const expiresAt = new Date(issuedAt.getTime() + QR_VALIDITY_SECONDS * 1000);
-
-  return {
-    type: 'LOYALTY_MEMBER',
-    loyaltyId,
-    nonce: createNonce(),
-    issuedAt: issuedAt.toISOString(),
-    expiresAt: expiresAt.toISOString(),
-  };
-}
-
-function formatCountdown(totalSeconds: number) {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-}
+const MEMBER_NAME = 'Nguyễn Văn Anh';
 
 export function QrScreen({ activeTab, points, onNavigate }: QrScreenProps) {
   const { height, width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const [payload, setPayload] = useState<MemberQrPayload>(() => createMemberQrPayload(LOYALTY_ID));
-  const [remainingSeconds, setRemainingSeconds] = useState(QR_VALIDITY_SECONDS);
+  const [payload, setPayload] = useState<MemberQrPayload>(() =>
+    MemberQrSession.createPayload(LOYALTY_ID),
+  );
+  const [remainingSeconds, setRemainingSeconds] = useState(MemberQrSession.validitySeconds);
   const compact = height < 820;
-  const qrCodeSize = clamp(width * 0.4, compact ? 132 : 150, compact ? 146 : 168);
-  const qrInnerSize = qrCodeSize + 16;
-  const qrCardSize = qrInnerSize + 44;
+  const qrCodeSize = clamp(width * 0.52, compact ? 168 : 186, compact ? 198 : 218);
+  const qrShellSize = qrCodeSize + (compact ? 32 : 38);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -75,8 +46,8 @@ export function QrScreen({ activeTab, points, onNavigate }: QrScreenProps) {
   const qrValue = useMemo(() => JSON.stringify(payload), [payload]);
 
   function handleRefreshQr() {
-    setPayload(createMemberQrPayload(LOYALTY_ID));
-    setRemainingSeconds(QR_VALIDITY_SECONDS);
+    setPayload(MemberQrSession.createPayload(LOYALTY_ID));
+    setRemainingSeconds(MemberQrSession.validitySeconds);
   }
 
   return (
@@ -90,22 +61,30 @@ export function QrScreen({ activeTab, points, onNavigate }: QrScreenProps) {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.eyebrow}>THẺ THÀNH VIÊN LOYALTY</Text>
-        <Text style={styles.name}>NGUYỄN VAN ANH</Text>
-        <Text style={styles.loyaltyId}>Loyalty ID: {LOYALTY_ID}</Text>
+        <View style={styles.memberInfoCard}>
+          <Text maxFontSizeMultiplier={1.08} style={styles.eyebrow}>
+            THẺ THÀNH VIÊN LOYALTY
+          </Text>
+          <Text maxFontSizeMultiplier={1.08} numberOfLines={1} style={styles.name}>
+            {MEMBER_NAME}
+          </Text>
+          <Text maxFontSizeMultiplier={1.08} style={styles.loyaltyId}>
+            Loyalty ID: {LOYALTY_ID}
+          </Text>
+        </View>
 
-        <View
-          style={[
-            styles.qrCard,
-            { height: qrCardSize, width: qrCardSize },
-            isExpired && styles.qrCardExpired,
-          ]}
-        >
-          <View style={[styles.qrInner, { height: qrInnerSize, width: qrInnerSize }]}>
+        <View style={[styles.qrSection, isExpired && styles.qrSectionExpired]}>
+          <View
+            style={[
+              styles.qrCodeShell,
+              { height: qrShellSize, width: qrShellSize },
+              isExpired && styles.qrCodeShellExpired,
+            ]}
+          >
             <View style={isExpired && styles.qrExpired}>
               <QRCode
                 backgroundColor={colors.white}
-                color={colors.primaryDark}
+                color={colors.black}
                 size={qrCodeSize}
                 value={qrValue}
               />
@@ -118,27 +97,63 @@ export function QrScreen({ activeTab, points, onNavigate }: QrScreenProps) {
               </View>
             ) : null}
           </View>
+
+          <Text style={[styles.timer, isExpired && styles.timerExpired]}>
+            {isExpired
+              ? 'Mã QR đã hết hạn'
+              : `Mã còn hiệu lực ${MemberQrSession.formatCountdown(remainingSeconds)}`}
+          </Text>
+
+          <Text maxFontSizeMultiplier={1.08} style={styles.fallbackText}>
+            Nếu không quét được mã, vui lòng cung cấp Loyalty ID cho thu ngân.
+          </Text>
         </View>
 
-        <Text style={[styles.timer, isExpired && styles.timerExpired]}>
-          {isExpired
-            ? 'Mã QR đã hết hạn'
-            : `Mã còn hiệu lực ${formatCountdown(remainingSeconds)}`}
-        </Text>
+        <View style={styles.actionPanel}>
+          <LinearGradient
+            colors={['#08295B', '#0A3769']}
+            end={{ x: 1, y: 0.5 }}
+            start={{ x: 0, y: 0.5 }}
+            style={styles.balanceCard}
+          >
+            <Text maxFontSizeMultiplier={1.08} style={styles.balanceLabel}>
+              Số dư hiện tại
+            </Text>
+            <Text maxFontSizeMultiplier={1.08} style={styles.balance}>
+              {formatPoints(points)} điểm
+            </Text>
+          </LinearGradient>
 
-        <Text style={styles.fallbackText}>
-          Nếu không quét được mã, vui lòng cung cấp Loyalty ID cho thu ngân.
-        </Text>
+          <View style={styles.actionRow}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => onNavigate('qr-scanner')}
+              style={({ pressed }) => [styles.actionButton, pressed && styles.buttonPressed]}
+            >
+              <LinearGradient
+                colors={['#0D77BD', '#005BAA']}
+                end={{ x: 1, y: 0.5 }}
+                start={{ x: 0, y: 0.5 }}
+                style={styles.scanButtonGradient}
+              >
+                <Ionicons color={colors.white} name="scan-outline" size={21} />
+                <Text style={styles.scanButtonText}>Quét QR</Text>
+              </LinearGradient>
+            </Pressable>
 
-        <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>Số dư hiện tại</Text>
-          <Text style={styles.balance}>{formatPoints(points)} điểm</Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={handleRefreshQr}
+              style={({ pressed }) => [
+                styles.actionButton,
+                styles.refreshButton,
+                pressed && styles.buttonPressed,
+              ]}
+            >
+              <Text style={styles.refreshText}>Tạo mã mới</Text>
+            </Pressable>
+          </View>
         </View>
-
-        <Pressable onPress={handleRefreshQr} style={styles.refreshButton}>
-          <Ionicons color={colors.primary} name="refresh-outline" size={17} />
-          <Text style={styles.refreshText}>TẠO MÃ MỚI</Text>
-        </Pressable>
       </ScrollView>
 
       <BottomNav active={activeTab} onNavigate={onNavigate} />
@@ -152,54 +167,78 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    flexGrow: 1,
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+  },
+  memberInfoCard: {
+    width: '100%',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 3,
   },
   eyebrow: {
-    color: colors.primary,
-    fontSize: 9,
-    fontWeight: '900',
-  },
-  name: {
-    marginTop: 8,
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '900',
-  },
-  loyaltyId: {
-    marginTop: 5,
-    color: colors.textMuted,
+    color: colors.black,
     fontSize: 12,
     fontWeight: '700',
+    letterSpacing: 0.2,
   },
-  qrCard: {
-    width: 236,
-    height: 236,
+  name: {
+    marginTop: 7,
+    color: colors.black,
+    fontSize: 23,
+    fontWeight: '900',
+    letterSpacing: -0.45,
+  },
+  loyaltyId: {
+    marginTop: 6,
+    color: colors.black,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  qrSection: {
+    width: '100%',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 24,
-    borderRadius: 24,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 22,
     backgroundColor: colors.surface,
+    paddingHorizontal: 16,
+    paddingVertical: 18,
     shadowColor: colors.primaryDark,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.14,
-    shadowRadius: 16,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    elevation: 4,
   },
-  qrCardExpired: {
+  qrSectionExpired: {
     borderWidth: 1,
     borderColor: colors.warning,
     backgroundColor: colors.warningSoft,
   },
-  qrInner: {
-    width: 192,
-    height: 192,
+  qrCodeShell: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 18,
+    borderRadius: 20,
     backgroundColor: colors.white,
-    padding: 8,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 5,
+  },
+  qrCodeShellExpired: {
+    backgroundColor: '#FFF9EA',
   },
   qrExpired: {
     opacity: 0.28,
@@ -220,9 +259,9 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   timer: {
-    marginTop: 16,
+    marginTop: 12,
     color: colors.success,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '900',
   },
   timerExpired: {
@@ -230,46 +269,81 @@ const styles = StyleSheet.create({
   },
   fallbackText: {
     maxWidth: 280,
-    marginTop: 8,
+    marginTop: 6,
     textAlign: 'center',
     color: colors.textMuted,
     fontSize: 11,
     lineHeight: 16,
   },
-  balanceCard: {
+  actionPanel: {
     width: '100%',
-    flexDirection: 'row',
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    padding: 14,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  balanceCard: {
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 18,
-    borderRadius: 16,
-    backgroundColor: colors.primaryDark,
-    padding: 16,
+    justifyContent: 'center',
+    minHeight: 68,
+    borderRadius: 15,
   },
   balanceLabel: {
-    color: '#BDD2E2',
-    fontSize: 11,
+    color: 'rgba(255,255,255,0.86)',
+    fontSize: 13,
+    fontWeight: '600',
   },
   balance: {
+    marginTop: 4,
     color: colors.white,
-    fontSize: 17,
+    fontSize: 21,
+    fontWeight: '900',
+    letterSpacing: -0.35,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    marginTop: 12,
+  },
+  actionButton: {
+    flex: 1,
+    minHeight: 48,
+    overflow: 'hidden',
+    borderRadius: 12,
+  },
+  scanButtonGradient: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scanButtonText: {
+    marginLeft: 7,
+    color: colors.white,
+    fontSize: 14,
     fontWeight: '900',
   },
   refreshButton: {
-    minHeight: 46,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 13,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    borderRadius: 14,
-    flexDirection: 'row',
-    paddingHorizontal: 24,
+    marginLeft: 10,
+    borderWidth: 1.4,
+    borderColor: '#1F6C82',
+    backgroundColor: colors.white,
   },
   refreshText: {
-    marginLeft: 7,
-    color: colors.primary,
-    fontSize: 11,
+    color: '#1F6077',
+    fontSize: 14,
     fontWeight: '900',
+  },
+  buttonPressed: {
+    opacity: 0.88,
+    transform: [{ scale: 0.985 }],
   },
 });

@@ -7,6 +7,7 @@ export type AppScreen =
   | MainTab
   | 'notifications'
   | 'offer-detail'
+  | 'qr-scanner'
   | 'payment'
   | 'payment-invoice-scanner'
   | 'transfer'
